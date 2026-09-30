@@ -4,12 +4,46 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Expense Manager</title>
+  <meta name="description" content="Track, share and manage your expenses – encrypted, on any device. Share expense books with friends.">
+
+  <!-- Installable app (PWA) -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Expenses">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Link preview on WhatsApp / Facebook / X / Telegram / LinkedIn.
+       WhatsApp needs FULL addresses: after you put the app online, replace ./ below with your site,
+       e.g. https://yourname.github.io/expense-manager/icons/og-image.jpg (see README). -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Expense Manager">
+  <meta property="og:title" content="Expense Manager – track & share your expenses">
+  <meta property="og:description" content="Track, share and manage your expenses – encrypted, on any device. Share expense books with friends.">
+  <meta property="og:url" content="./">
+  <meta property="og:image" content="./icons/og-image.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Expense Manager – track, share and manage your expenses">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Expense Manager – track & share your expenses">
+  <meta name="twitter:description" content="Track, share and manage your expenses – encrypted, on any device.">
+  <meta name="twitter:image" content="./icons/og-image.jpg">
+  <!-- saved theme is applied before the page draws (no white flash) -->
+  <script>try { if (localStorage.getItem('theme_v1') === 'dark') document.documentElement.dataset.theme = 'dark'; } catch {}</script>
   <style>
     :root {
       --primary: #2563eb;
       --primary-dark: #1d4ed8;
       --sent: #dc2626;
       --received: #16a34a;
+      /* amounts on the entry lines: lighter than the day / week / month totals */
+      --sent-item: #f06a6a;
+      --recv-item: #2fbf6c;
       --bg: #f3f4f6;
       --card: #ffffff;
       --text: #1f2937;
@@ -89,6 +123,14 @@
       color: #1e3a8a;
       font-size: .95rem;
     }
+
+    #homeInfo { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; }
+    #homeInfo > span { flex: 1 1 260px; }
+    .install-btn {
+      flex: 0 0 auto; border: none; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: .85rem;
+      padding: 6px 14px; color: #fff; background: linear-gradient(135deg, #2563eb, #7c3aed);
+    }
+    .install-btn:hover { filter: brightness(1.1); }
 
     /* ---------- Big buttons ---------- */
     .menu {
@@ -183,10 +225,12 @@
       flex: 0 0 22px; height: 28px; border: none; border-radius: 6px; cursor: pointer;
       font-weight: 800; font-size: 1rem; line-height: 1; padding: 0;
     }
-    .amt-wrap.minus .sign-btn { background: #fee2e2; color: var(--sent); }
-    .amt-wrap.minus input { color: var(--sent); }
-    .amt-wrap.plus .sign-btn { background: #dcfce7; color: var(--received); }
-    .amt-wrap.plus input { color: var(--received); }
+    .amt-wrap.minus .sign-btn { background: #fee2e2; color: var(--sent-item); }
+    .amt-wrap.minus input { color: var(--sent-item); }
+    .amt-wrap.plus .sign-btn { background: #dcfce7; color: var(--recv-item); }
+    .amt-wrap.plus input { color: var(--recv-item); }
+    #monthly #tbody input[data-f=sent] { color: var(--sent-item); font-weight: 600; }
+    #monthly #tbody input[data-f=received] { color: var(--recv-item); font-weight: 600; }
     .edit-table .c-date-cell { width: 120px; }            /* edit: 📅 + time box */
     #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 96px; }   /* view: "Wed, 30 Sept" / time */
     #mTable.flat .c-date-cell { width: 222px !important; }                      /* flat list, edit: date box + time box */
@@ -287,19 +331,22 @@
     /* month notes: one line, expands when clicked */
     .month-notes { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
     .month-notes label { flex: 0 0 auto; font-size: .85rem; color: var(--muted); padding-top: 8px; white-space: nowrap; }
-    .month-notes .saved { color: var(--received); font-weight: 600; }
+    .month-notes .saved { color: var(--received); font-weight: 600; font-size: .75rem; }
+    .month-notes label .lbl { display: none; }                  /* just the 📝 icon */
+    .month-notes label { padding-top: 2px; }
+    .month-notes .note-ico { font-size: 1.6rem; line-height: 1; }
     .note-preview {
       flex: 1; min-width: 0; text-align: left; cursor: pointer;
-      background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+      background: #f8f1ff; border: 1px solid #e1b5ff; border-radius: 8px;
       padding: 8px 10px; font: inherit; font-size: .92rem; color: var(--text);
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .note-preview:hover { border-color: #facc15; }
+    .note-preview:hover { border-color: #a855f7; }
     .note-preview.empty { color: var(--muted); }
-    .note-preview .more { color: #a16207; font-size: .8rem; margin-left: 6px; }
+    .note-preview .more { color: #7e22ce; font-size: .8rem; margin-left: 6px; }
     .month-notes textarea {
       flex: 1; min-height: 72px; resize: vertical; overflow-y: auto;
-      padding: 8px 10px; background: #fffbeb; border-color: #fde68a; font-size: .92rem;
+      padding: 8px 10px; background: #f8f1ff; border-color: #e1b5ff; font-size: .92rem;
     }
 
     /* Inside a book the page itself doesn't scroll: header, toolbar, note and column
@@ -326,11 +373,20 @@
     body.screen-mode header { padding: 10px 16px; }
     body.screen-mode .header-inner { flex-wrap: nowrap; }
 
-    /* home header: title top-left, login bottom-right, room in between */
-    body:not(.screen-mode) header { padding: 26px 20px 18px; }
-    body:not(.screen-mode) .header-inner { align-items: flex-end; min-height: 110px; gap: 20px; }
-    #brand { align-self: flex-start; text-align: left; }
+    /* home header (desktop + landscape): title left, login right, both vertically centred,
+       a barely visible line between them */
+    body:not(.screen-mode) header { padding: 24px 24px; }
+    body:not(.screen-mode) .header-inner { align-items: center; flex-wrap: nowrap; gap: 56px; }
+    #brand { text-align: left; min-width: 0; }
     #brand p { margin-top: 6px; }
+    body:not(.screen-mode) .auth { flex: 0 0 auto; width: auto; padding: 6px 0 6px 56px; border-left: 1px solid rgba(255,255,255,.2); }
+    /* phone upright: title centred on top, login centred below, line in between */
+    @media (max-width: 600px) and (orientation: portrait) {
+      body:not(.screen-mode) header { padding: 24px 16px 18px; }
+      body:not(.screen-mode) .header-inner { flex-direction: column; align-items: stretch; gap: 26px; }
+      body:not(.screen-mode) #brand { text-align: center; }
+      body:not(.screen-mode) .auth { width: 100%; justify-content: center; padding: 22px 0 0; border-left: none; border-top: 1px solid rgba(255,255,255,.2); }
+    }
 
     /* View your expenses: book cards */
     .books-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
@@ -345,22 +401,40 @@
     .book-name { font-weight: 700; font-size: 1.05rem; }
     .book-meta { color: var(--muted); font-size: .84rem; }
     .default-tag { background: #e0e7ff; color: #3730a3; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; vertical-align: middle; }
-    .book-actions { display: flex; gap: 6px; flex: 0 0 auto; }
-    .book-actions .btn { padding: 6px 10px; }
+    .book-actions { display: flex; gap: 4px; flex: 0 0 auto; }
+    .book-actions .btn { padding: 6px 8px; }
+    .book-actions .fav-btn { padding: 4px 2px; }
+    .mem { white-space: nowrap; }
     .add-book { border-style: dashed; color: var(--primary); justify-content: center; min-height: 92px; }
     #booksMsg { margin-top: 12px; }
 
     /* home: divider + second row (Shared with you · Favourite) */
     .menu-divider, .sec-divider { border: none; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #c7d2fe, #e9d5ff); }
-    .menu-divider { margin: -8px 0 16px; }
-    .menu-2 { grid-template-columns: repeat(2, 1fr); }
+    .menu-divider { margin: -4px 0 18px; }
+    .quick { margin-bottom: 20px; }
+    .quick-list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .quick-card { padding: 12px 14px; gap: 10px; }
+    .quick-card .book-icon { font-size: 1.5rem; }
+    .quick-card .book-name { font-size: .95rem; }
     .sec-divider { margin: 22px 0 16px; }
     .sec-title { font-size: 1rem; color: #3730a3; margin: 0 0 10px; }
     .shared-tag { background: #ede9fe; color: #5b21b6; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; vertical-align: middle; }
     .role-tag { background: #f1f5f9; color: #475569; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
-    .fav-btn { background: none !important; font-size: 1.25rem; color: #cbd5e1; }
-    .fav-btn.on { color: #f59e0b; }
+    .fav-btn { background: none !important; font-size: 1.35rem; line-height: 1; color: #94a3b8; }
+    .fav-btn.on { color: #ef4444; }
+    .fav-btn:hover { color: #ef4444; }
+    .fav-btn.locked { opacity: 1; cursor: default; }        /* My Monthly Expenses: always a favourite */
+    .book-actions .fav-btn { margin-right: 8px; }
     .empty-card { color: var(--muted); padding: 18px; border: 2px dashed var(--border); border-radius: var(--radius); text-align: center; }
+    /* Shared with you: grouped by the person who shared */
+    #sharedList { display: flex; flex-direction: column; gap: 18px; }
+    .owner-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: .95rem; margin: 0 0 8px; }
+    .owner-head small { color: var(--muted); font-weight: 400; }
+    .owner-count { margin-left: auto; font-size: .75rem; font-weight: 600; color: var(--muted); background: var(--bg); border-radius: 999px; padding: 1px 8px; }
+    .avatar-sm { width: 26px; height: 26px; border-radius: 50%; background: var(--primary); color: #fff; display: grid; place-items: center; font-size: .8rem; font-weight: 700; flex: 0 0 auto; }
+    .person select { width: auto; padding: 4px 6px; font-size: .85rem; }
+    .unshare { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .unshare .hint { margin: 0; flex: 1 1 240px; }
     .shared-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
     .shared-bar .hint { margin: 0; flex: 1; min-width: 220px; }
     #sharedMsg { margin: 0 0 12px; }
@@ -392,12 +466,12 @@
     #monthly.viewmode .edit-table :is(:disabled, [readonly])::placeholder, #monthly.readonly .edit-table :is(:disabled, [readonly])::placeholder { color: transparent; -webkit-text-fill-color: transparent; }
     #monthly.viewmode .edit-table input[readonly]::-webkit-inner-spin-button, #monthly.viewmode .edit-table input[readonly]::-webkit-outer-spin-button { -webkit-appearance: none; display: none; }
     #monthly.viewmode .edit-table :is(textarea, input)[readonly] { cursor: pointer; }
-    #monthly .amt-wrap.minus input[readonly] { color: var(--sent); }
-    #monthly .amt-wrap.plus input[readonly] { color: var(--received); }
+    #monthly .amt-wrap.minus input[readonly] { color: var(--sent-item); }
+    #monthly .amt-wrap.plus input[readonly] { color: var(--recv-item); }
     #monthly.viewmode .edit-table input:disabled::-webkit-inner-spin-button,
     #monthly.viewmode .edit-table input:disabled::-webkit-calendar-picker-indicator { display: none; }
-    #monthly .amt-wrap.minus input:disabled { color: var(--sent); }
-    #monthly .amt-wrap.plus input:disabled { color: var(--received); }
+    #monthly .amt-wrap.minus input:disabled { color: var(--sent-item); }
+    #monthly .amt-wrap.plus input:disabled { color: var(--recv-item); }
     /* the entry's time sits where the 📅 date button was */
     /* Date · Time cell */
     .dt-cell { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
@@ -448,6 +522,11 @@
     .modal .err { color: var(--sent); font-weight: 600; font-size: .88rem; }
     .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
     .btn-danger-solid { background: var(--sent); color: #fff; }
+    .login-modal { max-width: 400px; }
+    .login-or { text-align: center; color: var(--muted); font-size: .8rem; }
+    .g-login { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border); }
+    .g-login svg { width: 18px; height: 18px; }
+    #loginMsg { margin: 0; }
     .btn-danger-solid:hover { background: #b91c1c; }
     .confirm-list { list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
     .confirm-list li { padding: 6px 10px; background: #f8fafc; border-radius: 8px; }
@@ -520,9 +599,9 @@
     .new-book .err { color: var(--sent); font-weight: 600; font-size: .9rem; }
     .new-book .hint { margin: 0; }
     tr.total td {
-      background: #fef9c3;
+      background: #f8f1ff;
       font-weight: 700;
-      border-top: 2px solid #facc15;
+      border-top: 2px solid #e1b5ff;
       padding: 10px 12px;
     }
     /* sortable headers, dropdowns */
@@ -567,8 +646,8 @@
     /* smaller text in the grid so Purpose / Note show more */
     .edit-table textarea[data-f=purpose], .edit-table input[data-f=note] { font-size: .86rem; }
     .day-pill { display: inline-block; border-radius: 999px; padding: 1px 8px; font-weight: 600; font-size: .76rem; white-space: nowrap; }
-    .day-pill.out { background: #ffe4e6; color: #e11d48; }        /* light red – different from the entries' sent red */
-    .day-pill.in { background: #d1fae5; color: #059669; }         /* light green – different from the received green */
+    .day-pill.out { background: #ffe4e6; color: #be123c; }        /* tinted pill – different from the entries' light red */
+    .day-pill.in { background: #d1fae5; color: #047857; }         /* tinted pill – different from the entries' light green */
     .day-count { color: var(--muted); font-size: .8rem; }
     .day-add {
       float: right; border: 1px dashed #a5b4fc; background: #fff; color: var(--primary);
@@ -584,7 +663,7 @@
     tr.day-entry:hover .date-pick, .date-pick:focus { opacity: 1; }
     tr:not(.day-entry) .date-pick { display: none; }
     tr.week-total { cursor: pointer; user-select: none; }
-    tr.week-total:hover td { background: #fef9c3; }
+    tr.week-total:hover td { background: #f1e4ff; }
     tr.week-total .tools { gap: 6px; white-space: nowrap; }
     tr.week-total .wk-label-cell { overflow: hidden; }
     #tbody tr.day-head td { padding-left: 4px; padding-right: 4px; }
@@ -599,8 +678,8 @@
 
     /* weekly subtotal – a paler shade of the monthly total's yellow */
     tr.week-total td {
-      background: #fefce8; color: #854d0e; font-weight: 600; font-size: .88rem;
-      padding: 8px 12px; border-top: 1px dashed #fde047; border-bottom: 1px dashed #fde047;
+      background: #f8f1ff; color: #6b21a8; font-weight: 600; font-size: .88rem;
+      padding: 8px 12px; border-top: 1px dashed #e1b5ff; border-bottom: 1px dashed #e1b5ff;
     }
 
     /* duplicates: kept, just highlighted */
@@ -636,6 +715,19 @@
     .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
 
     footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 24px 16px; }
+    footer .heart { color: #ef4444; }
+
+    /* phones held upright only: hint to turn the phone sideways */
+    .rotate-tip { display: none; }
+    @media (max-width: 600px) and (orientation: portrait) {
+      .rotate-tip {
+        display: flex; align-items: center; justify-content: center; gap: 8px;
+        background: #f8f1ff; color: #6b21a8; border-radius: 8px;
+        font-size: .75rem; padding: 3px 8px; margin-bottom: 6px;
+      }
+      .rotate-tip button { background: none; border: none; color: inherit; font-size: .8rem; cursor: pointer; padding: 0 4px; }
+      #monthly.list-scrolled .rotate-tip { display: none; }
+    }
 
     /* ---------- Tablets / phones in landscape: the full grid, compact so it still fits ---------- */
     @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
@@ -668,6 +760,11 @@
       tr.day-head td, tr.week-total td, tr.total td { padding: 4px 6px; font-size: .8rem; }
       .dup-tag { font-size: .62rem; padding: 0 4px; }
     }
+    /* phone held sideways: taller home buttons */
+    @media (max-height: 520px) and (orientation: landscape) {
+      .menu button { min-height: 60px; padding: 10px 14px; flex-direction: row; gap: 10px; font-size: 1rem; }
+      .menu button .icon { font-size: 1.4rem; }
+    }
     /* phone held sideways: slimmer header so the grid gets the height */
     @media (max-height: 520px) and (orientation: landscape) {
       /* date column: "Tue,01 - 9:05P" */
@@ -692,6 +789,7 @@
       .month-bar .lbl { display: none; }
       .month-notes { margin-bottom: 4px; gap: 6px; }
       .month-notes label { padding-top: 2px; font-size: .75rem; }
+      .month-notes .note-ico { font-size: 1.15rem; }
       .month-notes label .lbl { display: none; }
       .note-preview { padding: 2px 8px; font-size: .78rem; border-radius: 6px; }
       #mMsg { margin-bottom: 4px; padding: 4px 8px; font-size: .82rem; }
@@ -765,11 +863,11 @@
       html:not(.tbl-wide) #tbody tr.day-head { background: #eef2ff; border-top: 2px solid #c7d2fe; }
       html:not(.tbl-wide) #tbody tr.day-head.no-entries { background: #f8fafc; border-top-color: var(--border); }
       html:not(.tbl-wide) #tbody tr.day-head.is-today { background: #dbeafe; }
-      html:not(.tbl-wide) #tbody tr.week-total { background: #fefce8; border-top: 1px dashed #fde047; border-bottom: 1px dashed #fde047; }
+      html:not(.tbl-wide) #tbody tr.week-total { background: #f8f1ff; border-top: 1px dashed #e1b5ff; border-bottom: 1px dashed #e1b5ff; }
       html:not(.tbl-wide) tr.week-total .wk-label-cell { flex: 1; min-width: 0; overflow: hidden; }
       html:not(.tbl-wide) .wl-long { display: inline !important; }
       html:not(.tbl-wide) .wl-short { display: none !important; }
-      html:not(.tbl-wide) .edit-table tfoot tr.total { background: #fef9c3; border-top: 2px solid #facc15; }
+      html:not(.tbl-wide) .edit-table tfoot tr.total { background: #f8f1ff; border-top: 2px solid #e1b5ff; }
       html:not(.tbl-wide) .edit-table tfoot tr.total.filtered { background: #dbeafe; border-top-color: #60a5fa; }
       html:not(.tbl-wide) .edit-table tfoot tr.total.filtered.cycle { background: #f3e8ff; border-top-color: #c084fc; }
       .cycle-bar { font-size: .76rem; padding: 3px 8px; }
@@ -794,6 +892,7 @@
       /* month note: one thin line */
       .month-notes { margin-bottom: 6px; gap: 6px; }
       .month-notes label { padding-top: 3px; font-size: .75rem; }
+      .month-notes .note-ico { font-size: 1.15rem; }
       .month-notes label .lbl { display: none; }
       .note-preview { padding: 3px 8px; font-size: .78rem; border-radius: 6px; }
     }
@@ -879,20 +978,102 @@
       body.book-mode main { padding: 8px 8px 8px; }
     }
     @media (max-width: 700px) {
-      .menu, .menu-2 { grid-template-columns: 1fr; gap: 10px; }
+      .menu { grid-template-columns: 1fr; gap: 8px; }
       .menu-divider { margin: 4px 0 14px; }
       .menu button {
         flex-direction: row;
         justify-content: flex-start;
-        min-height: 64px;
-        padding: 14px 18px;
+        min-height: 54px;
+        padding: 10px 16px;
+        font-size: 1rem;
       }
-      .menu button .icon { font-size: 1.6rem; }
-      .auth { width: 100%; justify-content: flex-end; }
-      body:not(.screen-mode) .header-inner { min-height: 0; gap: 22px; }
+      .menu button .icon { font-size: 1.4rem; }
       .summary { grid-template-columns: 1fr; }
       .panel { padding: 16px; }
       .actions .btn { flex: 1; }
+    }
+    /* ---------- 🌙 Dark theme (html[data-theme=dark], toggled in the header) ---------- */
+    .theme-btn {
+      flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1rem; line-height: 1;
+      background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.4); color: #fff; display: grid; place-items: center;
+    }
+    .theme-btn:hover { background: rgba(255,255,255,.3); }
+    body.screen-mode .theme-btn { width: 30px; height: 30px; font-size: .9rem; }
+    @media (max-height: 520px) and (orientation: landscape) { body.screen-mode .theme-btn { width: 24px; height: 24px; font-size: .75rem; } }
+
+    html[data-theme=dark] {
+      color-scheme: dark;
+      --primary: #d4d4d4; --primary-dark: #fff;
+      --sent: #f87171; --received: #4ade80;
+      --sent-item: #fca5a5; --recv-item: #86efac;
+      --bg: #000000; --card: #111111; --text: #e6e6e6; --muted: #9a9a9a; --border: #2e2e2e;
+    }
+    html[data-theme=dark] header { background: linear-gradient(135deg, #2563eb, #7c3aed); }   /* same header as the light theme */
+    html[data-theme=dark] .info { background: #1f1f1f; color: #d6d6d6; border-left-color: #555; }
+    html[data-theme=dark] input, html[data-theme=dark] textarea, html[data-theme=dark] select { background-color: #121212; color: var(--text); }
+    html[data-theme=dark] .edit-table :is(input, textarea, select) { background: #161616; }
+    html[data-theme=dark] .edit-table :is(input, textarea):focus { background: #000000; }
+    html[data-theme=dark] th, html[data-theme=dark] .edit-table tfoot td { background: #111111; }
+    html[data-theme=dark] .table-wrap { background: #000000; border-color: #262626; }   /* entry rows: black */
+    html[data-theme=dark] th.sortable:hover { background: #2a2a2a; }
+    html[data-theme=dark] .btn-primary { color: #111; }
+    html[data-theme=dark] .avatar-sm { background: #3a3a3a; }
+    html[data-theme=dark] tr.week-total td, html[data-theme=dark] tr.week-total .wk-label { color: #d8b4fe; }
+    html[data-theme=dark] tr.week-total:hover td { background: #211529 !important; }
+    html[data-theme=dark] .profile .avatar { background: #2e2e2e; color: #fff; border-color: #555; }
+    html[data-theme=dark] .caret { color: #9a9a9a; }
+    html[data-theme=dark] :is(.today-tag, .filter-count, .day-add:hover, .menu button.active) { color: #111; }
+    html[data-theme=dark] .btn-danger { background: #4c1d24; color: #fca5a5; }
+    html[data-theme=dark] .msg { background: #064e3b; color: #bbf7d0; }
+    html[data-theme=dark] .msg .undo, html[data-theme=dark] .day-add { background: transparent; }
+    html[data-theme=dark] .amt-wrap.minus .sign-btn { background: #4c1d24; }
+    html[data-theme=dark] .amt-wrap.plus .sign-btn { background: #064e3b; }
+    html[data-theme=dark] .edit-table tr.invalid input.bad { background: #4c1d24; }
+    html[data-theme=dark] :is(.note-preview, .month-notes textarea) { background: #191021; border-color: #573274; color: #ede9fe; }
+    html[data-theme=dark] .note-preview .more { color: #c4b5fd; }
+    html[data-theme=dark] .rotate-tip { background: #191021; color: #d8b4fe; }
+    html[data-theme=dark] .default-tag { background: #2e2e2e; color: #e6e6e6; }
+    html[data-theme=dark] .shared-tag { background: #3b0764; color: #ddd6fe; }
+    html[data-theme=dark] .role-tag { background: #2e2e2e; color: #d0d0d0; }
+    html[data-theme=dark] .sec-title, html[data-theme=dark] tr.day-head .day-label { color: #e6e6e6; }
+    html[data-theme=dark] tr.day-head.weekend .day-label { color: #fda4af; }
+    html[data-theme=dark] tr.day-head.no-entries .day-label { color: #8a8a8a; }
+    html[data-theme=dark] .confirm-list li { background: #121212; }
+    html[data-theme=dark] :is(#filterBtn.on, .wide-btn.on) { background: #333; color: #fff; }
+    html[data-theme=dark] .edit-btn.on { background: #064e3b; color: #bbf7d0; }
+    html[data-theme=dark] .filter-bar { background: #202020; border-color: #3a3a3a; color: #e6e6e6; }
+    html[data-theme=dark] .filter-opt:hover { background: #121212; }
+    html[data-theme=dark] .filter-opt.on { background: #262626; border-color: #555; }
+    html[data-theme=dark] .cycle-bar { background: #2e1065; border-color: #6b21a8; color: #e9d5ff; }
+    html[data-theme=dark] .cycle-info b { color: #d8b4fe; }
+    html[data-theme=dark] .due-soon { background: #4c1d24; color: #fca5a5; }
+    html[data-theme=dark] .adj-tag { background: #422006; color: #fde68a; }
+    html[data-theme=dark] tr.month-sep td { background: #2e1065; color: #e9d5ff; }
+    html[data-theme=dark] .bulk { background: #161616; border-color: #3a3a3a; }
+    html[data-theme=dark] .cell-tip { background: #2a2a2a; border: 1px solid #3a3a3a; }
+    html[data-theme=dark] .day-pill.out { background: #4c1d24; color: #fda4af; }
+    html[data-theme=dark] .day-pill.in { background: #064e3b; color: #6ee7b7; }
+    html[data-theme=dark] .menu-divider { background: #2e2e2e; }
+    html[data-theme=dark] .star-btn:not(.on) { color: #4a4a4a; }
+    html[data-theme=dark] .fav-btn:not(.on) { color: #7a7a7a; }
+    /* table rows (wide grid: the cells; upright phones: the line) */
+    html[data-theme=dark] tr.day-head td, html[data-theme=dark] #tbody tr.day-head { background: #111111 !important; border-top-color: #2a2a2a !important; }
+    html[data-theme=dark] tr.day-head:hover td { background: #1a1a1a !important; }
+    html[data-theme=dark] tr.day-head.no-entries td, html[data-theme=dark] #tbody tr.day-head.no-entries { background: #080808 !important; border-top-color: var(--border) !important; }
+    html[data-theme=dark] tr.day-head.is-today td, html[data-theme=dark] #tbody tr.day-head.is-today { background: #1f1f1f !important; }
+    html[data-theme=dark] tr.week-total td, html[data-theme=dark] #tbody tr.week-total { background: #191021 !important; color: #d8b4fe; border-color: #573274 !important; }
+    html[data-theme=dark] tr.total td, html[data-theme=dark] .edit-table tfoot tr.total { background: #191021 !important; border-top-color: #573274 !important; }
+    html[data-theme=dark] tr.total.filtered td, html[data-theme=dark] .edit-table tfoot tr.total.filtered { background: #262626 !important; border-top-color: #555 !important; }
+    html[data-theme=dark] tr.total.filtered.cycle td, html[data-theme=dark] .edit-table tfoot tr.total.filtered.cycle { background: #2e1065 !important; border-top-color: #7e22ce !important; }
+    html[data-theme=dark] tr.starred td { background: #2e1f4f; }
+    html[data-theme=dark] tr.dup td, html[data-theme=dark] .item.dup { background: #3b2412; }
+    html[data-theme=dark] #tbody tr.selected td { background: #333; }
+    html[data-theme=dark]:not(.tbl-wide) #mTable thead { background: #111111 !important; }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr.starred { background: #2e1f4f; }
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr.dup { background: #3b2412; }
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr.selected { background: #333; }
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr[data-id] td { background: transparent !important; }
     }
   </style>
 </head>
@@ -917,53 +1098,45 @@
   <main>
     <!-- App usage detail -->
     <div class="info" id="homeInfo">
-      ℹ️ Keep separate expense books – <b>Monthly Expenses</b> is ready to use, and you can create more
-      (party, fuel, bank savings…). Each book has the same month-wise table with daily, weekly and monthly totals.
-      <b>Log in with Google</b> to save your data <b>encrypted</b> in your own Google Drive and use it on any device —
-      otherwise it stays in this browser only.
+      <span>✨ Manage your expenses easily, take them anywhere and share them with anyone.</span>
+      <button type="button" class="install-btn" id="installBtn" hidden>📲 Install app</button>
     </div>
 
     <!-- 3 large buttons (home screen only) -->
     <nav class="menu" id="homeMenu">
       <button data-go="books"><span class="icon">📋</span>View Your Expenses</button>
-      <button data-go="newBook"><span class="icon">➕</span>Create New Expense</button>
-      <button data-go="monthly"><span class="icon">📅</span>Monthly Expenses</button>
-    </nav>
-    <hr class="menu-divider" id="homeDivider">
-    <nav class="menu menu-2" id="homeMenu2">
       <button data-go="shared"><span class="icon">👥</span>Shared with you</button>
-      <button data-go="favs"><span class="icon">⭐</span>Favourite</button>
+      <button data-go="newBook"><span class="icon">➕</span>Create New Expense</button>
     </nav>
 
-    <!-- View your expenses: my books, then (after a divider) books shared with me -->
+    <!-- ⚡ Quick access: books marked with ♥ (hidden, line included, when there are none) -->
+    <section class="quick" id="homeQuick" hidden>
+      <hr class="menu-divider" id="homeDivider">
+      <h3 class="sec-title">⚡ Quick access</h3>
+      <div class="books-list quick-list" id="quickList"></div>
+    </section>
+
+    <!-- View your expenses: my own books (shared-with-me books have their own screen) -->
     <section id="books" class="panel" hidden>
-      <h3 class="sec-title">📁 My expenses</h3>
       <div class="books-list" id="booksList"></div>
       <div class="msg" id="booksMsg" hidden></div>
-      <hr class="sec-divider">
-      <h3 class="sec-title">👥 Shared with you</h3>
-      <div class="books-list" id="booksShared"></div>
     </section>
 
     <!-- Shared with you -->
     <section id="shared" class="panel" hidden>
       <div class="shared-bar">
-        <button type="button" class="btn btn-primary" id="addSharedBtn">➕ Add shared expense</button>
-        <span class="hint">When someone shares an expense with your Gmail, add it here once – pick it in the Google window that opens.</span>
+        <button type="button" class="btn btn-light" id="addSharedBtn">🔄 Refresh</button>
+        <span class="hint">Expenses people share with your email show up here by themselves – just log in with that email.</span>
       </div>
       <div class="msg" id="sharedMsg" hidden></div>
       <div class="books-list" id="sharedList"></div>
     </section>
 
-    <!-- Favourite: shared expenses you starred -->
-    <section id="favs" class="panel" hidden>
-      <div class="books-list" id="favList"></div>
-    </section>
 
     <!-- Share one expense with other people -->
     <section id="share" class="panel" hidden>
       <form class="share-form" id="shareForm" autocomplete="off">
-        <label for="shareEmail">Share with (Gmail address)</label>
+        <label for="shareEmail">Share with (their email address)</label>
         <div class="share-row">
           <input type="email" id="shareEmail" placeholder="friend@gmail.com">
           <select id="shareRole" aria-label="Access">
@@ -978,6 +1151,10 @@
       </form>
       <h3 class="sec-title">People with access</h3>
       <div class="people" id="sharePeople"></div>
+      <div class="unshare" id="unshareBox" hidden>
+        <p class="hint">Stop sharing: everyone loses access and the expense (all months and notes) goes back to being private to you.</p>
+        <button type="button" class="btn btn-danger btn-sm" id="unshareBtn">⏏ Stop sharing</button>
+      </div>
     </section>
 
     <!-- Create new expense: ask for a name, then open it -->
@@ -985,7 +1162,7 @@
       <form class="new-book" id="newBookForm" autocomplete="off">
         <label for="bookName">Expense name</label>
         <input type="text" id="bookName" maxlength="60" placeholder="e.g. Party expenses, Fuel expenses, Bank savings">
-        <p class="hint">It gets the same month-wise table as Monthly Expenses. You can rename it later from <b>View Your Expenses</b>.</p>
+        <p class="hint">It gets the same month-wise table as My Monthly Expenses. You can rename it later from <b>View Your Expenses</b>.</p>
         <div class="err" id="newBookErr" hidden></div>
         <div class="actions">
           <button type="submit" class="btn btn-primary">➕ Create &amp; open</button>
@@ -1050,8 +1227,9 @@
         </div>
       </div>
 
+      <div class="rotate-tip" id="rotateTip" hidden>📱↻ Use in landscape mode for better visibility<button type="button" id="rotateTipX" title="Close">✕</button></div>
       <div class="month-notes">
-        <label for="monthNote">📝<span class="lbl"> Notes</span> <span class="saved" id="noteSaved"></span></label>
+        <label for="monthNote" title="Month notes" aria-label="Month notes"><span class="note-ico">📝</span><span class="lbl"> Notes</span> <span class="saved" id="noteSaved"></span></label>
         <button type="button" class="note-preview" id="notePreview" title="Click to open the full note"></button>
         <textarea id="monthNote" rows="4" hidden></textarea>
       </div>
@@ -1085,6 +1263,23 @@
         </table>
       </div>    </section>
   </main>
+
+  <!-- Login / sign up: email magic link (+ optional Google) -->
+  <div class="overlay" id="loginDlg" hidden>
+    <form class="modal login-modal" id="loginForm" autocomplete="on">
+      <div class="modal-head">
+        <h3>🔑 Log in / Sign up</h3>
+        <button type="button" class="modal-x" id="loginX" title="Close">✕</button>
+      </div>
+      <p class="hint">No password needed – we email you a sign-in link. New here? The same link creates your account.</p>
+      <input type="email" id="loginEmail" placeholder="you@gmail.com" autocomplete="email" required>
+      <button type="submit" class="btn btn-primary" id="loginSend">📧 Email me a sign-in link</button>
+      <div class="login-or" id="loginOr">or</div>
+      <button type="button" class="btn btn-light g-login" id="loginGoogle">Continue with Google</button>
+      <div class="msg" id="loginMsg" hidden></div>
+      <div class="err" id="loginErr" hidden></div>
+    </form>
+  </div>
 
   <!-- Confirmation popup (delete / remove) -->
   <div class="overlay" id="confirmDlg" hidden>
@@ -1161,9 +1356,9 @@
     </div>
   </div>
 
-  <footer>Expense Manager &middot; encrypted (AES-256) &middot; stored in your Google Drive, never on our servers</footer>
+  <footer>Made with <span class="heart">❤️</span> by Subho</footer>
 
-  <script src="https://accounts.google.com/gsi/client" async></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 
   <script>
     const KEY = 'expenses_v1';
@@ -1175,7 +1370,7 @@
       try { return JSON.parse(localStorage.getItem(KEY)) || []; }
       catch { return []; }
     }
-    // Logged in -> encrypted save to Google Drive; guest -> this browser only
+    // Logged in -> encrypted save to the cloud (Supabase); guest -> this browser only
     function save() { persist(); }
 
     const money = n => '₹' + (Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -1189,10 +1384,12 @@
 
     /* ---------- Expense books ("Monthly Expenses" + user-created ones) ---------- */
     const BOOKS_KEY = 'books_v1';
-    const DEFAULT_BOOK = { id: 'monthly', name: 'Monthly Expenses', created: 0 };
-    // Monthly Expenses always exists (first); anything else is user-created
+    const DEFAULT_BOOK = { id: 'monthly', name: 'My Monthly Expenses', created: 0 };
+    const OLD_DEFAULT_NAME = 'Monthly Expenses';
+    // My Monthly Expenses always exists (first); anything else is user-created. Old saves called it "Monthly Expenses".
     const normBooks = b => !Array.isArray(b) ? [{ ...DEFAULT_BOOK }]
-      : b.some(x => x.id === 'monthly') ? b : [{ ...DEFAULT_BOOK }, ...b];
+      : b.some(x => x.id === 'monthly') ? b.map(x => x.id === 'monthly' && x.name === OLD_DEFAULT_NAME ? { ...x, name: DEFAULT_BOOK.name } : x)
+      : [{ ...DEFAULT_BOOK }, ...b];
     let books = loadBooks();
     function loadBooks() {
       try { return normBooks(JSON.parse(localStorage.getItem(BOOKS_KEY))); } catch { return [{ ...DEFAULT_BOOK }]; }
@@ -1200,17 +1397,33 @@
     let curBook = 'monthly';
     const bookOf = e => e.book || 'monthly';                  // entries saved before books existed -> Monthly
 
-    /* Shared books live in their own encrypted Drive file (not in your private app-data file).
+    /* Shared books live in their own encrypted shared_books row (not in your private vault).
        sharedRefs (saved in your private file) remembers which ones you own or were given:
-       { id: <Drive file id>, name, ownerName, ownerEmail, role: 'owner'|'writer'|'reader', fav } */
+       { id: <shared_books id>, name, ownerName, ownerEmail, role: 'owner'|'writer'|'reader', fav } */
     let sharedRefs = [];
+    let monthlyShared = null;                                 // shared_books id of my Monthly Expenses once I share it
     const SH = 'sh_';                                         // in-app book id of a shared book = 'sh_' + fileId
     const isShared = id => String(id).startsWith(SH);
     const refOf = id => sharedRefs.find(r => SH + r.id === id);
     const bookName = id => isShared(id) ? (refOf(id)?.name || 'Shared expense') : (books.find(b => b.id === id)?.name || 'Expenses');
-    const bookIcon = id => id === 'monthly' ? '📅' : isShared(id) ? '👥' : '📒';
+    const isMonthlyRef = r => !!r && (r.id === monthlyShared || (r.role !== 'owner' && [DEFAULT_BOOK.name, OLD_DEFAULT_NAME].includes(r.name)));
+    const bookIcon = id => id === 'monthly' || isMonthlyRef(isShared(id) && refOf(id)) ? '📅' : isShared(id) ? '👥' : '📒';
+    // someone else's book: "subhodip's Monthly Expenses"
+    const bookTitle = id => { const r = isShared(id) && refOf(id); return r && r.role !== 'owner' ? `${r.ownerName || r.ownerEmail}'s ${r.name.replace(/^My /, '')}` : bookName(id); };
+    // the book behind the home "Monthly Expenses" button (the shared copy once I've shared it)
+    const monthlyBook = () => monthlyShared && refOf(SH + monthlyShared) ? SH + monthlyShared : 'monthly';
     const canEdit = id => !isShared(id) || ['owner', 'writer'].includes(refOf(id)?.role);
     const bookExists = id => isShared(id) ? !!refOf(id) : books.some(b => b.id === id);
+
+    // ⚡ Quick access: any book (mine: its id, shared: 'sh_' + id) starred with ☆ – shown on the home screen
+    const QUICK_KEY = 'quick_v1';
+    let quick = loadQuick();
+    function loadQuick() { try { return new Set(JSON.parse(localStorage.getItem(QUICK_KEY)) || []); } catch { return new Set(); } }
+    // My Monthly Expenses (or its shared copy) is always a favourite – its ♥ can't be turned off
+    const isMyMonthly = id => id === 'monthly' || (!!monthlyShared && id === SH + monthlyShared);
+    const lockedHeart = '<button type="button" class="btn btn-light btn-sm fav-btn on locked" disabled title="Always in Quick access">♥</button>';
+    const quickBtn = id => isMyMonthly(id) ? lockedHeart : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(id) ? 'on' : ''}" data-act="quick" title="${quick.has(id) ? 'Remove from Quick access' : 'Add to Quick access'}">${quick.has(id) ? '♥' : '♡'}</button>`;
+    function toggleQuick(id) { if (isMyMonthly(id)) return; if (quick.has(id)) quick.delete(id); else quick.add(id); saveVault(); }
 
     /* ---------- Screens: home · books list · new book · one book ---------- */
     let screen = 'home';
@@ -1219,15 +1432,14 @@
     function openScreen(name, push = true) {
       pruneBlank();
       if (push && name !== screen) navStack.push(screen);
+      const prev = screen;
       screen = name;
       const home = name === 'home';
       $('brand').hidden = !home;
       $('screenHead').hidden = home;
       $('homeInfo').hidden = !home;
       $('homeMenu').hidden = !home;
-      $('homeMenu2').hidden = !home;
-      $('homeDivider').hidden = !home;
-      ['books', 'newBook', 'shared', 'favs', 'share'].forEach(s => $(s).hidden = name !== s);
+      ['books', 'newBook', 'shared', 'share'].forEach(s => $(s).hidden = name !== s);
       $('monthly').hidden = name !== 'book';
       document.body.classList.toggle('screen-mode', !home);
       document.body.classList.toggle('book-mode', name === 'book');
@@ -1235,15 +1447,15 @@
         name === 'books' ? '📋 Your Expenses' :
         name === 'newBook' ? '➕ Create New Expense' :
         name === 'shared' ? '👥 Shared with you' :
-        name === 'favs' ? '⭐ Favourite' :
         name === 'share' ? `🔗 Share “${bookName(shareTarget)}”` :
-        name === 'book' ? `${bookIcon(curBook)} ${bookName(curBook)}` : '';
+        name === 'book' ? `${bookIcon(curBook)} ${bookTitle(curBook)}` : '';
       if (name === 'book' && !canEdit(curBook)) $('screenTitle').insertAdjacentHTML('beforeend', ' <span class="view-only-tag">👁 view only</span>');
       if (name === 'books') renderBooks();
       if (name === 'shared') renderShared();
-      if (name === 'favs') renderFavs();
+      renderQuick();
       if (name === 'share') renderShare();
       if (name === 'book') renderMonthly();
+      if (name === 'book' && prev !== 'book') showRotateTip();
       if (name === 'newBook') {
         $('bookName').value = '';
         $('newBookErr').hidden = true;
@@ -1259,15 +1471,26 @@
     }
 
     $('backBtn').addEventListener('click', () => openScreen(navStack.pop() || 'home', false));
-    document.querySelectorAll('#homeMenu button, #homeMenu2 button').forEach(b => b.addEventListener('click', () => {
-      if (b.dataset.go === 'monthly') openBook('monthly');
+
+    // "use in landscape" hint (CSS shows it on upright phones only): 4 s each time a book opens, ✕ closes it
+    function showRotateTip() {
+      $('rotateTip').hidden = false;
+      clearTimeout(showRotateTip.t);
+      showRotateTip.t = setTimeout(() => $('rotateTip').hidden = true, 4000);
+    }
+    $('rotateTipX').addEventListener('click', () => { clearTimeout(showRotateTip.t); $('rotateTip').hidden = true; });
+    document.querySelectorAll('#homeMenu button').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.go === 'monthly') { const m = monthlyBook(); if (isShared(m)) openShared(m.slice(SH.length)); else openBook('monthly'); }
       else openScreen(b.dataset.go);
     }));
 
     /* ---------- View your expenses: list of books ---------- */
     function renderBooks() {
       const m = today().slice(0, 7);
-      $('booksList').innerHTML = books.map(b => {
+      // my shared books: a shared Monthly Expenses keeps its place at the top
+      const mineShared = sharedRefs.filter(r => r.role === 'owner');
+      $('booksList').innerHTML = mineShared.filter(r => r.id === monthlyShared).map(r => sharedCard(r)).join('') +
+      books.filter(b => !(b.id === 'monthly' && isShared(monthlyBook()))).map(b => {
         const items = expenses.filter(e => bookOf(e) === b.id);
         let s = 0, r = 0;
         items.filter(e => e.date.startsWith(m)).forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
@@ -1280,18 +1503,15 @@
             <div class="book-meta">${monthLabel(m)}: <span class="sent">− ${money(s)}</span> · <span class="received">+ ${money(r)}</span></div>
           </div>
           <div class="book-actions">
-            ${b.id !== 'monthly' ? `<button type="button" class="btn btn-light btn-sm" data-act="share" title="Share with someone">🔗</button>` : ''}
+            ${quickBtn(b.id)}
+            <button type="button" class="btn btn-light btn-sm" data-act="share" title="Share with someone">🔗</button>
             <button type="button" class="btn btn-light btn-sm" data-act="rename" title="Rename">✏️</button>
             ${b.id !== 'monthly' ? `<button type="button" class="btn btn-danger btn-sm" data-act="delete" title="Delete this expense book">🗑</button>` : ''}
           </div>
         </div>`;
       }).join('') +
-      sharedRefs.filter(r => r.role === 'owner').map(sharedCard).join('') +
+      mineShared.filter(r => r.id !== monthlyShared).map(r => sharedCard(r)).join('') +
       `<button type="button" class="book-card add-book" id="addBookCard"><span class="book-icon">➕</span><span class="book-name">Create new expense</span></button>`;
-
-      const withMe = sharedRefs.filter(r => r.role !== 'owner');
-      $('booksShared').innerHTML = withMe.length ? withMe.map(sharedCard).join('')
-        : `<div class="empty-card">${user ? 'Nothing shared with you yet. Open <b>Shared with you</b> on the home screen to add one.' : 'Log in with Google to see expenses shared with you.'}</div>`;
     }
 
     $('booksList').addEventListener('click', ev => {
@@ -1303,6 +1523,7 @@
       if (!act) { openBook(id); return; }
 
       if (act.dataset.act === 'share') { openShareScreen(id); return; }
+      if (act.dataset.act === 'quick') { toggleQuick(id); renderBooks(); return; }
 
       if (act.dataset.act === 'rename') {
         const name = (prompt('Rename expense', bookName(id)) || '').trim();
@@ -1323,6 +1544,7 @@
       }
       const name = bookName(id);
       books = books.filter(b => b.id !== id);
+      quick.delete(id);
       expenses = expenses.filter(e => bookOf(e) !== id);
       Object.keys(monthNotes).forEach(k => { if (k.startsWith(id + '|')) delete monthNotes[k]; });
       save();
@@ -1340,21 +1562,29 @@
     /* ---------- Shared with you · Favourite ---------- */
     const roleLabel = r => r === 'owner' ? '👑 Owner' : r === 'writer' ? '✏️ Can edit' : '👁 Can view';
 
-    function sharedCard(r) {
+    // who a book of mine is shared with: "alice ✏️, bob 👁"
+    const memberList = r => (r.members || []).map(m => `<span class="mem">${esc(m.email.split('@')[0])} ${m.role === 'writer' ? '✏️' : '👁'}</span>`).join(', ');
+
+    function sharedCard(r, grouped) {
       const mine = r.role === 'owner';
+      const meta = mine
+        ? (r.members?.length ? `Shared with ${memberList(r)}` : 'Not shared with anyone yet')
+        : grouped ? `<span class="role-tag">${roleLabel(r.role)}</span>`
+        : 'by ' + esc(r.ownerName || r.ownerEmail || 'someone') +
+          (r.ownerEmail && r.ownerEmail !== r.ownerName ? ` <small>(${esc(r.ownerEmail)})</small>` : '') + ` · <span class="role-tag">${roleLabel(r.role)}</span>`;
       return `<div class="book-card" data-shared="${esc(r.id)}" title="Open ${esc(r.name)}">
-        <div class="book-icon">👥</div>
+        <div class="book-icon">${isMonthlyRef(r) ? '📅' : '👥'}</div>
         <div class="book-main">
           <div class="book-name">${esc(r.name)} <span class="shared-tag">${mine ? 'shared by you' : 'shared'}</span></div>
-          <div class="book-meta">${mine ? 'You own this' : 'by ' + esc(r.ownerName || r.ownerEmail || 'someone') +
-            (r.ownerEmail && r.ownerEmail !== r.ownerName ? ` <small>(${esc(r.ownerEmail)})</small>` : '')} · <span class="role-tag">${roleLabel(r.role)}</span></div>
+          <div class="book-meta">${meta}</div>
         </div>
         <div class="book-actions">
           ${mine
-            ? `<button type="button" class="btn btn-light btn-sm" data-act="share" title="Manage sharing">🔗</button>
-               <button type="button" class="btn btn-danger btn-sm" data-act="delete-shared" title="Delete for everyone">🗑</button>`
-            : `<button type="button" class="btn btn-light btn-sm fav-btn ${r.fav ? 'on' : ''}" data-act="fav" title="${r.fav ? 'Remove from Favourite' : 'Add to Favourite'}">${r.fav ? '★' : '☆'}</button>
-               <button type="button" class="btn btn-light btn-sm" data-act="unlink" title="Remove from my list (the owner keeps it)">✕</button>`}
+            ? `${isMyMonthly(SH + r.id) ? lockedHeart : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(SH + r.id) ? 'on' : ''}" data-act="fav" title="${quick.has(SH + r.id) ? 'Remove from Quick access' : 'Add to Quick access'}">${quick.has(SH + r.id) ? '♥' : '♡'}</button>`}
+               <button type="button" class="btn btn-light btn-sm" data-act="share" title="Manage sharing">🔗</button>
+               ${r.id === monthlyShared ? '' : '<button type="button" class="btn btn-danger btn-sm" data-act="delete-shared" title="Delete for everyone">🗑</button>'}`
+            : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(SH + r.id) ? 'on' : ''}" data-act="fav" title="${quick.has(SH + r.id) ? 'Remove from Quick access' : 'Add to Quick access'}">${quick.has(SH + r.id) ? '♥' : '♡'}</button>
+               <button type="button" class="btn btn-light btn-sm" data-act="unlink" title="Remove from my list (the owner keeps it)">🗑</button>`}
         </div>
       </div>`;
     }
@@ -1363,16 +1593,63 @@
       const list = sharedRefs.filter(r => r.role !== 'owner');
       $('addSharedBtn').disabled = !user;
       $('sharedList').innerHTML = !user
-        ? '<div class="empty-card">🔒 Log in with Google to see expenses other people shared with you.</div>'
-        : list.length ? list.map(sharedCard).join('')
-        : '<div class="empty-card">Nothing here yet. When someone shares an expense with you, tap <b>➕ Add shared expense</b> and pick it.</div>';
+        ? '<div class="empty-card">🔒 Log in to see expenses other people shared with you.</div>'
+        : list.length ? sharedGroups(list)
+        : '<div class="empty-card">Nothing here yet. When someone shares an expense with your email, it shows up here automatically.</div>';
     }
 
-    function renderFavs() {
-      const list = sharedRefs.filter(r => r.fav && r.role !== 'owner');
-      $('favList').innerHTML = list.length ? list.map(sharedCard).join('')
-        : '<div class="empty-card">No favourites yet. Tap <b>☆</b> on an expense in <b>Shared with you</b> to add it here.</div>';
+    // Shared with you: one group per person, their Monthly Expenses first
+    function sharedGroups(list) {
+      const groups = new Map();
+      list.forEach(r => {
+        const k = (r.ownerEmail || r.ownerName || '?').toLowerCase();
+        if (!groups.has(k)) groups.set(k, []);
+        groups.get(k).push(r);
+      });
+      return [...groups.values()]
+        .sort((a, b) => (a[0].ownerName || '').localeCompare(b[0].ownerName || ''))
+        .map(rs => {
+          rs.sort((a, b) => isMonthlyRef(b) - isMonthlyRef(a) || a.name.localeCompare(b.name));
+          const o = rs[0];
+          return `<div class="owner-group">
+            <h3 class="owner-head"><span class="avatar-sm">${esc((o.ownerName || o.ownerEmail || '?')[0].toUpperCase())}</span>
+              <span class="owner-name">${esc(o.ownerName || o.ownerEmail)}</span>
+              ${o.ownerEmail && o.ownerEmail !== o.ownerName ? `<small>${esc(o.ownerEmail)}</small>` : ''}
+              <span class="owner-count">${rs.length} shared</span></h3>
+            <div class="books-list">${rs.map(r => sharedCard(r, true)).join('')}</div>
+          </div>`;
+        }).join('');
     }
+
+    // ⚡ Quick access on the home screen: only the books starred with ☆; nothing at all when none are
+    function renderQuick() {
+      const ids = [monthlyBook(), ...[...quick].filter(id => bookExists(id) && !isMyMonthly(id))];   // My Monthly Expenses always first
+      $('homeQuick').hidden = screen !== 'home' || !ids.length;
+      if ($('homeQuick').hidden) return;
+      const m = today().slice(0, 7);
+      $('quickList').innerHTML = ids.map(id => {
+        const r = isShared(id) && refOf(id);
+        let meta;
+        if (r) meta = r.role === 'owner' ? '👥 shared by you' : '👥 by ' + esc(r.ownerName || r.ownerEmail || 'someone');
+        else {
+          let s = 0, rc = 0;
+          expenses.forEach(e => { if (bookOf(e) === id && e.date.startsWith(m)) { s += +e.sent || 0; rc += +e.received || 0; } });
+          meta = `${monthLabel(m)}: <span class="sent">− ${money(s)}</span> · <span class="received">+ ${money(rc)}</span>`;
+        }
+        return `<div class="book-card quick-card" data-quick="${esc(id)}" title="Open ${esc(bookName(id))}">
+          <div class="book-icon">${bookIcon(id)}</div>
+          <div class="book-main"><div class="book-name">${esc(bookName(id))}</div><div class="book-meta">${meta}</div></div>
+          <div class="book-actions">${isMyMonthly(id) ? lockedHeart : '<button type="button" class="btn btn-light btn-sm fav-btn on" data-act="unquick" title="Remove from Quick access">♥</button>'}</div>
+        </div>`;
+      }).join('');
+    }
+    $('quickList').addEventListener('click', ev => {
+      const card = ev.target.closest('[data-quick]');
+      if (!card) return;
+      const id = card.dataset.quick;
+      if (ev.target.closest('[data-act="unquick"]')) { toggleQuick(id); renderQuick(); return; }
+      if (isShared(id)) openShared(id.slice(SH.length)); else openBook(id);
+    });
 
     function sharedFlash(text, isErr) {
       const m = $('sharedMsg');
@@ -1385,31 +1662,32 @@
     }
 
     // one click handler for every list that shows shared cards
-    ['booksList', 'booksShared', 'sharedList', 'favList'].forEach(listId => $(listId).addEventListener('click', async ev => {
+    ['booksList', 'sharedList'].forEach(listId => $(listId).addEventListener('click', async ev => {
       const card = ev.target.closest('.book-card[data-shared]');
       if (!card) return;
       const r = sharedRefs.find(x => x.id === card.dataset.shared);
       if (!r) return;
       const act = ev.target.closest('[data-act]')?.dataset.act;
-      const rerender = () => { if (screen === 'books') renderBooks(); if (screen === 'shared') renderShared(); if (screen === 'favs') renderFavs(); };
+      const rerender = () => { if (screen === 'books') renderBooks(); if (screen === 'shared') renderShared(); renderQuick(); };
 
       if (!act) { openShared(r.id); return; }
       if (act === 'share') { openShareScreen(SH + r.id); return; }
-      if (act === 'fav') { r.fav = !r.fav; save(); rerender(); return; }
+      if (act === 'fav') { toggleQuick(SH + r.id); rerender(); return; }
 
       const btn = ev.target.closest('[data-act]');
       if (!btn.classList.contains('armed')) {                  // every removal needs a second click
         btn.classList.add('armed');
         btn.textContent = act === 'unlink' ? 'Remove?' : 'Delete for all?';
-        setTimeout(() => { if (btn.isConnected) { btn.classList.remove('armed'); btn.textContent = act === 'unlink' ? '✕' : '🗑'; } }, 3000);
+        setTimeout(() => { if (btn.isConnected) { btn.classList.remove('armed'); btn.textContent = '🗑'; } }, 3000);
         return;
       }
-      if (act === 'delete-shared') {
-        try { await gfetch(`${DRIVE}/${r.id}`, { method: 'DELETE' }); }
-        catch (e) { if (!/404/.test(e.message)) { alert('Could not delete: ' + e.message); return; } }
-      }
+      try {
+        if (act === 'delete-shared') await dbDeleteShared(r.id);          // owner: gone for everyone
+        else await dbRemoveMember(r.id, myEmail());                       // member: leave the shared expense
+      } catch (e) { alert('Could not remove: ' + e.message); return; }
       forgetShared(r.id);
-      save();
+      quick.delete(SH + r.id);
+      saveVault();
       rerender();
     }));
 
@@ -1421,29 +1699,18 @@
       delete sharedFiles[fileId];
     }
 
+    // shared expenses appear by themselves; this just checks again right now
     $('addSharedBtn').addEventListener('click', async () => {
       if (!user) return;
-      if (!pickerConfigured()) {
-        sharedFlash('The Google file picker is not set up yet – add GOOGLE_API_KEY and GOOGLE_APP_ID in index.html (see README).', true);
-        return;
-      }
-      try {
-        const ids = await openPicker();
-        let added = 0;
-        for (const id of ids) {
-          if (sharedRefs.some(r => r.id === id)) continue;
-          try { await loadSharedFile(id); added++; }
-          catch (e) { console.error(e); sharedFlash(`That file is not a shared expense (${e.message}).`, true); }
-        }
-        if (added) { save(); renderShared(); sharedFlash(`✅ Added ${added} shared expense${added > 1 ? 's' : ''}.`); }
-      } catch (e) { sharedFlash('Could not open the Google file picker: ' + e.message, true); }
+      try { await refreshSharedList(); sharedFlash('✅ Up to date.'); }
+      catch (e) { sharedFlash('Could not refresh: ' + e.message, true); }
     });
 
-    /* ---------- Share screen: owner shares a book with a Gmail (can view / can edit) ---------- */
+    /* ---------- Share screen: owner shares a book with an email (can view / can edit) ---------- */
     let shareTarget = null;          // book id being shared ('b…' own book, or 'sh_…' already shared)
 
     function openShareScreen(id) {
-      if (!user) { alert('Log in with Google first – shared expenses are stored in your Google Drive.'); return; }
+      if (!user) { alert('Log in first – shared expenses are stored in your cloud account.'); return; }
       shareTarget = id;
       openScreen('share');
     }
@@ -1454,8 +1721,10 @@
       $('shareErr').hidden = true;
       $('shareMsg').hidden = true;
       $('shareHint').innerHTML = already
-        ? 'Google emails them an invite. They open this app → <b>Shared with you</b> → <b>➕ Add shared expense</b>.'
-        : 'Sharing moves this expense (all months, notes included) into its own encrypted file in your Google Drive, so the people you add can open it. You stay the owner.';
+        ? 'They log in to this app with that email and find it under <b>Shared with you</b> – it appears there by itself.'
+        : 'Sharing moves this expense (all months, notes included) into its own encrypted shared record, so the people you add can open it. You stay the owner.';
+      $('unshareBox').hidden = !already || refOf(shareTarget)?.role !== 'owner';
+      $('unshareBtn').classList.remove('armed'); $('unshareBtn').textContent = '⏏ Stop sharing';
       renderPeople();
     }
 
@@ -1464,24 +1733,78 @@
       if (!isShared(shareTarget)) { box.innerHTML = '<div class="empty-card">Only you, for now.</div>'; return; }
       box.innerHTML = '<div class="hint">Loading…</div>';
       try {
-        const fileId = shareTarget.slice(SH.length);
-        const perms = (await (await gfetch(`${DRIVE}/${fileId}/permissions?fields=permissions(id,emailAddress,displayName,role)`)).json()).permissions || [];
-        box.innerHTML = perms.map(p => `<div class="person">
-            <div class="who">${esc(p.displayName || p.emailAddress)}<small>${esc(p.emailAddress || '')}</small></div>
-            <span class="role-tag">${roleLabel(p.role)}</span>
-            ${p.role === 'owner' ? '' : `<button type="button" class="btn btn-light btn-sm" data-perm="${esc(p.id)}" title="Remove access">✕</button>`}
-          </div>`).join('') || '<div class="empty-card">Only you, for now.</div>';
+        const members = await dbListMembers(shareTarget.slice(SH.length));
+        box.innerHTML = `<div class="person"><div class="who">${esc(user.name)} (you)<small>${esc(myEmail())}</small></div><span class="role-tag">${roleLabel('owner')}</span></div>` +
+          members.map(m => `<div class="person">
+            <div class="who">${esc(m.email.split('@')[0])}<small>${esc(m.email)}</small></div>
+            <select data-role-of="${esc(m.email)}" aria-label="Access for ${esc(m.email)}">
+              <option value="writer" ${m.role === 'writer' ? 'selected' : ''}>✏️ Can edit</option>
+              <option value="reader" ${m.role !== 'writer' ? 'selected' : ''}>👁 Can view</option>
+            </select>
+            <button type="button" class="btn btn-light btn-sm" data-member="${esc(m.email)}" title="Remove access">✕</button>
+          </div>`).join('');
       } catch (e) { box.innerHTML = `<div class="err">Could not load: ${esc(e.message)}</div>`; }
     }
+    // keep the "Shared with …" line on the cards in step
+    const refreshSharedSoon = () => refreshSharedList().catch(console.warn);
 
     $('sharePeople').addEventListener('click', async ev => {
-      const b = ev.target.closest('[data-perm]');
+      const b = ev.target.closest('[data-member]');
       if (!b) return;
       if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Remove?'; return; }
-      try { await gfetch(`${DRIVE}/${shareTarget.slice(SH.length)}/permissions/${b.dataset.perm}`, { method: 'DELETE' }); }
+      try { await dbRemoveMember(shareTarget.slice(SH.length), b.dataset.member); }
       catch (e) { alert('Could not remove access: ' + e.message); }
-      renderPeople();
+      renderPeople(); refreshSharedSoon();
     });
+    // change someone between can view / can edit
+    $('sharePeople').addEventListener('change', async ev => {
+      const s = ev.target.closest('[data-role-of]');
+      if (!s) return;
+      s.disabled = true;
+      try { await dbAddMember(shareTarget.slice(SH.length), s.dataset.roleOf, s.value); }
+      catch (e) { alert('Could not change access: ' + e.message); }
+      renderPeople(); refreshSharedSoon();
+    });
+
+    // ⏏ stop sharing: bring the book back into my private data, delete the shared record
+    $('unshareBtn').addEventListener('click', async () => {
+      const b = $('unshareBtn');
+      if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Stop sharing for everyone?'; return; }
+      b.disabled = true;
+      try {
+        const pid = await unshareBook(shareTarget);
+        navStack.length = 0; navStack.push('home');
+        openScreen('books', false);
+        booksFlash(`⏏ "${bookName(pid)}" is private again.`);
+      } catch (e) { console.error(e); alert('Could not stop sharing: ' + e.message); }
+      finally { b.disabled = false; }
+    });
+
+    async function unshareBook(bid) {
+      const id = bid.slice(SH.length);
+      await loadSharedFile(id);                          // latest entries + notes into memory
+      const r = refOf(bid), toMonthly = id === monthlyShared;
+      await dbDeleteShared(id);                          // everyone loses access
+      let pid = 'monthly';
+      if (!toMonthly) {
+        pid = 'b' + newId();
+        const taken = n => books.some(x => x.name.toLowerCase() === n.toLowerCase());
+        books.push({ id: pid, name: taken(r.name) ? r.name + ' (private)' : r.name, created: Date.now() });
+      }
+      expenses.forEach(e => { if (bookOf(e) === bid) { if (toMonthly) delete e.book; else e.book = pid; } });
+      Object.keys(monthNotes).forEach(k => {
+        if (!k.startsWith(bid + '|')) return;
+        const m = k.slice(bid.length + 1);
+        monthNotes[toMonthly ? m : `${pid}|${m}`] = monthNotes[k];
+        delete monthNotes[k];
+      });
+      forgetShared(id);
+      if (quick.delete(bid)) quick.add(pid);
+      if (toMonthly) monthlyShared = null;
+      if (curBook === bid) curBook = pid;
+      saveVault();
+      return pid;
+    }
 
     $('shareForm').addEventListener('submit', async ev => {
       ev.preventDefault();
@@ -1489,22 +1812,24 @@
       const err = m => { $('shareErr').textContent = m; $('shareErr').hidden = false; };
       $('shareErr').hidden = true;
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Enter a valid email address.');
-      if (email.toLowerCase() === user.email.toLowerCase()) return err('That is your own address.');
+      if (email.toLowerCase() === myEmail()) return err('That is your own address.');
       $('shareSubmit').disabled = true;
       try {
-        if (!isShared(shareTarget)) shareTarget = await convertToShared(shareTarget);   // first share: move into its own file
-        const fileId = shareTarget.slice(SH.length);
-        const note = `${user.name} shared the expense "${bookName(shareTarget)}" with you. ` +
-          `Open Expense Manager (${location.origin}${location.pathname}) → Shared with you → Add shared expense.`;
-        await gfetch(`${DRIVE}/${fileId}/permissions?sendNotificationEmail=true&emailMessage=${encodeURIComponent(note)}`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'user', role, emailAddress: email })
-        });
+        if (!isShared(shareTarget)) shareTarget = await convertToShared(shareTarget);   // first share: move into its own record
+        await dbAddMember(shareTarget.slice(SH.length), email.toLowerCase(), role);
+        refreshSharedSoon();
         $('screenTitle').textContent = `🔗 Share “${bookName(shareTarget)}”`;
-        $('shareEmail').value = '';
-        $('shareMsg').textContent = `✅ Shared with ${email} (${role === 'writer' ? 'can edit' : 'can view'}). Google has emailed them.`;
+        renderShare();
+        // no automatic email – give them a message to send
+        const invite = `${user.name} shared the expense "${bookName(shareTarget)}" with you on Expense Manager. ` +
+          `Open ${location.origin}${location.pathname}, log in with ${email.toLowerCase()} and it's under "Shared with you".`;
+        $('shareMsg').innerHTML = `✅ Shared with <b>${esc(email)}</b> (${role === 'writer' ? 'can edit' : 'can view'}). Let them know: ` +
+          `<button type="button" class="btn btn-light btn-sm" id="copyInvite">📋 Copy invite message</button>`;
         $('shareMsg').hidden = false;
-        renderShare(); $('shareMsg').hidden = false;
+        $('copyInvite').onclick = async () => {
+          try { await navigator.clipboard.writeText(invite); $('copyInvite').textContent = '✔ Copied – paste it in WhatsApp / email'; }
+          catch { prompt('Copy this message:', invite); }
+        };
       } catch (e) {
         console.error(e);
         err('Could not share: ' + e.message);
@@ -2855,47 +3180,59 @@
     });
 
     /* =====================================================================
-       Google login + encrypted storage in the user's own Google Drive
-       - Data is JSON-encoded, encrypted in the browser with AES-256-GCM
-         (key derived from APP_SECRET + the user's Google ID via PBKDF2), then saved to
-         the hidden app-data folder of the user's Drive. No database needed.
+       Login + encrypted cloud storage with Supabase (see README.md)
+       - Everything is JSON-encoded and encrypted in the browser (AES-256-GCM,
+         key from APP_SECRET via PBKDF2) before it is saved. The database only
+         ever holds encrypted text.
+       - vaults:       one row per user – their private books, notes, settings
+       - shared_books: one row per shared book (encrypted), owned by one user
+       - book_members: who a shared book is shared with (email + can view / can edit)
+       Row Level Security in the database makes sure people only get their own
+       vault and the books shared with their email.
        ===================================================================== */
 
-    // Paste your OAuth Client ID here (see README.md for how to create it)
-    const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+    // Paste your project's values here (Supabase dashboard → Project Settings → API)
+    const SUPABASE_URL = 'https://rgqhrukbkauadwpfekmw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJncWhydWtia2F1YWR3cGZla213Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA3NjM2MDksImV4cCI6MjEwNjMzOTYwOX0.NsMWXtzTdEief4kbBkNRAD1J675zy4pLGcuq8I8Zluw';
+    // Also offer "Continue with Google" on the login screen (enable the Google provider in Supabase first)
+    const SUPABASE_GOOGLE_LOGIN = false;
 
     // Static encryption secret. Change it to your own random string BEFORE first use –
     // changing it later makes existing saved data unreadable.
     const APP_SECRET = 'xP9#vL2$qR7!mZ4&kT8@wN3^bH6*eJ1%';
 
-    // For "Shared with you": Google Picker API key + Cloud project number (see README.md)
-    const GOOGLE_API_KEY = 'YOUR_API_KEY';
-    const GOOGLE_APP_ID = 'YOUR_PROJECT_NUMBER';
-
-    const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
-    // drive.file: only files this app creates (shared expenses) or that you pick in the Google picker
-    const FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
-    const SCOPES = 'openid email profile ' + DRIVE_SCOPE + ' ' + FILE_SCOPE;
-    const FILE_NAME = 'expense-manager.enc.json';
     const PBKDF2_ITER = 310000;
-    const DRIVE = 'https://www.googleapis.com/drive/v3/files';
-    const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
+    const configured = () => !SUPABASE_URL.includes('YOUR_') && !SUPABASE_ANON_KEY.includes('YOUR_');
+    // only the project address is needed – drop anything pasted after it (e.g. "/rest/v1/")
+    const projectUrl = (() => { try { return new URL(SUPABASE_URL.trim()).origin; } catch { return SUPABASE_URL.trim(); } })();
+    const sb = configured() && window.supabase ? window.supabase.createClient(projectUrl, SUPABASE_ANON_KEY.trim(), {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    }) : null;
 
-    let user = null;            // { sub, name, email, picture }
-    let cryptoKey = null;       // AES key; null until the Drive data is loaded
-    let cloud = { fileId: null, modified: null, salt: null };
-    let accessToken = null, tokenExp = 0, tokenClient = null, pendingToken = null;
+    let user = null;            // { id, email, name, picture }
+    let cryptoKey = null;       // AES key; null until my data is loaded
+    let cloud = { modified: null, salt: null };
     let syncState = 'idle';
     let dirty = false, saving = false, saveTimer = null;
-
-    const configured = () => !GOOGLE_CLIENT_ID.startsWith('YOUR_');
-    const lastUser = () => { try { return JSON.parse(localStorage.getItem('lastUser')); } catch { return null; } };
-    const forgetLast = () => { try { localStorage.removeItem('lastUser'); } catch {} };
     function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || {}; } catch { return {}; } }
+
+    /* ---------- Database calls (everything goes through these) ---------- */
+    async function q(req) { const { data, error } = await req; if (error) throw error; return data; }
+    const nowIso = () => new Date().toISOString();
+    async function dbGetVault() { return q(sb.from('vaults').select('data, updated_at').eq('user_id', user.id).maybeSingle()); }
+    async function dbSaveVault(data) { return q(sb.from('vaults').upsert({ user_id: user.id, data, updated_at: nowIso() }).select('updated_at').single()); }
+    async function dbListShared() { return q(sb.from('shared_books').select('id, name, owner_id, owner_email, updated_at, book_members(email, role)').order('name')); }
+    async function dbGetShared(id) { return q(sb.from('shared_books').select('id, name, owner_id, owner_email, data, updated_at, book_members(email, role)').eq('id', id).maybeSingle()); }
+    async function dbCreateShared(row) { return q(sb.from('shared_books').insert({ ...row, owner_id: user.id, updated_at: nowIso() }).select('id, updated_at').single()); }
+    async function dbUpdateShared(id, patch) { return q(sb.from('shared_books').update({ ...patch, updated_at: nowIso() }).eq('id', id).select('updated_at').single()); }
+    async function dbDeleteShared(id) { return q(sb.from('shared_books').delete().eq('id', id)); }
+    async function dbListMembers(id) { return q(sb.from('book_members').select('email, role').eq('book_id', id).order('email')); }
+    async function dbAddMember(id, email, role) { return q(sb.from('book_members').upsert({ book_id: id, email, role })); }
+    async function dbRemoveMember(id, email) { return q(sb.from('book_members').delete().eq('book_id', id).eq('email', email)); }
 
     /* ---------- Saving (real time) ---------- */
     let vaultDirty = false;
-    // my private data only – shared expenses are saved to their own files
+    // my private data only – shared expenses are saved in their own rows
     const privateExpenses = () => expenses.filter(e => !isShared(bookOf(e)));
     const privateNotes = () => Object.fromEntries(Object.entries(monthNotes).filter(([k]) => !isShared(k)));
 
@@ -2907,11 +3244,12 @@
           localStorage.setItem(MODES_KEY, JSON.stringify(payModes));
           localStorage.setItem(CYCLES_KEY, JSON.stringify(cardCycles));
           localStorage.setItem(BOOKS_KEY, JSON.stringify(books));
+          localStorage.setItem(QUICK_KEY, JSON.stringify([...quick]));
         } catch {}
         return;
       }
       if (!cryptoKey) return;
-      if (screen === 'book' && isShared(curBook)) {            // editing a shared expense -> its own file
+      if (screen === 'book' && isShared(curBook)) {            // editing a shared expense -> its own row
         const f = sharedFiles[curBook.slice(SH.length)];
         if (!f || !canEdit(curBook)) return;
         f.dirty = true;
@@ -2924,7 +3262,7 @@
       saveTimer = setTimeout(flush, 700);   // batch rapid typing into one upload
     }
 
-    // settings (payment options, lists) always belong to my private file, whatever screen is open
+    // settings (payment options, lists, favourites) always belong to my private data, whatever screen is open
     function saveVault() {
       if (!user) return persist();
       if (!cryptoKey) return;
@@ -2956,7 +3294,7 @@
         dirty = true;
         vaultDirty = vaultDirty || doVault;
         shared.forEach(id => { if (sharedFiles[id]) sharedFiles[id].dirty = true; });
-        setSync(e.reauth ? 'reauth' : 'error');
+        setSync('error');
       } finally {
         saving = false;
       }
@@ -2998,316 +3336,248 @@
       return JSON.parse(td.decode(pt));
     }
 
-    // Each user gets their own key: static app secret + their Google account ID
-    const userKey = (salt, iter) => deriveKey(`${APP_SECRET}:${user.sub}`, salt, iter);
-    // Shared expenses must open for everyone they're shared with: app secret + the file's own random salt.
-    // Who can read the file at all is decided by Google Drive sharing.
+    // Each user gets their own key: static app secret + their account id
+    const userKey = (salt, iter) => deriveKey(`${APP_SECRET}:${user.id}`, salt, iter);
+    // Shared expenses must open for everyone they're shared with: app secret + the book's own random salt.
+    // Who can read the row at all is decided by the database rules (book_members).
     const sharedKey = (salt, iter) => deriveKey(`${APP_SECRET}:shared-expense`, salt, iter);
 
-    /* ---------- Shared expenses: one encrypted Drive file per shared book ---------- */
-    const sharedFiles = {};   // fileId -> { key, salt, modified, dirty }
-
-    const sharedPayload = fileId => {
-      const bid = SH + fileId, r = refOf(bid);
-      const notes = {};
-      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) notes[k.slice(bid.length + 1)] = monthNotes[k]; });
-      return {
-        name: r.name, ownerName: r.ownerName, ownerEmail: r.ownerEmail,
-        expenses: expenses.filter(e => bookOf(e) === bid).map(({ book, ...e }) => e),
-        monthNotes: notes, savedAt: new Date().toISOString()
-      };
-    };
-
-    async function uploadShared(fileId) {
-      const f = sharedFiles[fileId];
-      const body = JSON.stringify(await encryptData(sharedPayload(fileId), f.key, f.salt, { kind: 'shared-expense' }));
-      const r = await gfetch(`${UPLOAD}/${fileId}?uploadType=media&fields=id,modifiedTime`, {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body
-      });
-      f.modified = (await r.json()).modifiedTime;
-    }
-
-    // First share of one of my books: move it out of my private file into its own Drive file
-    async function convertToShared(bookId) {
-      const b = books.find(x => x.id === bookId);
-      const salt = crypto.getRandomValues(new Uint8Array(16));
-      const key = await sharedKey(salt, PBKDF2_ITER);
-      const notes = {};
-      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bookId + '|')) notes[k.slice(bookId.length + 1)] = monthNotes[k]; });
-      const payload = {
-        name: b.name, ownerName: user.name, ownerEmail: user.email,
-        expenses: expenses.filter(e => bookOf(e) === bookId).map(({ book, ...e }) => e),
-        monthNotes: notes, savedAt: new Date().toISOString()
-      };
-      const body = JSON.stringify(await encryptData(payload, key, salt, { kind: 'shared-expense' }));
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify({
-        name: `${b.name} · Expense Manager.json`, mimeType: 'application/json',
-        description: 'Shared expense from Expense Manager (encrypted). Open it in the Expense Manager app.',
-        appProperties: { expenseManager: 'shared-expense' }
-      })], { type: 'application/json' }));
-      form.append('file', new Blob([body], { type: 'application/json' }));
-      const f = await (await gfetch(`${UPLOAD}?uploadType=multipart&fields=id,modifiedTime`, { method: 'POST', body: form })).json();
-
-      // move entries + notes over to the shared book id, forget the private book
-      const bid = SH + f.id;
-      sharedFiles[f.id] = { key, salt, modified: f.modifiedTime };
-      sharedRefs.push({ id: f.id, name: b.name, ownerName: user.name, ownerEmail: user.email, role: 'owner', fav: false });
-      expenses.forEach(e => { if (bookOf(e) === bookId) e.book = bid; });
-      Object.keys(notes).forEach(m => { monthNotes[`${bid}|${m}`] = notes[m]; delete monthNotes[`${bookId}|${m}`]; });
-      books = books.filter(x => x.id !== bookId);
-      if (curBook === bookId) curBook = bid;
-      save();                                   // private file no longer holds this book
-      return bid;
-    }
-
-    // Download + decrypt a shared file and put its entries in memory (adds it to my list if new)
-    async function loadSharedFile(fileId) {
-      const meta = await (await gfetch(`${DRIVE}/${fileId}?fields=id,name,modifiedTime,ownedByMe,capabilities(canEdit),owners(displayName,emailAddress)`)).json();
-      const env = await (await gfetch(`${DRIVE}/${fileId}?alt=media`)).json();
-      if (env?.kind !== 'shared-expense') throw new Error('not an Expense Manager file');
-      const salt = fromB64(env.salt);
-      const key = sharedFiles[fileId]?.key || await sharedKey(salt, env.iter || PBKDF2_ITER);
-      const data = await decryptData(env, key);
-      sharedFiles[fileId] = { ...(sharedFiles[fileId] || {}), key, salt, modified: meta.modifiedTime };
-
-      const bid = SH + fileId;
-      expenses = expenses.filter(e => bookOf(e) !== bid).concat((data.expenses || []).map(e => ({ ...e, book: bid })));
-      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) delete monthNotes[k]; });
-      Object.entries(data.monthNotes || {}).forEach(([m, v]) => monthNotes[`${bid}|${m}`] = v);
-
-      const role = meta.ownedByMe ? 'owner' : meta.capabilities?.canEdit ? 'writer' : 'reader';
-      let r = sharedRefs.find(x => x.id === fileId);
-      if (!r) sharedRefs.push(r = { id: fileId, fav: false });
-      Object.assign(r, { name: data.name || r.name || 'Shared expense', role,
-        ownerName: data.ownerName || meta.owners?.[0]?.displayName || '', ownerEmail: data.ownerEmail || meta.owners?.[0]?.emailAddress || '' });
-      return r;
-    }
-
-    // Open a shared book: always fetch the latest version first
-    async function openShared(fileId, push = true) {
-      if (!user) { alert('Log in with Google to open shared expenses.'); return; }
-      const bid = SH + fileId;
-      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); }
-      curBook = bid;
-      openScreen('book', push);
-      $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
-      try {
-        await loadSharedFile(fileId);
-        $('mMsg').hidden = true;
-        if (screen === 'book' && curBook === bid) openScreen('book', false);
-      } catch (e) {
-        console.error(e);
-        mFlash(/40[34]/.test(e.message) ? '🔒 You no longer have access to this shared expense.' : 'Could not load: ' + e.message);
-      }
-    }
-
-    // Google Picker – the way to give this app access to a file someone shared with you
-    function pickerConfigured() { return !GOOGLE_API_KEY.startsWith('YOUR_') && !GOOGLE_APP_ID.startsWith('YOUR_'); }
-    function loadPickerLib() {
-      return new Promise((res, rej) => {
-        if (window.google?.picker) return res();
-        const go = () => window.gapi.load('picker', { callback: res, onerror: rej });
-        if (window.gapi) return go();
-        const s = document.createElement('script');
-        s.src = 'https://apis.google.com/js/api.js';
-        s.onload = go; s.onerror = () => rej(new Error('could not load Google Picker'));
-        document.head.appendChild(s);
-      });
-    }
-    async function openPicker() {
-      if (!accessToken || Date.now() > tokenExp) await requestToken('');
-      await loadPickerLib();
-      return new Promise(res => {
-        const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
-          .setOwnedByMe(false).setMimeTypes('application/json').setQuery('Expense Manager');
-        new google.picker.PickerBuilder()
-          .addView(view)
-          .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
-          .setOAuthToken(accessToken).setDeveloperKey(GOOGLE_API_KEY).setAppId(GOOGLE_APP_ID)
-          .setTitle('Pick the expense shared with you')
-          .setCallback(d => {
-            if (d.action === google.picker.Action.PICKED) res(d.docs.map(x => x.id));
-            else if (d.action === google.picker.Action.CANCEL) res([]);
-          })
-          .build().setVisible(true);
-      });
-    }
-
-    /* ---------- Google OAuth ---------- */
-    function initGoogle() {
-      if (tokenClient) return true;
-      if (!configured() || !window.google?.accounts?.oauth2) return false;
-      tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: SCOPES,
-        callback: r => {
-          const p = pendingToken; pendingToken = null;
-          if (!p) return;
-          if (r.error) return p.rej(new Error(r.error_description || r.error));
-          if (!google.accounts.oauth2.hasGrantedAllScopes(r, DRIVE_SCOPE))
-            return p.rej(new Error('Please allow Google Drive access – it is where your encrypted data is saved.'));
-          accessToken = r.access_token;
-          tokenExp = Date.now() + (r.expires_in - 60) * 1000;
-          p.res(accessToken);
-        },
-        error_callback: err => {
-          const p = pendingToken; pendingToken = null;
-          if (!p) return;
-          const e = new Error(err.message || err.type || 'Login failed');
-          e.type = err.type;
-          p.rej(e);
-        }
-      });
-      return true;
-    }
-    window.addEventListener('load', initGoogle);
-
-    // Must be called from a click so the Google popup isn't blocked
-    function requestToken(prompt) {
-      return new Promise((res, rej) => {
-        if (!initGoogle()) return rej(new Error('Google login is still loading – try again in a moment.'));
-        pendingToken = { res, rej };
-        const hint = user?.email || lastUser()?.email || '';
-        tokenClient.requestAccessToken({ prompt, hint, login_hint: hint });
-      });
-    }
-
-    async function gfetch(url, opts = {}) {
-      if (!accessToken || Date.now() > tokenExp) {
-        try { await requestToken(''); }
-        catch { const e = new Error('Session expired'); e.reauth = true; throw e; }
-      }
-      const r = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + accessToken } });
-      if (r.status === 401) {
-        accessToken = null;
-        const e = new Error('Session expired'); e.reauth = true; throw e;
-      }
-      if (!r.ok) throw new Error(`Google Drive error ${r.status}: ${await r.text()}`);
-      return r;
-    }
-
-    /* ---------- Google Drive (hidden app-data folder) ---------- */
-    async function findFile() {
-      const q = encodeURIComponent(`name='${FILE_NAME}' and trashed=false`);
-      const r = await gfetch(`${DRIVE}?spaces=appDataFolder&q=${q}&orderBy=modifiedTime desc&fields=files(id,modifiedTime)`);
-      return (await r.json()).files[0] || null;
-    }
-    async function downloadFile(id) {
-      return (await gfetch(`${DRIVE}/${id}?alt=media`)).json();
-    }
+    /* ---------- My private data ---------- */
     async function uploadData() {
       const body = JSON.stringify(await encryptData({
-        expenses: privateExpenses(), monthNotes: privateNotes(), viaOptions: payModes, cardCycles, books, sharedRefs, savedAt: new Date().toISOString()
+        expenses: privateExpenses(), monthNotes: privateNotes(), viaOptions: payModes, cardCycles, books,
+        quick: [...quick], monthlyShared, savedAt: nowIso()
       }));
-      let r;
-      if (cloud.fileId) {
-        r = await gfetch(`${UPLOAD}/${cloud.fileId}?uploadType=media&fields=id,modifiedTime`, {
-          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body
-        });
-      } else {
-        const form = new FormData();
-        form.append('metadata', new Blob([JSON.stringify({ name: FILE_NAME, parents: ['appDataFolder'] })], { type: 'application/json' }));
-        form.append('file', new Blob([body], { type: 'application/json' }));
-        r = await gfetch(`${UPLOAD}?uploadType=multipart&fields=id,modifiedTime`, { method: 'POST', body: form });
-      }
-      const f = await r.json();
-      cloud.fileId = f.id;
-      cloud.modified = f.modifiedTime;
+      const r = await dbSaveVault(body);
+      cloud.modified = r.updated_at;
     }
 
-    // Pick up changes made on another device (phone <-> laptop)
-    async function pullRemote() {
-      if (!user || !cryptoKey || dirty || saving || document.hidden || !accessToken || Date.now() > tokenExp) return;
-      try {
-        const f = await findFile();
-        if (!f || f.modifiedTime === cloud.modified) return;
-        const env = await downloadFile(f.id);
-        const data = await decryptData(env, cryptoKey);
-        if (dirty || saving) return;   // local edits win; they'll be uploaded next
-        cloud.fileId = f.id;
-        cloud.modified = f.modifiedTime;
-        // replace my private data, keep the shared expenses that are loaded in memory
-        const sharedNow = expenses.filter(e => isShared(bookOf(e)));
-        const sharedNotes = Object.fromEntries(Object.entries(monthNotes).filter(([k]) => isShared(k)));
-        expenses = (data.expenses || []).concat(sharedNow);
-        monthNotes = { ...(data.monthNotes || {}), ...sharedNotes };
-        payModes = migrateModes(data.viaOptions, data.payModes, data.expenses); cardCycles = data.cardCycles || {};
-        books = normBooks(data.books);
-        sharedRefs = data.sharedRefs || [];
-        refreshView();
-      } catch (e) { console.warn('Sync check failed', e); }
-    }
-
-    // someone else edited the shared expense that is open right now -> reload it
-    async function pullShared() {
-      if (!user || screen !== 'book' || !isShared(curBook) || dirty || saving || document.hidden || !accessToken || Date.now() > tokenExp) return;
-      const fileId = curBook.slice(SH.length), f = sharedFiles[fileId];
-      if (!f) return;
-      try {
-        const meta = await (await gfetch(`${DRIVE}/${fileId}?fields=modifiedTime`)).json();
-        if (meta.modifiedTime === f.modified || dirty || saving) return;
-        await loadSharedFile(fileId);
-        if (!$('monthly').contains(document.activeElement)) renderMonthly();
-      } catch (e) { console.warn('Shared sync check failed', e); }
-    }
-    setInterval(pullShared, 15000);
-    window.addEventListener('focus', pullShared);
-    setInterval(pullRemote, 20000);
-    window.addEventListener('focus', pullRemote);
-
-    /* ---------- Login / signup / logout ---------- */
-    async function login(prompt) {
-      try {
-        await requestToken(prompt);
-        setAuthUI('loading');
-        const p = await (await gfetch('https://www.googleapis.com/oauth2/v3/userinfo')).json();
-        user = { sub: p.sub, name: p.name || p.email, email: p.email, picture: p.picture };
-        try { localStorage.setItem('lastUser', JSON.stringify({ name: user.name, email: user.email })); } catch {}
-        setAuthUI();
-        await openVault();
-      } catch (e) {
-        if (e.type !== 'popup_closed') {
-          console.error(e);
-          alert('Login failed: ' + e.message);
-        }
-        await logout(true);
-      }
+    // apply my private data, keeping the shared expenses that are loaded in memory
+    function applyVault(data) {
+      const sharedNow = expenses.filter(e => isShared(bookOf(e)));
+      const sharedNotes = Object.fromEntries(Object.entries(monthNotes).filter(([k]) => isShared(k)));
+      expenses = (data.expenses || []).concat(sharedNow);
+      monthNotes = { ...(data.monthNotes || {}), ...sharedNotes };
+      payModes = migrateModes(data.viaOptions, data.payModes, data.expenses);
+      cardCycles = data.cardCycles || {};
+      books = normBooks(data.books);
+      // older saves only starred shared books ('favShared', plain ids)
+      quick = new Set(data.quick || (data.favShared || []).map(id => SH + id));
+      monthlyShared = data.monthlyShared || null;
     }
 
     async function openVault() {
       setSync('loading');
-      const file = await findFile();
+      const row = await dbGetVault();
       let data;
-
-      if (file) {
-        // Existing user: download and decrypt
-        const env = await downloadFile(file.id);
-        cloud = { fileId: file.id, modified: file.modifiedTime, salt: fromB64(env.salt) };
+      if (row) {
+        // returning user: decrypt
+        const env = JSON.parse(row.data);
+        cloud = { modified: row.updated_at, salt: fromB64(env.salt) };
         const key = await userKey(cloud.salt, env.iter || PBKDF2_ITER);
         try { data = await decryptData(env, key); }
         catch { throw new Error('Could not decrypt your saved data (was APP_SECRET changed?).'); }
         cryptoKey = key;
       } else {
-        // First login = sign up: new encrypted file, carry over any guest data
+        // first login = sign up: new encrypted row, carry over anything entered before logging in
         const salt = crypto.getRandomValues(new Uint8Array(16));
-        cloud = { fileId: null, modified: null, salt };
+        cloud = { modified: null, salt };
         cryptoKey = await userKey(salt, PBKDF2_ITER);
-        data = { expenses: load(), monthNotes: loadNotes(), viaOptions: loadModes(), cardCycles: loadCycles(), books: loadBooks() };
+        data = { expenses: load(), monthNotes: loadNotes(), viaOptions: loadModes(), cardCycles: loadCycles(), books: loadBooks(), quick: [...loadQuick()] };
       }
-
-      expenses = data.expenses || [];
-      monthNotes = data.monthNotes || {};
-      payModes = migrateModes(data.viaOptions, data.payModes, data.expenses); cardCycles = data.cardCycles || {};
-      books = normBooks(data.books);
-      sharedRefs = data.sharedRefs || [];
-      if (!file) {
+      expenses = []; monthNotes = {};
+      applyVault(data);
+      if (!row) {
         await uploadData();
-        // guest data now lives (encrypted) in Drive – remove the plain copy
-        try { localStorage.removeItem(KEY); localStorage.removeItem(NOTES_KEY); localStorage.removeItem(MODES_KEY); localStorage.removeItem(OLD_MODES_KEY); localStorage.removeItem(CYCLES_KEY); localStorage.removeItem(BOOKS_KEY); } catch {}
+        // guest data now lives (encrypted) in the cloud – remove the plain copy
+        try { [KEY, NOTES_KEY, MODES_KEY, OLD_MODES_KEY, CYCLES_KEY, BOOKS_KEY, QUICK_KEY].forEach(k => localStorage.removeItem(k)); } catch {}
       }
+      await refreshSharedList();
+      subscribeRealtime();
       setSync('saved');
       refreshView();
+    }
+
+    // another device changed my private data -> load it (unless I have unsaved edits)
+    async function pullRemote() {
+      if (!user || !cryptoKey || dirty || saving || document.hidden) return;
+      try {
+        const row = await dbGetVault();
+        if (!row || row.updated_at === cloud.modified) return;
+        const env = JSON.parse(row.data);
+        const data = await decryptData(env, cryptoKey);
+        if (dirty || saving) return;   // local edits win; they'll be uploaded next
+        cloud.modified = row.updated_at;
+        applyVault(data);
+        refreshView();
+      } catch (e) { console.warn('Sync check failed', e); }
+    }
+
+    /* ---------- Shared expenses: one encrypted row per shared book ---------- */
+    const sharedFiles = {};   // book id -> { key, salt, modified, dirty }
+    const myEmail = () => (user?.email || '').toLowerCase();
+
+    function refFromRow(row, old = {}) {
+      const role = row.owner_id === user.id ? 'owner' : (row.book_members || []).find(m => m.email === myEmail())?.role || 'reader';
+      return { ...old, id: row.id, name: row.name, role, ownerEmail: row.owner_email || '',
+        ownerName: old.ownerName || (row.owner_email || '').split('@')[0],
+        members: role === 'owner' ? (row.book_members || []).slice().sort((a, b) => a.email.localeCompare(b.email)) : [] };
+    }
+
+    // everything I own or that was shared with my email (the database only returns those)
+    async function refreshSharedList() {
+      if (!user) return;
+      const rows = await dbListShared();
+      const ids = new Set(rows.map(r => r.id));
+      sharedRefs = rows.map(r => refFromRow(r, sharedRefs.find(x => x.id === r.id)));
+      Object.keys(sharedFiles).forEach(id => { if (!ids.has(id)) forgetShared(id); });   // access removed
+      refreshView();
+    }
+
+    const sharedPayload = id => {
+      const bid = SH + id, r = refOf(bid);
+      const notes = {};
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) notes[k.slice(bid.length + 1)] = monthNotes[k]; });
+      return {
+        name: r.name, ownerName: r.ownerName, ownerEmail: r.ownerEmail,
+        expenses: expenses.filter(e => bookOf(e) === bid).map(({ book, ...e }) => e),
+        monthNotes: notes, savedAt: nowIso()
+      };
+    };
+
+    async function uploadShared(id) {
+      const f = sharedFiles[id];
+      const body = JSON.stringify(await encryptData(sharedPayload(id), f.key, f.salt, { kind: 'shared-expense' }));
+      const r = await dbUpdateShared(id, { data: body });
+      f.modified = r.updated_at;
+    }
+
+    // First share of one of my books: move it out of my private data into its own shared row
+    async function convertToShared(bookId) {
+      const b = books.find(x => x.id === bookId);
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const key = await sharedKey(salt, PBKDF2_ITER);
+      const notes = {};
+      // Monthly Expenses keeps its notes under plain "YYYY-MM" keys, other books under "<id>|YYYY-MM"
+      const noteKeyOf = m => bookId === 'monthly' ? m : `${bookId}|${m}`;
+      Object.keys(monthNotes).forEach(k => {
+        if (bookId === 'monthly' ? /^\d{4}-\d{2}$/.test(k) : k.startsWith(bookId + '|')) notes[bookId === 'monthly' ? k : k.slice(bookId.length + 1)] = monthNotes[k];
+      });
+      const payload = {
+        name: b.name, ownerName: user.name, ownerEmail: myEmail(),
+        expenses: expenses.filter(e => bookOf(e) === bookId).map(({ book, ...e }) => e),
+        monthNotes: notes, savedAt: nowIso()
+      };
+      const body = JSON.stringify(await encryptData(payload, key, salt, { kind: 'shared-expense' }));
+      const row = await dbCreateShared({ name: b.name, owner_email: myEmail(), data: body });
+
+      // move entries + notes over to the shared book id, forget the private book
+      const bid = SH + row.id;
+      sharedFiles[row.id] = { key, salt, modified: row.updated_at };
+      sharedRefs.push({ id: row.id, name: b.name, ownerName: user.name, ownerEmail: myEmail(), role: 'owner', members: [] });
+      expenses.forEach(e => { if (bookOf(e) === bookId) e.book = bid; });
+      Object.keys(notes).forEach(m => { monthNotes[`${bid}|${m}`] = notes[m]; delete monthNotes[noteKeyOf(m)]; });
+      if (bookId === 'monthly') monthlyShared = row.id;       // the home button now opens the shared copy
+      else books = books.filter(x => x.id !== bookId);
+      if (quick.delete(bookId)) quick.add(bid);            // stays in Quick access
+      if (curBook === bookId) curBook = bid;
+      saveVault();                              // my private data no longer holds this book
+      return bid;
+    }
+
+    // Download + decrypt a shared book and put its entries in memory
+    async function loadSharedFile(id) {
+      const row = await dbGetShared(id);
+      if (!row) { const e = new Error('403 no access'); e.noAccess = true; throw e; }
+      const env = JSON.parse(row.data);
+      if (env?.kind !== 'shared-expense') throw new Error('not an Expense Manager book');
+      const salt = fromB64(env.salt);
+      const key = sharedFiles[id]?.key || await sharedKey(salt, env.iter || PBKDF2_ITER);
+      const data = await decryptData(env, key);
+      sharedFiles[id] = { ...(sharedFiles[id] || {}), key, salt, modified: row.updated_at };
+
+      const bid = SH + id;
+      expenses = expenses.filter(e => bookOf(e) !== bid).concat((data.expenses || []).map(e => ({ ...e, book: bid })));
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) delete monthNotes[k]; });
+      Object.entries(data.monthNotes || {}).forEach(([m, v]) => monthNotes[`${bid}|${m}`] = v);
+
+      const i = sharedRefs.findIndex(x => x.id === id);
+      const r = refFromRow(row, { ...(sharedRefs[i] || {}), ownerName: data.ownerName || undefined });
+      if (i < 0) sharedRefs.push(r); else sharedRefs[i] = r;
+      return r;
+    }
+
+    // Open a shared book: always fetch the latest version first
+    async function openShared(id, push = true) {
+      if (!user) { alert('Log in to open shared expenses.'); return; }
+      const bid = SH + id;
+      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); }
+      curBook = bid;
+      openScreen('book', push);
+      $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
+      try {
+        await loadSharedFile(id);
+        $('mMsg').hidden = true;
+        if (screen === 'book' && curBook === bid) openScreen('book', false);
+      } catch (e) {
+        console.error(e);
+        mFlash(e.noAccess ? '🔒 You no longer have access to this shared expense.' : 'Could not load: ' + e.message);
+      }
+    }
+
+    // someone else edited the shared expense that is open right now -> reload it
+    async function pullShared(force) {
+      if (!user || screen !== 'book' || !isShared(curBook) || dirty || saving || (document.hidden && !force)) return;
+      const id = curBook.slice(SH.length), f = sharedFiles[id];
+      if (!f) return;
+      try {
+        const row = await dbGetShared(id);
+        if (!row) { forgetShared(id); refreshView(); return; }
+        if (row.updated_at === f.modified || dirty || saving) return;
+        await loadSharedFile(id);
+        if (!$('monthly').contains(document.activeElement)) renderMonthly();
+      } catch (e) { console.warn('Shared sync check failed', e); }
+    }
+
+    /* ---------- Live updates (Supabase Realtime) + a slow safety poll ---------- */
+    let rtChannel = null;
+    function subscribeRealtime() {
+      if (!sb || !user) return;
+      rtChannel?.unsubscribe();
+      let listTimer = null;
+      const refreshListSoon = () => { clearTimeout(listTimer); listTimer = setTimeout(() => refreshSharedList().catch(console.warn), 400); };
+      rtChannel = sb.channel('em-' + user.id)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'vaults', filter: `user_id=eq.${user.id}` },
+          p => { if (p.new?.updated_at && p.new.updated_at !== cloud.modified) pullRemote(); })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'shared_books' }, p => {
+          const id = p.new?.id || p.old?.id;
+          if (screen === 'book' && curBook === SH + id && p.new?.updated_at !== sharedFiles[id]?.modified) pullShared(true);
+          refreshListSoon();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'book_members' }, refreshListSoon)
+        .subscribe();
+    }
+    setInterval(pullShared, 30000);
+    setInterval(pullRemote, 45000);
+    window.addEventListener('focus', () => { pullRemote(); pullShared(); if (user) refreshSharedList().catch(() => {}); });
+
+    /* ---------- Login / signup / logout ---------- */
+    async function startSession(session) {
+      if (!session?.user || (user && user.id === session.user.id)) return;
+      const u = session.user, md = u.user_metadata || {};
+      user = { id: u.id, email: u.email, name: md.full_name || md.name || (u.email || '').split('@')[0], picture: md.avatar_url || md.picture || '' };
+      closeLogin();
+      setAuthUI();
+      try { await openVault(); }
+      catch (e) { console.error(e); alert('Could not load your data: ' + e.message); await logout(true); }
+    }
+
+    if (sb) {
+      // after the email link / Google redirect, and on every page load with a saved session
+      sb.auth.onAuthStateChange((event, session) => {
+        if (session?.user && !user) setTimeout(() => startSession(session), 0);
+        if (event === 'SIGNED_OUT' && user) setTimeout(() => logout(true), 0);
+      });
     }
 
     async function logout(silent) {
@@ -3315,32 +3585,69 @@
         clearTimeout(saveTimer);
         await flush();
       }
-      if (!silent) forgetLast();
-      user = null; cryptoKey = null; accessToken = null; tokenExp = 0;
-      cloud = { fileId: null, modified: null, salt: null };
+      rtChannel?.unsubscribe(); rtChannel = null;
+      const wasUser = !!user;
+      user = null; cryptoKey = null;
+      cloud = { modified: null, salt: null };
       dirty = false; vaultDirty = false;
       expenses = load();
       monthNotes = loadNotes();
       payModes = loadModes();
       cardCycles = loadCycles();
       books = loadBooks();
-      sharedRefs = [];
+      sharedRefs = []; quick = loadQuick(); monthlyShared = null;
       Object.keys(sharedFiles).forEach(k => delete sharedFiles[k]);
+      if (!silent && wasUser && sb) { try { await sb.auth.signOut(); } catch {} }
       setAuthUI();
       refreshView();
     }
 
-    function startLogin(prompt) {
+    function startLogin() {
       if (!configured()) {
-        alert('Google login is not set up yet.\n\nCreate an OAuth Client ID (see README.md) and paste it into GOOGLE_CLIENT_ID in index.html.');
+        alert('Login is not set up yet.\n\nCreate a free Supabase project (see README.md) and paste its URL and anon key into SUPABASE_URL / SUPABASE_ANON_KEY in index.html.');
         return;
       }
+      if (!sb) { alert('Could not load the Supabase library – check your internet connection and reload.'); return; }
       if (location.protocol === 'file:') {
-        alert('Google login needs the app to run on a web server.\n\nRun:  node server.js\nthen open  http://localhost:8000');
+        alert('Login needs the app to run on a web server.\n\nRun:  node server.js\nthen open  http://localhost:8000');
         return;
       }
-      login(prompt);
+      openLogin();
     }
+
+    // login popup: email magic link (+ optional Google)
+    const appUrl = () => location.origin + location.pathname;
+    function openLogin() {
+      $('loginErr').hidden = true; $('loginMsg').hidden = true;
+      $('loginSend').disabled = false;
+      $('loginGoogle').hidden = $('loginOr').hidden = !SUPABASE_GOOGLE_LOGIN;
+      $('loginDlg').hidden = false;
+      setTimeout(() => $('loginEmail').focus(), 0);
+    }
+    function closeLogin() { $('loginDlg').hidden = true; }
+    $('loginForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const email = $('loginEmail').value.trim();
+      const err = m => { $('loginErr').textContent = m; $('loginErr').hidden = false; };
+      $('loginErr').hidden = true;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Enter a valid email address.');
+      $('loginSend').disabled = true;
+      try {
+        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: appUrl() } });
+        if (error) throw error;
+        $('loginMsg').innerHTML = `📬 Check <b>${esc(email)}</b> and tap the sign-in link. You can close this.`;
+        $('loginMsg').hidden = false;
+      } catch (e) {
+        err(/rate|seconds/i.test(e.message) ? 'Please wait a minute before asking for another link.' : 'Could not send the link: ' + e.message);
+        $('loginSend').disabled = false;
+      }
+    });
+    $('loginGoogle').addEventListener('click', async () => {
+      const { error } = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: appUrl() } });
+      if (error) { $('loginErr').textContent = 'Google login failed: ' + error.message; $('loginErr').hidden = false; }
+    });
+    $('loginX').addEventListener('click', closeLogin);
+    $('loginDlg').addEventListener('click', ev => { if (ev.target === $('loginDlg')) closeLogin(); });
 
     function refreshView() {
       if (!bookExists(curBook)) {                          // open book was deleted / logged out of a shared one
@@ -3348,17 +3655,18 @@
         if (screen === 'book') { openScreen('home', false); navStack.length = 0; return; }
       }
       if (screen === 'book') {
-        $('screenTitle').textContent = `${bookIcon(curBook)} ${bookName(curBook)}`;
+        $('screenTitle').textContent = `${bookIcon(curBook)} ${bookTitle(curBook)}`;
         if (!canEdit(curBook)) $('screenTitle').insertAdjacentHTML('beforeend', ' <span class="view-only-tag">👁 view only</span>');
       }
       if (!$('books').hidden) renderBooks();
       if (!$('shared').hidden) renderShared();
-      if (!$('favs').hidden) renderFavs();
+      renderQuick();
       if (!$('monthly').hidden && !$('monthly').contains(document.activeElement)) renderMonthly();
     }
 
     /* ---------- Header: login button / profile ---------- */
     const G_ICON = '<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+    $('loginGoogle').insertAdjacentHTML('afterbegin', G_ICON + ' ');
 
     function setAuthUI(state) {
       const a = $('auth');
@@ -3367,25 +3675,34 @@
       if (user) {
         const avatar = user.picture
           ? `<img src="${esc(user.picture)}" alt="" referrerpolicy="no-referrer">`
-          : `<span class="avatar">${esc(user.name[0].toUpperCase())}</span>`;
+          : `<span class="avatar">${esc((user.name || '?')[0].toUpperCase())}</span>`;
         a.innerHTML = `
-          <div class="profile">
+          <div class="profile" title="${esc(user.email)}">
             ${avatar}
             <div><span class="name">${esc(user.name)}</span><span class="sync" id="syncStatus"></span></div>
           </div>
           <button class="logout" id="logoutBtn">Logout</button>`;
         $('logoutBtn').onclick = () => logout();
         setSync(syncState);
+        addThemeBtn();
         return;
       }
+      a.innerHTML = '<button class="g-btn" id="loginBtn">🔑 Log in / Sign up</button>';
+      $('loginBtn').onclick = startLogin;
+      addThemeBtn();
+    }
 
-      const last = lastUser();
-      a.innerHTML = last
-        ? `<button class="g-btn" id="loginBtn">${G_ICON} Continue as ${esc(last.name.split(' ')[0])}</button>
-           <button class="link-btn" id="otherBtn">Use another account</button>`
-        : `<button class="g-btn" id="loginBtn">${G_ICON} Login / Sign up with Google</button>`;
-      $('loginBtn').onclick = () => startLogin(last ? '' : 'select_account');
-      if (last) $('otherBtn').onclick = () => { forgetLast(); startLogin('select_account'); };
+    /* ---------- 🌙 / ☀️ theme ---------- */
+    const isDark = () => document.documentElement.dataset.theme === 'dark';
+    function addThemeBtn() {
+      $('auth').insertAdjacentHTML('afterbegin', `<button type="button" class="theme-btn" id="themeBtn" title="${isDark() ? 'Light theme' : 'Dark theme'}">${isDark() ? '☀️' : '🌙'}</button>`);
+      $('themeBtn').onclick = () => setTheme(isDark() ? 'light' : 'dark');
+    }
+    function setTheme(mode) {
+      if (mode === 'dark') document.documentElement.dataset.theme = 'dark'; else delete document.documentElement.dataset.theme;
+      try { localStorage.setItem('theme_v1', mode); } catch {}
+      const b = $('themeBtn');
+      if (b) { b.textContent = isDark() ? '☀️' : '🌙'; b.title = isDark() ? 'Light theme' : 'Dark theme'; }
     }
 
     function setSync(state) {
@@ -3393,20 +3710,13 @@
       const el = $('syncStatus');
       if (!el) return;
       el.innerHTML = {
-        loading: '⏳ Loading from Drive…',
+        loading: '⏳ Loading…',
         saving: '⏳ Saving…',
-        saved: '☁️ Saved to Drive · 🔒 encrypted',
-        error: '⚠️ Not saved <button id="retryBtn">Retry</button>',
-        reauth: '⚠️ Session expired <button id="retryBtn">Reconnect</button>'
+        saved: '☁️ Saved · 🔒 encrypted',
+        error: '⚠️ Not saved <button id="retryBtn">Retry</button>'
       }[state] || '';
       const b = $('retryBtn');
-      if (b) b.onclick = async () => {
-        try {
-          if (state === 'reauth' || !accessToken || Date.now() > tokenExp) await requestToken('');
-          dirty = true;
-          flush();
-        } catch (e) { alert(e.message); }
-      };
+      if (b) b.onclick = () => { dirty = true; vaultDirty = true; flush(); };
     }
 
     // switch month labels between long/short when the screen size or orientation changes
@@ -3444,6 +3754,22 @@
 
     /* ---------- Init ---------- */
     applyTimeToggle();
+    /* ---------- 📲 Installable app (PWA) ---------- */
+    // offline copy + "install" support; only on a real web address (not file://)
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(e => console.warn('Service worker not registered', e)));
+    }
+    // Chrome / Edge / Android offer an install prompt: show our button for it
+    let installEvent = null;
+    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; $('installBtn').hidden = false; });
+    $('installBtn').addEventListener('click', async () => {
+      if (!installEvent) return;
+      installEvent.prompt();
+      await installEvent.userChoice.catch(() => {});
+      installEvent = null; $('installBtn').hidden = true;
+    });
+    window.addEventListener('appinstalled', () => { installEvent = null; $('installBtn').hidden = true; });
+
     openScreen('home', false);
     setAuthUI();
   </script>
