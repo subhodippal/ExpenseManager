@@ -1,0 +1,3451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expense Manager</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --sent: #dc2626;
+      --received: #16a34a;
+      --bg: #f3f4f6;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    [hidden] { display: none !important; }   /* hidden must win over any display rule */
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ---------- Header ---------- */
+    header {
+      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      color: #fff;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    header h1 { font-size: clamp(1.4rem, 4vw, 2rem); }
+    header p { opacity: .9; font-size: .95rem; }
+
+    /* ---------- Auth area ---------- */
+    .auth { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .g-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #fff; color: #1f2937;
+      border: none; border-radius: 999px;
+      padding: 10px 18px; font-size: .95rem; font-weight: 600;
+      cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .g-btn:hover { background: #f3f4f6; }
+    .g-btn svg { width: 18px; height: 18px; }
+    .link-btn { background: none; border: none; color: #e0e7ff; text-decoration: underline; cursor: pointer; font-size: .8rem; }
+    .profile { display: flex; align-items: center; gap: 10px; }
+    .profile img, .profile .avatar {
+      width: 38px; height: 38px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.7); object-fit: cover;
+      background: #fff; color: var(--primary); font-weight: 700;
+      display: grid; place-items: center;
+    }
+    .profile .name { font-weight: 600; line-height: 1.2; }
+    .profile .sync { font-size: .78rem; opacity: .9; display: block; }
+    .profile .sync button { background: none; border: none; color: #fde68a; text-decoration: underline; cursor: pointer; font-size: .78rem; }
+    .logout {
+      background: rgba(255,255,255,.18); color: #fff;
+      border: 1px solid rgba(255,255,255,.4); border-radius: 8px;
+      padding: 6px 12px; cursor: pointer; font-weight: 600;
+    }
+    .logout:hover { background: rgba(255,255,255,.3); }
+
+    main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+    /* ---------- Info line ---------- */
+    .info {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      color: #1e3a8a;
+      font-size: .95rem;
+    }
+
+    /* ---------- Big buttons ---------- */
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .menu button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 120px;
+      padding: 20px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .menu button .icon { font-size: 2.2rem; }
+    .menu button:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .menu button.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    /* ---------- Sections ---------- */
+    .panel {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .panel h2 { margin-bottom: 16px; font-size: 1.3rem; }
+
+    /* ---------- Summary cards ---------- */
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .summary div {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .summary small { color: var(--muted); display: block; }
+    .summary strong { font-size: 1.2rem; }
+
+    /* ---------- Inputs ---------- */
+    label { font-weight: 600; font-size: .9rem; }
+    input, textarea, select {
+      padding: 10px 12px;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      width: 100%;
+    }
+    input:focus, textarea:focus { outline: 2px solid var(--primary); border-color: transparent; }
+    textarea { resize: vertical; min-height: 70px; }
+
+    .actions { grid-column: 1 / -1; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+    .hint { color: var(--muted); font-size: .9rem; margin-bottom: 12px; }
+
+    /* ---------- Editable table ---------- */
+    /* fixed column widths so every column fits – no horizontal scrollbar */
+    .edit-table { table-layout: fixed; min-width: 0; }
+    .edit-table th { padding: 10px 6px; font-size: .85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .edit-table td { padding: 4px; }
+    .edit-table .c-num { width: 32px; color: var(--muted); text-align: center; }
+    .edit-table .c-tools { width: 44px; }
+    #mTable .c-tools { width: 60px; }
+    /* merged amount / via columns and the short date exist for upright phones only */
+    .edit-table .c-amt, .dl-short { display: none; }
+    /* one "Via" column for sent and received (separate Send/Recv Via columns are not shown) */
+    .edit-table .c-sv, .edit-table .c-rv { display: none; }
+    .edit-table .c-via { width: 124px; }
+    .amt-wrap { display: flex; align-items: center; gap: 2px; }
+    .amt-wrap input { min-width: 0; text-align: right; font-weight: 600; }
+    .sign-btn {
+      flex: 0 0 22px; height: 28px; border: none; border-radius: 6px; cursor: pointer;
+      font-weight: 800; font-size: 1rem; line-height: 1; padding: 0;
+    }
+    .amt-wrap.minus .sign-btn { background: #fee2e2; color: var(--sent); }
+    .amt-wrap.minus input { color: var(--sent); }
+    .amt-wrap.plus .sign-btn { background: #dcfce7; color: var(--received); }
+    .amt-wrap.plus input { color: var(--received); }
+    .edit-table .c-date-cell { width: 120px; }            /* edit: 📅 + time box */
+    #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 96px; }   /* view: "Wed, 30 Sept" / time */
+    #mTable.flat .c-date-cell { width: 222px !important; }                      /* flat list, edit: date box + time box */
+    #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 150px !important; }   /* flat list, view: "Tue, 22 Sept · 9:05 pm" */
+    .edit-table .c-time-cell { width: 88px; }
+    .edit-table .c-sent, .edit-table .c-recv { width: 82px; }
+    .edit-table .c-sv, .edit-table .c-rv { width: 118px; }
+    .edit-table .c-note { width: 16%; }
+    .edit-table:not(.hide-time) .c-note { width: 12%; }
+    .edit-table .c-del { width: 40px; text-align: center; }
+    .edit-table input, .edit-table textarea {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: .92rem;
+      background: #f9fafb;
+    }
+    .edit-table input:hover, .edit-table textarea:hover { border-color: var(--border); }
+    .edit-table input:focus, .edit-table textarea:focus { background: #fff; }
+    /* purpose: wraps to a 2nd line when long (height set to 1 or 2 rows by fitPurpose) */
+    .edit-table textarea[data-f=purpose] {
+      display: block; min-height: 0; height: auto; resize: none; overflow: hidden;
+      line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere;
+    }
+    .edit-table input[type=number] { text-align: right; }
+    .edit-table tr.invalid input.bad { border-color: var(--sent); background: #fef2f2; }
+    .edit-table tfoot td { font-weight: 700; background: #f9fafb; padding: 10px 12px; }
+    .row-del {
+      border: none; background: none; cursor: pointer;
+      font-size: 1.1rem; color: var(--muted); padding: 6px;
+    }
+    .row-del:hover { color: var(--sent); }
+    .btn {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-light { background: var(--bg); color: var(--text); }
+    .btn-sm { padding: 6px 12px; font-size: .85rem; }
+    .btn-danger { background: #fee2e2; color: var(--sent); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .msg {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    /* ---------- Expense list ---------- */
+    .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .toolbar input { flex: 1; min-width: 180px; }
+
+    .list { display: flex; flex-direction: column; gap: 10px; }
+    .item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    .item .purpose { font-weight: 600; }
+    .item .meta { color: var(--muted); font-size: .85rem; }
+    .item .amounts { text-align: right; font-weight: 600; }
+    .item .buttons { grid-column: 1 / -1; display: flex; gap: 8px; }
+
+    .sent { color: var(--sent); }
+    .received { color: var(--received); }
+
+    /* ---------- Monthly table ---------- */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-size: .92rem; }
+    th { background: #f9fafb; position: sticky; top: 0; font-weight: 600; }
+    td.num, th.num { text-align: right; white-space: nowrap; }
+    /* ---------- Monthly view ---------- */
+    /* toolbar: month selection · show time · clear selected · add row · bulk add */
+    /* toolbar: always one line */
+    .month-bar {
+      display: flex; gap: 6px; align-items: center; flex-wrap: nowrap;
+      background: var(--card); padding: 0 0 8px; margin-bottom: 2px;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .month-bar::-webkit-scrollbar { display: none; }
+    .month-pick { display: flex; gap: 6px; align-items: center; flex: 1 1 auto; min-width: 0; }
+    .month-pick select { flex: 1; min-width: 120px; max-width: 260px; font-weight: 600; padding: 8px 10px; }
+    .month-bar .btn { padding: 8px 12px; font-size: .88rem; white-space: nowrap; flex: 0 0 auto; }
+    #mMsg { margin: 0 0 10px; }
+    #monthly .bulk { margin: 0 0 12px; }
+
+    /* month notes: one line, expands when clicked */
+    .month-notes { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+    .month-notes label { flex: 0 0 auto; font-size: .85rem; color: var(--muted); padding-top: 8px; white-space: nowrap; }
+    .month-notes .saved { color: var(--received); font-weight: 600; }
+    .note-preview {
+      flex: 1; min-width: 0; text-align: left; cursor: pointer;
+      background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+      padding: 8px 10px; font: inherit; font-size: .92rem; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-preview:hover { border-color: #facc15; }
+    .note-preview.empty { color: var(--muted); }
+    .note-preview .more { color: #a16207; font-size: .8rem; margin-left: 6px; }
+    .month-notes textarea {
+      flex: 1; min-height: 72px; resize: vertical; overflow-y: auto;
+      padding: 8px 10px; background: #fffbeb; border-color: #fde68a; font-size: .92rem;
+    }
+
+    /* Inside a book the page itself doesn't scroll: header, toolbar, note and column
+       titles stay put, the monthly total stays at the bottom, only the entries scroll */
+    body.book-mode { position: fixed; inset: 0; height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+    body.book-mode main { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; padding-bottom: 10px; }
+    body.book-mode #monthly { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 16px; }
+    body.book-mode #monthly > * { flex-shrink: 0; }
+    body.book-mode #monthly .table-wrap { flex: 1 1 auto; min-height: 60px; overflow: auto; overscroll-behavior: contain; }
+    body.book-mode #monthly .bulk { max-height: 45vh; overflow: auto; }
+    body.book-mode footer { display: none; }
+    #monthly .edit-table thead th { position: sticky; top: 0; z-index: 3; }
+    #monthly .edit-table tfoot td { position: sticky; bottom: 0; z-index: 3; }
+
+    /* header on inner screens: ← Back + screen / book name */
+    .screen-head { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
+    .screen-head h1 { font-size: clamp(1.15rem, 3.4vw, 1.6rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .back-btn {
+      flex: 0 0 auto; background: rgba(255,255,255,.18); color: #fff;
+      border: 1px solid rgba(255,255,255,.45); border-radius: 8px;
+      padding: 7px 14px; font-size: .95rem; font-weight: 600; cursor: pointer;
+    }
+    .back-btn:hover { background: rgba(255,255,255,.3); }
+    body.screen-mode header { padding: 10px 16px; }
+    body.screen-mode .header-inner { flex-wrap: nowrap; }
+
+    /* home header: title top-left, login bottom-right, room in between */
+    body:not(.screen-mode) header { padding: 26px 20px 18px; }
+    body:not(.screen-mode) .header-inner { align-items: flex-end; min-height: 110px; gap: 20px; }
+    #brand { align-self: flex-start; text-align: left; }
+    #brand p { margin-top: 6px; }
+
+    /* View your expenses: book cards */
+    .books-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+    .book-card {
+      display: flex; align-items: center; gap: 14px; text-align: left;
+      padding: 16px; border: 2px solid var(--border); border-radius: var(--radius);
+      background: var(--card); cursor: pointer; transition: border-color .15s, transform .15s; font: inherit; color: inherit;
+    }
+    .book-card:hover { border-color: var(--primary); transform: translateY(-1px); }
+    .book-icon { font-size: 2rem; flex: 0 0 auto; }
+    .book-main { flex: 1; min-width: 0; }
+    .book-name { font-weight: 700; font-size: 1.05rem; }
+    .book-meta { color: var(--muted); font-size: .84rem; }
+    .default-tag { background: #e0e7ff; color: #3730a3; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; vertical-align: middle; }
+    .book-actions { display: flex; gap: 6px; flex: 0 0 auto; }
+    .book-actions .btn { padding: 6px 10px; }
+    .add-book { border-style: dashed; color: var(--primary); justify-content: center; min-height: 92px; }
+    #booksMsg { margin-top: 12px; }
+
+    /* home: divider + second row (Shared with you · Favourite) */
+    .menu-divider, .sec-divider { border: none; height: 3px; border-radius: 3px; background: linear-gradient(90deg, #c7d2fe, #e9d5ff); }
+    .menu-divider { margin: -8px 0 16px; }
+    .menu-2 { grid-template-columns: repeat(2, 1fr); }
+    .sec-divider { margin: 22px 0 16px; }
+    .sec-title { font-size: 1rem; color: #3730a3; margin: 0 0 10px; }
+    .shared-tag { background: #ede9fe; color: #5b21b6; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; vertical-align: middle; }
+    .role-tag { background: #f1f5f9; color: #475569; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
+    .fav-btn { background: none !important; font-size: 1.25rem; color: #cbd5e1; }
+    .fav-btn.on { color: #f59e0b; }
+    .empty-card { color: var(--muted); padding: 18px; border: 2px dashed var(--border); border-radius: var(--radius); text-align: center; }
+    .shared-bar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+    .shared-bar .hint { margin: 0; flex: 1; min-width: 220px; }
+    #sharedMsg { margin: 0 0 12px; }
+
+    /* share screen */
+    .share-form { display: flex; flex-direction: column; gap: 8px; max-width: 640px; margin-bottom: 18px; }
+    .share-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .share-row input { flex: 1 1 220px; }
+    .share-row select { flex: 0 0 auto; width: auto; }
+    .share-form .err { color: var(--sent); font-weight: 600; font-size: .9rem; }
+    .people { display: flex; flex-direction: column; gap: 8px; max-width: 640px; }
+    .person { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 10px; }
+    .person .who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+    .person .who small { color: var(--muted); display: block; }
+
+    /* a shared book you can only view */
+    #monthly.readonly .day-add, #monthly.readonly #clearBtn, #monthly.readonly #bulkBtn,
+    #monthly.readonly .row-del, #monthly.readonly .date-pick { display: none !important; }
+
+    /* view only (✏️ Edit off): no editing controls, fields read like plain text */
+    #monthly.viewmode .day-add, #monthly.viewmode #clearBtn, #monthly.viewmode #bulkBtn, #monthly.viewmode .row-del,
+    #monthly.viewmode .date-pick, #monthly.viewmode .row-sel, #monthly.viewmode .grp-sel, #monthly.viewmode #selAll { display: none !important; }
+    #monthly.viewmode .star-btn:not(.on) { opacity: .35; }                 /* ☆ still tappable in view mode */
+    #monthly.viewmode .edit-table :is(input, select, textarea):is(:disabled, [readonly]),
+    #monthly.readonly .edit-table :is(input, select, textarea):is(:disabled, [readonly]) {
+      background: transparent; border-color: transparent; color: var(--text); -webkit-text-fill-color: currentColor;
+      opacity: 1; cursor: default; appearance: none; -webkit-appearance: none; -moz-appearance: textfield;
+    }
+    #monthly.viewmode .edit-table :is(:disabled, [readonly])::placeholder, #monthly.readonly .edit-table :is(:disabled, [readonly])::placeholder { color: transparent; -webkit-text-fill-color: transparent; }
+    #monthly.viewmode .edit-table input[readonly]::-webkit-inner-spin-button, #monthly.viewmode .edit-table input[readonly]::-webkit-outer-spin-button { -webkit-appearance: none; display: none; }
+    #monthly.viewmode .edit-table :is(textarea, input)[readonly] { cursor: pointer; }
+    #monthly .amt-wrap.minus input[readonly] { color: var(--sent); }
+    #monthly .amt-wrap.plus input[readonly] { color: var(--received); }
+    #monthly.viewmode .edit-table input:disabled::-webkit-inner-spin-button,
+    #monthly.viewmode .edit-table input:disabled::-webkit-calendar-picker-indicator { display: none; }
+    #monthly .amt-wrap.minus input:disabled { color: var(--sent); }
+    #monthly .amt-wrap.plus input:disabled { color: var(--received); }
+    /* the entry's time sits where the 📅 date button was */
+    /* Date · Time cell */
+    .dt-cell { display: flex; align-items: center; gap: 3px; white-space: nowrap; }
+    .dt-cell input[data-f=date] { width: 128px; flex: 0 0 auto; }
+    .dt-cell .time-in { width: 92px; flex: 0 0 auto; padding-left: 4px; padding-right: 2px; font-size: .8rem; }
+    .dt-cell .date-pick { flex: 0 0 auto; }
+    .dt-view { display: none; font-size: .8rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dt-view .dv-date { color: var(--text); }
+    .dt-view .dv-sep { color: var(--muted); }
+    tr.day-entry .dt-view .dv-date, tr.day-entry .dt-view .dv-sep { display: none; }   /* grouped: the date is on the date row */
+    .dt-view .dv-compact { display: none; }
+    /* date & week rows: amounts right under Sent / Recv, like the entries */
+    #tbody td.day-sent, #tbody td.day-recv, #tbody td.wk-sent, #tbody td.wk-recv { text-align: right; white-space: nowrap; font-size: .82rem; font-weight: 600; }
+    #tbody td.wk-net { font-size: .82rem; font-weight: 600; white-space: nowrap; }
+    #tbody td.wk-label-cell .wk-label { display: block; }
+    /* tap a long Purpose / Note in view mode -> full text */
+    .cell-tip { position: fixed; z-index: 90; max-width: min(360px, 90vw); background: #1f2937; color: #fff; font-size: .85rem; line-height: 1.4;
+      padding: 8px 12px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.25); white-space: pre-wrap; overflow-wrap: anywhere; }
+    /* view only: text instead of boxes */
+    #monthly.viewmode .dt-cell > :not(.dt-view), #monthly.readonly .dt-cell > :not(.dt-view) { display: none !important; }
+    #monthly.viewmode .dt-view, #monthly.readonly .dt-view { display: inline; }
+    #monthly.viewmode .edit-table input[type=time][value=""]:disabled,
+    #monthly.readonly .edit-table input[type=time][value=""]:disabled { color: transparent; -webkit-text-fill-color: transparent; }
+    .edit-btn.on { background: #dcfce7; color: #166534; }
+    #monthly.readonly .note-preview { cursor: default; }
+    .view-only-tag { font-size: .7rem; font-weight: 600; background: rgba(255,255,255,.25); border-radius: 4px; padding: 1px 6px; vertical-align: middle; }
+
+    /* ⚙ settings popup */
+    .overlay {
+      position: fixed; inset: 0; z-index: 100; background: rgba(15, 23, 42, .5);
+      display: grid; place-items: center; padding: 16px;
+    }
+    .modal {
+      background: var(--card); border-radius: 14px; width: 100%; max-width: 460px;
+      max-height: calc(100dvh - 32px); display: flex; flex-direction: column; gap: 10px;
+      padding: 18px; box-shadow: 0 20px 50px rgba(0,0,0,.3);
+    }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; }
+    .modal-head h3 { font-size: 1.15rem; }
+    .modal-x { border: none; background: none; font-size: 1.2rem; cursor: pointer; color: var(--muted); padding: 4px 8px; }
+    .modal .hint { margin: 0; }
+    .modes-list { display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; }
+    .mode-row { display: flex; align-items: center; gap: 8px; }
+    .mode-row .mode-name { flex: 1; min-width: 0; padding: 8px 10px; }
+    .mode-used { flex: 0 0 auto; font-size: .75rem; color: var(--muted); min-width: 64px; text-align: right; }
+    .modes-add { display: flex; gap: 8px; }
+    .modes-add input { flex: 1; min-width: 0; }
+    .modal .err { color: var(--sent); font-weight: 600; font-size: .88rem; }
+    .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
+    .btn-danger-solid { background: var(--sent); color: #fff; }
+    .btn-danger-solid:hover { background: #b91c1c; }
+    .confirm-list { list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: .9rem; }
+    .confirm-list li { padding: 6px 10px; background: #f8fafc; border-radius: 8px; }
+
+    /* 🔍 filter */
+    #filterBtn.on { background: #dbeafe; color: #1e40af; }
+    .filter-count { background: var(--primary); color: #fff; border-radius: 999px; font-size: .7rem; padding: 0 6px; margin-left: 4px; }
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+      padding: 4px 8px; margin-bottom: 8px; font-size: .85rem; color: #1e3a8a;
+    }
+    .filter-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .filter-bar .btn { padding: 3px 10px; flex: 0 0 auto; }
+    .filter-quick { display: flex; gap: 8px; }
+    .filter-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; }
+    .filter-opt {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer;
+      border: 1px solid var(--border); border-radius: 8px; font-weight: 400;
+    }
+    .filter-opt:hover { background: #f8fafc; }
+    .filter-opt.on { border-color: #93c5fd; background: #eff6ff; }
+    .filter-opt input { width: 18px; height: 18px; accent-color: var(--primary); flex: 0 0 auto; }
+    .filter-opt .fo-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .filter-opt .fo-sum { flex: 0 0 auto; font-size: .8rem; text-align: right; line-height: 1.3; }
+    .filter-opt .fo-sum small { color: var(--muted); display: block; }
+    /* 💳 billing cycle bar */
+    .cycle-bar {
+      display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap;
+      background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px;
+      padding: 4px 10px; margin: -4px 0 8px; font-size: .84rem; color: #581c87;
+    }
+    .cycle-switch { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .cycle-switch input { width: 16px; height: 16px; accent-color: #9333ea; }
+    .cycle-set { white-space: nowrap; }
+    .cycle-set select { width: auto; padding: 2px 4px; font-size: .82rem; border-radius: 6px; }
+    .cycle-info { flex: 1 1 220px; min-width: 0; }
+    .cycle-info b { color: #6b21a8; }
+    .due-soon { background: #fee2e2; color: #b91c1c; border-radius: 4px; padding: 0 5px; font-weight: 600; }
+    .cycle-edit { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; flex-basis: 100%; }
+    .cycle-edit label { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
+    .cycle-edit input[type=date] { width: auto; padding: 3px 6px; font-size: .82rem; }
+    .cycle-edit .err { color: var(--sent); font-weight: 600; }
+    .adj-tag { background: #fef3c7; color: #92400e; border-radius: 4px; padding: 0 5px; font-size: .75rem; font-weight: 600; }
+    #cycleToggle:disabled + * { opacity: .5; }
+
+    /* month separator inside a billing cycle */
+    tr.month-sep td { background: #faf5ff; border-top: 2px dashed #c084fc; border-bottom: 2px dashed #c084fc; padding: 5px 10px; font-size: .82rem; color: #581c87; }
+    .ms-line { display: flex; align-items: center; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .ms-arrow { color: #a855f7; font-weight: 700; }
+
+    /* ⚙️ card management */
+    .modal-wide { max-width: 640px; }
+    .cards-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; min-height: 0; }
+    .card-row { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
+    .card-main { flex: 1 1 220px; min-width: 0; }
+    .card-name { font-weight: 700; }
+    .card-meta { font-size: .78rem; color: var(--muted); }
+    .card-row label, .card-add label { display: inline-flex; align-items: center; gap: 4px; font-size: .82rem; font-weight: 600; white-space: nowrap; }
+    .card-row select, .card-add select { width: auto; padding: 4px 6px; font-size: .85rem; }
+    .card-add { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .card-add input { flex: 1 1 180px; min-width: 0; }
+    tr.total.filtered.cycle td { background: #f3e8ff !important; border-top-color: #c084fc !important; }
+    tr.total.filtered td { background: #dbeafe !important; border-top-color: #60a5fa !important; }
+
+    /* Create new expense: name form */
+    .new-book { max-width: 520px; display: flex; flex-direction: column; gap: 10px; }
+    .new-book label { font-size: 1rem; }
+    .new-book input { font-size: 1.05rem; padding: 12px 14px; }
+    .new-book .err { color: var(--sent); font-weight: 600; font-size: .9rem; }
+    .new-book .hint { margin: 0; }
+    tr.total td {
+      background: #fef9c3;
+      font-weight: 700;
+      border-top: 2px solid #facc15;
+      padding: 10px 12px;
+    }
+    /* sortable headers, dropdowns */
+    .edit-table select {
+      border: 1px solid transparent; border-radius: 6px; padding: 8px 4px;
+      font-size: .92rem; background: #f9fafb; width: 100%; cursor: pointer; text-overflow: ellipsis;
+    }
+    .edit-table select:hover { border-color: var(--border); }
+    th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+    th.sortable:hover { background: #eef2ff; }
+    th.sortable::after { content: ' ⇅'; color: #cbd5e1; font-size: .8em; }
+    th.sortable.asc::after { content: ' ▲'; color: var(--primary); }
+    th.sortable.desc::after { content: ' ▼'; color: var(--primary); }
+
+    /* optional time column (collapsed by default) */
+    .hide-time .c-time-cell { display: none; }
+
+    /* row tools: star, insert */
+    .tools { display: flex; align-items: center; gap: 2px; }
+    .star-btn { border: none; background: none; cursor: pointer; font-size: 1.15rem; color: #cbd5e1; padding: 2px; line-height: 1; }
+    .star-btn:hover { color: #f59e0b; }
+    .star-btn.on { color: #f59e0b; }
+
+    /* rows grouped by day: alternating background, date shown once per day */
+    /* one row per date (all days of the month); click to collapse / expand */
+    tr.day-head td {
+      background: #eef2ff; border-top: 2px solid #c7d2fe;
+      padding: 6px 8px; font-size: .86rem; cursor: pointer; user-select: none;
+    }
+    tr.day-head:hover td { background: #e0e7ff; }
+    tr.day-head .day-label { font-weight: 700; color: #3730a3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .8rem; }
+    tr.day-head.weekend .day-label { color: #be123c; }
+    tr.day-head.no-entries td { background: #f8fafc; border-top-color: var(--border); cursor: default; }
+    tr.day-head.no-entries .day-label { color: #64748b; font-weight: 600; }
+    tr.day-head.is-today td { background: #dbeafe; }
+    /* totals on date rows, week rows and the month total: one line in the wide right-hand cell */
+    .sums { display: flex; align-items: center; gap: 4px 14px; flex-wrap: nowrap; white-space: nowrap; font-size: .82rem; min-width: 0; }
+    .sums > span:empty { display: none; }
+    .sums .day-add { margin-left: auto; float: none; }
+    .wk-sums .sums, tfoot .sums { font-weight: 600; }
+    tfoot .sums { font-size: .9rem; font-weight: 700; }
+    /* smaller text in the grid so Purpose / Note show more */
+    .edit-table textarea[data-f=purpose], .edit-table input[data-f=note] { font-size: .86rem; }
+    .day-pill { display: inline-block; border-radius: 999px; padding: 1px 8px; font-weight: 600; font-size: .76rem; white-space: nowrap; }
+    .day-pill.out { background: #ffe4e6; color: #e11d48; }        /* light red – different from the entries' sent red */
+    .day-pill.in { background: #d1fae5; color: #059669; }         /* light green – different from the received green */
+    .day-count { color: var(--muted); font-size: .8rem; }
+    .day-add {
+      float: right; border: 1px dashed #a5b4fc; background: #fff; color: var(--primary);
+      border-radius: 6px; padding: 2px 10px; font-size: .8rem; font-weight: 600; cursor: pointer;
+    }
+    .day-add:hover { background: var(--primary); color: #fff; border-style: solid; }
+    .caret { display: inline-block; width: 14px; text-align: center; color: #6366f1; font-size: .9rem; }
+    .today-tag { background: var(--primary); color: #fff; border-radius: 4px; font-size: .68rem; padding: 1px 5px; margin-left: 4px; }
+    /* grouped entries: the date is on the date row, so the cell only has a small 📅 to change it */
+    tr.day-entry .c-date-cell { position: relative; text-align: center; }
+    tr.day-entry input[data-f=date] { position: absolute; left: 0; bottom: 0; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+    .date-pick { border: none; background: none; cursor: pointer; font-size: .9rem; padding: 4px; opacity: .3; }
+    tr.day-entry:hover .date-pick, .date-pick:focus { opacity: 1; }
+    tr:not(.day-entry) .date-pick { display: none; }
+    tr.week-total { cursor: pointer; user-select: none; }
+    tr.week-total:hover td { background: #fef9c3; }
+    tr.week-total .tools { gap: 6px; white-space: nowrap; }
+    tr.week-total .wk-label-cell { overflow: hidden; }
+    #tbody tr.day-head td { padding-left: 4px; padding-right: 4px; }
+    #tbody tr.week-total td { padding-left: 4px; padding-right: 4px; }
+    .wl-short { display: none; }
+    tr.week-total .wk-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    #mTotalLabel { white-space: nowrap; }
+
+    /* starred rows: marked in place */
+    tr.starred td { background: #f5f3ff; }
+    tr.starred td:first-child { box-shadow: inset 4px 0 0 #8b5cf6; }
+
+    /* weekly subtotal – a paler shade of the monthly total's yellow */
+    tr.week-total td {
+      background: #fefce8; color: #854d0e; font-weight: 600; font-size: .88rem;
+      padding: 8px 12px; border-top: 1px dashed #fde047; border-bottom: 1px dashed #fde047;
+    }
+
+    /* duplicates: kept, just highlighted */
+    tr.dup { outline: 3px solid #f97316; outline-offset: -3px; }
+    tr.dup td { background: #fff7ed; border-top: 3px solid #f97316; border-bottom: 3px solid #f97316; }
+    tr.dup td:first-child { border-left: 3px solid #f97316; }
+    tr.dup td:last-child { border-right: 3px solid #f97316; }
+    .dup-tag {
+      display: inline-block; margin-top: 2px; padding: 1px 6px; border-radius: 4px;
+      background: #fb923c; color: #fff; font-size: .7rem; font-weight: 700; white-space: nowrap;
+    }
+    .item.dup { border: 3px solid #f97316; background: #fff7ed; }
+
+    /* bulk paste */
+    .bulk { margin-top: 16px; padding: 16px; border: 2px dashed #c7d2fe; border-radius: 10px; background: #f8faff; }
+    .bulk label { display: block; font-weight: 600; margin-bottom: 4px; }
+    .bulk textarea { font-family: ui-monospace, Consolas, monospace; font-size: .88rem; min-height: 130px; }
+    #bulkPreview { margin-top: 10px; font-size: .88rem; }
+    #bulkPreview .ok { color: var(--received); font-weight: 600; margin-bottom: 6px; }
+    #bulkPreview .err { color: var(--sent); margin-top: 6px; }
+    #bulkPreview .warn { color: #c2410c; margin-top: 6px; }
+    #bulkPreview table { min-width: 520px; }
+    #bulkPreview td, #bulkPreview th { padding: 5px 8px; font-size: .85rem; }
+
+    /* selection + clear */
+    .tools input.row-sel, .tools input.grp-sel, #selAll { width: 16px; height: 16px; flex: 0 0 auto; cursor: pointer; margin: 0 3px; accent-color: var(--primary); }
+    #tbody tr.selected td { background: #dbeafe; }
+    .btn-danger.armed { background: var(--sent); color: #fff; }
+    .msg .undo { margin-left: 10px; padding: 4px 12px; border: 1px solid currentColor; border-radius: 6px; background: #fff; color: inherit; font-weight: 600; cursor: pointer; }
+
+    .row-del.armed { color: #fff; background: var(--sent); border-radius: 6px; font-size: .8rem; font-weight: 600; }
+
+    .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+
+    footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 24px 16px; }
+
+    /* ---------- Tablets / phones in landscape: the full grid, compact so it still fits ---------- */
+    @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
+      .edit-table th { padding: 7px 4px; font-size: .78rem; }
+      .edit-table td { padding: 2px; }
+      .edit-table input, .edit-table select, .edit-table textarea { padding: 5px 5px; font-size: .8rem; }
+      .edit-table textarea[data-f=purpose], .edit-table input[data-f=note] { font-size: .8rem; }
+      tr.day-head .day-label { font-size: .76rem; }
+      .sums { font-size: .76rem; gap: 4px 10px; }
+      tfoot .sums { font-size: .8rem; }
+      #mTable .c-tools { width: 52px; }
+      .edit-table .c-date-cell { width: 106px; }
+      .dt-cell { gap: 2px; }
+      .dt-cell .time-in { width: 78px; padding: 4px 1px 4px 3px; font-size: .72rem; }
+      .dt-cell input[data-f=date] { width: 104px; font-size: .74rem; padding: 4px 2px; }
+      .dt-cell .date-pick { padding: 2px; font-size: .8rem; }
+      #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 62px; }   /* "Wed, 30" */
+      #mTable.flat .c-date-cell { width: 192px !important; }
+      #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 128px !important; }
+      .dl-long { display: none; }
+      .dl-short { display: inline; }
+      .wl-long { display: none; }
+      .wl-short { display: inline; }
+      .edit-table .c-time-cell { width: 74px; }
+      .edit-table .c-sent, .edit-table .c-recv { width: 64px; }
+      .edit-table .c-via { width: 96px; }
+      .edit-table .c-del { width: 28px; }
+      .edit-table .c-note { width: 12%; }
+      .star-btn { font-size: 1rem; }
+      tr.day-head td, tr.week-total td, tr.total td { padding: 4px 6px; font-size: .8rem; }
+      .dup-tag { font-size: .62rem; padding: 0 4px; }
+    }
+    /* phone held sideways: slimmer header so the grid gets the height */
+    @media (max-height: 520px) and (orientation: landscape) {
+      /* date column: "Tue,01 - 9:05P" */
+      .dt-view .dv-date, .dt-view .dv-sep, .dt-view .dv-time { display: none !important; }
+      .dt-view .dv-compact { display: inline !important; }
+      #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 88px; }
+      #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 88px !important; }
+      /* thin header + thin toolbar so the grid gets most of the height */
+      body.screen-mode header { padding: 2px 10px; }
+      body.screen-mode .screen-head h1 { font-size: 1rem; }
+      body.screen-mode .auth { width: auto; flex: 0 0 auto; }
+      body.screen-mode .profile img, body.screen-mode .profile .avatar { width: 26px; height: 26px; }
+      body.screen-mode .profile .name, body.screen-mode .profile .sync, body.screen-mode .logout,
+      body.screen-mode .g-btn, body.screen-mode .link-btn, .back-btn .lbl { display: none; }
+      .back-btn { padding: 2px 10px; font-size: .9rem; }
+      body.book-mode main { padding: 2px 6px 4px; }
+      body.book-mode #monthly { padding: 4px 8px; }
+      .month-bar { padding-bottom: 3px; gap: 4px; }
+      .month-pick { gap: 4px; }
+      .month-bar .btn { padding: 3px 8px; font-size: .8rem; }
+      .month-pick select { padding: 3px 6px; font-size: .82rem; max-width: 190px; }
+      .month-bar .lbl { display: none; }
+      .month-notes { margin-bottom: 4px; gap: 6px; }
+      .month-notes label { padding-top: 2px; font-size: .75rem; }
+      .month-notes label .lbl { display: none; }
+      .note-preview { padding: 2px 8px; font-size: .78rem; border-radius: 6px; }
+      #mMsg { margin-bottom: 4px; padding: 4px 8px; font-size: .82rem; }
+    }
+    /* phones: short date on date rows ("Tue, 01") – month & year are in the picker */
+    @media (max-width: 600px), (max-height: 520px) and (orientation: landscape) {
+      .dl-long { display: none; }
+      .dl-short { display: inline; }
+      .wl-long { display: none; }
+      .wl-short { display: inline; }
+    }
+
+    /* ---------- Phone upright: one compact line per entry (turn sideways for all columns) ---------- */
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) .edit-table, html:not(.tbl-wide) .edit-table thead, html:not(.tbl-wide) .edit-table tbody, html:not(.tbl-wide) .edit-table tfoot { display: block; width: 100%; }
+      html:not(.tbl-wide) #mTable thead { position: sticky; top: 0; z-index: 3; background: #f9fafb; border-bottom: 1px solid var(--border); }
+      html:not(.tbl-wide) #mTable tfoot { position: sticky; bottom: 0; z-index: 3; }
+      html:not(.tbl-wide) #monthly .edit-table tfoot td, html:not(.tbl-wide) #monthly .edit-table thead th { position: static; }
+
+      /* same 5 columns for the header line and every entry line:
+         ☐ · amount (− sent / + received) · purpose · via · ✕ */
+      html:not(.tbl-wide) #mTable thead tr, html:not(.tbl-wide) #tbody tr[data-id] {
+        display: grid; grid-template-columns: 18px 90px minmax(0, 1fr) 84px 46px;
+        align-items: center; gap: 0 4px; padding: 1px 4px;
+      }
+      html:not(.tbl-wide) #tbody tr[data-id] { border-bottom: 1px solid var(--border); }
+      html:not(.tbl-wide) #mTable .c-date-cell, html:not(.tbl-wide) #mTable .c-time-cell, html:not(.tbl-wide) #mTable .c-note,
+      html:not(.tbl-wide) #mTable thead .c-sent, html:not(.tbl-wide) #mTable thead .c-recv, html:not(.tbl-wide) #mTable thead .c-sv, html:not(.tbl-wide) #mTable thead .c-rv,
+      html:not(.tbl-wide) #tbody tr[data-id] .c-sent, html:not(.tbl-wide) #tbody tr[data-id] .c-recv, html:not(.tbl-wide) #tbody tr[data-id] .c-sv, html:not(.tbl-wide) #tbody tr[data-id] .c-rv,
+      html:not(.tbl-wide) #tbody tr[data-id] .star-btn, html:not(.tbl-wide) #tbody tr[data-id] .dup-tag { display: none !important; }
+      /* view mode: ☆/★ at the start of the line (where the checkbox is when editing) */
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { display: inline-block !important; font-size: .95rem; padding: 0; }
+      html:not(.tbl-wide) #mTable thead .c-amt, html:not(.tbl-wide) #mTable thead .c-via, html:not(.tbl-wide) #tbody tr[data-id] .c-amt, html:not(.tbl-wide) #tbody tr[data-id] .c-via { display: block; }
+      html:not(.tbl-wide) #mTable thead .c-amt { text-align: center; }
+      html:not(.tbl-wide) #mTable thead th { display: block; width: auto; padding: 6px 2px; font-size: .7rem; border: none; background: none; }
+      html:not(.tbl-wide) #mTable thead th.sortable::after { font-size: .7em; }
+      html:not(.tbl-wide) #tbody tr[data-id] td { display: block; width: auto; padding: 1px 0; border: none !important; background: transparent !important; box-shadow: none !important; }
+      html:not(.tbl-wide) #tbody tr[data-id] input, html:not(.tbl-wide) #tbody tr[data-id] select { padding: 5px 3px; font-size: .8rem; height: 30px; }
+      html:not(.tbl-wide) #tbody tr[data-id] textarea[data-f=purpose] { padding: 6px 4px; font-size: .8rem; line-height: 1.25; }
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap { gap: 0; }
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap .sign-btn { border-radius: 6px 0 0 6px; height: 30px; }
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap input { padding: 5px 4px 5px 3px; font-size: .85rem; text-align: left; border-radius: 0 6px 6px 0; }
+      html:not(.tbl-wide) #tbody tr[data-id] select { padding: 3px 1px; font-size: .74rem; }
+      html:not(.tbl-wide) #tbody .row-del { padding: 2px; font-size: .95rem; }
+      html:not(.tbl-wide) .tools input.row-sel, html:not(.tbl-wide) .tools input.grp-sel, html:not(.tbl-wide) #selAll { width: 14px; height: 14px; margin: 0 1px; }
+      /* 📝 (only when there's a note) + 🗑 at the end of the line */
+      html:not(.tbl-wide) #tbody tr[data-id] .c-del { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+      html:not(.tbl-wide) #tbody tr[data-id] .note-btn { display: inline-block; }
+      /* Amount header: ⇅ date · Amount · ⇅ amount */
+      html:not(.tbl-wide) #mTable thead .c-amt { display: flex !important; align-items: center; justify-content: center; gap: 3px; }
+
+      /* row colours move to the line */
+      html:not(.tbl-wide) #tbody tr.starred { background: #f5f3ff; box-shadow: inset 3px 0 0 #8b5cf6; }
+      html:not(.tbl-wide) #tbody tr.dup { background: #fff7ed; }
+      html:not(.tbl-wide) #tbody tr.selected { background: #dbeafe; }
+
+      /* date rows, week totals and the month total: one line each */
+      html:not(.tbl-wide) tr.day-head, html:not(.tbl-wide) tr.week-total, html:not(.tbl-wide) .edit-table tfoot tr {
+        display: flex; flex-wrap: nowrap; align-items: center; gap: 6px;
+        padding: 4px 6px; white-space: nowrap; font-size: .78rem;
+      }
+      html:not(.tbl-wide) tr.day-head td, html:not(.tbl-wide) tr.week-total td, html:not(.tbl-wide) .edit-table tfoot td {
+        display: block; width: auto !important; padding: 0 !important; border: none !important;
+        background: transparent !important; font-size: .78rem;
+      }
+      html:not(.tbl-wide) tr.day-head td:empty, html:not(.tbl-wide) tr.week-total td:empty, html:not(.tbl-wide) .edit-table tfoot td:empty, html:not(.tbl-wide) tr.day-head .c-time-cell, html:not(.tbl-wide) tr.week-total .c-time-cell, html:not(.tbl-wide) .edit-table tfoot .c-time-cell { display: none !important; }
+      html:not(.tbl-wide) #mTable tr.day-head .c-date-cell, html:not(.tbl-wide) #mTable tr.week-total .c-date-cell { display: block !important; width: auto; }
+      html:not(.tbl-wide) tr.day-head .day-info { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+      html:not(.tbl-wide) .day-add { float: none; padding: 1px 8px; font-size: .74rem; }
+      html:not(.tbl-wide) .day-count { font-size: .72rem; }
+      html:not(.tbl-wide) #tbody tr.day-head { background: #eef2ff; border-top: 2px solid #c7d2fe; }
+      html:not(.tbl-wide) #tbody tr.day-head.no-entries { background: #f8fafc; border-top-color: var(--border); }
+      html:not(.tbl-wide) #tbody tr.day-head.is-today { background: #dbeafe; }
+      html:not(.tbl-wide) #tbody tr.week-total { background: #fefce8; border-top: 1px dashed #fde047; border-bottom: 1px dashed #fde047; }
+      html:not(.tbl-wide) tr.week-total .wk-label-cell { flex: 1; min-width: 0; overflow: hidden; }
+      html:not(.tbl-wide) .wl-long { display: inline !important; }
+      html:not(.tbl-wide) .wl-short { display: none !important; }
+      html:not(.tbl-wide) .edit-table tfoot tr.total { background: #fef9c3; border-top: 2px solid #facc15; }
+      html:not(.tbl-wide) .edit-table tfoot tr.total.filtered { background: #dbeafe; border-top-color: #60a5fa; }
+      html:not(.tbl-wide) .edit-table tfoot tr.total.filtered.cycle { background: #f3e8ff; border-top-color: #c084fc; }
+      .cycle-bar { font-size: .76rem; padding: 3px 8px; }
+      html:not(.tbl-wide) #tbody tr.month-sep, html:not(.tbl-wide) #tbody tr.month-sep td { display: block; }
+      html:not(.tbl-wide) #tbody tr.month-sep td { padding: 4px 6px !important; font-size: .74rem; }
+      html:not(.tbl-wide) .ms-line { gap: 6px; }
+      html:not(.tbl-wide) #mTotalLabel { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+      html:not(.tbl-wide) #tbody tr:not([data-id]):not(.week-total):not(.day-head), html:not(.tbl-wide) #tbody tr:not([data-id]):not(.week-total):not(.day-head) td { display: block; }
+
+      /* ↔ expanded: the full grid, scroll sideways */
+      html.tbl-wide #mTable { min-width: 780px; }
+      html.tbl-wide .month-bar .time-toggle { display: inline-block; }
+
+      /* toolbar: narrow month picker so every button stays on one line; time column isn't shown upright */
+      .month-bar { gap: 4px; }
+      .month-pick { gap: 4px; }
+      .month-pick select { min-width: 0; max-width: none; padding: 6px 4px; font-size: .85rem; }
+      .month-bar .btn { padding: 6px 8px; }
+      html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
+      .month-bar .btn { padding: 6px 7px; }
+
+      /* month note: one thin line */
+      .month-notes { margin-bottom: 6px; gap: 6px; }
+      .month-notes label { padding-top: 3px; font-size: .75rem; }
+      .month-notes label .lbl { display: none; }
+      .note-preview { padding: 3px 8px; font-size: .78rem; border-radius: 6px; }
+    }
+
+    /* 📝 note button (upright phones, where the Note column is hidden), ↔ expand button */
+    .note-btn { display: none; border: none; background: none; cursor: pointer; font-size: .9rem; padding: 2px; line-height: 1; }
+    .wide-btn { display: none !important; }
+    .wide-btn.on { background: #dbeafe; color: #1e40af; }
+    #monthly:is(.viewmode, .readonly) .edit-table select:disabled { pointer-events: none; }   /* tap reaches the cell -> tooltip */
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      .wide-btn { display: inline-block !important; }
+    }
+    .wide-btn.lock { display: none !important; }         /* editing: the full table stays open */
+    .row-del { font-size: .95rem; }
+    /* Amount header sort icons */
+    .sort-ico { cursor: pointer; color: #94a3b8; font-size: .85em; padding: 0 2px; user-select: none; }
+    .sort-ico.on { color: var(--primary); }
+    .amt-title { cursor: pointer; }
+
+    /* ---------- popups on phones (upright + sideways): smaller text / buttons so lists fit ---------- */
+    .due-soon { white-space: nowrap; }
+    @media (max-width: 600px), (max-height: 520px) and (orientation: landscape) {
+      .overlay { padding: 8px; }
+      .modal { padding: 12px; gap: 8px; border-radius: 12px; max-height: calc(100dvh - 16px); }
+      .modal-head h3 { font-size: 1rem; }
+      .modal-x { font-size: 1rem; padding: 2px 6px; }
+      .modal .hint { font-size: .74rem; line-height: 1.35; }
+      .modal .btn { padding: 6px 12px; font-size: .82rem; }
+      .modal .btn-sm { padding: 4px 8px; font-size: .74rem; }
+      .modal input, .modal select { font-size: .82rem; }
+      .modal .err { font-size: .78rem; }
+      .modal-foot { gap: 6px; }
+      /* card management */
+      .cards-list { gap: 6px; }
+      .card-row { padding: 7px 8px; gap: 4px 8px; }
+      .card-name { font-size: .88rem; }
+      .card-meta { font-size: .7rem; line-height: 1.3; }
+      .card-row label, .card-add label { font-size: .72rem; gap: 3px; }
+      .card-row select, .card-add select { padding: 3px 4px; font-size: .78rem; }
+      .card-row .card-view, .card-row .card-del { padding: 4px 8px; font-size: .74rem; }
+      .card-add { gap: 6px; }
+      .card-add input { padding: 7px 10px; }
+      .card-add .btn { padding: 6px 12px; }
+      /* payment options, filter */
+      .mode-row .mode-name { padding: 6px 8px; font-size: .84rem; }
+      .mode-used { font-size: .7rem; min-width: 52px; }
+      .modes-add input { padding: 7px 10px; }
+      .filter-opt { padding: 6px 8px; gap: 8px; }
+      .filter-opt .fo-name { font-size: .84rem; }
+      .filter-opt .fo-sum { font-size: .74rem; }
+      .confirm-list { font-size: .82rem; }
+    }
+    /* upright: card name + dates on one line, the controls together on the next */
+    @media (max-width: 600px) {
+      .card-main { flex: 1 1 100%; }
+      .card-row .card-view { margin-left: auto; }
+      .card-add input { flex: 1 1 100%; }
+      .card-add .btn { margin-left: auto; }
+    }
+    /* sideways: every pixel of height counts */
+    @media (max-height: 520px) and (orientation: landscape) {
+      #cardsDlg .hint, #modesDlg .hint { display: none; }
+      .modal-head h3 { font-size: .92rem; }
+    }
+
+    /* the landscape button only makes sense on phones */
+    .landscape-btn { display: none !important; }
+    @media (max-width: 600px), (max-height: 520px) and (orientation: landscape) {
+      .landscape-btn { display: inline-block !important; }
+    }
+    /* phones: the one-line note hides while you scroll the entries */
+    @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
+      #monthly.list-scrolled .month-notes { display: none; }
+    }
+    /* ---------- Responsive ---------- */
+    @media (max-width: 760px) {
+      .month-bar .lbl, .back-btn .lbl { display: none; }   /* icon-only buttons so everything fits on one line */
+      /* inner screens on phones: keep the header to one line (avatar only) */
+      body.screen-mode .auth { width: auto; flex: 0 0 auto; }
+      body.screen-mode .profile .name, body.screen-mode .profile .sync, body.screen-mode .logout,
+      body.screen-mode .g-btn, body.screen-mode .link-btn { display: none; }
+      body.book-mode #monthly { padding: 10px; }
+      body.book-mode main { padding: 8px 8px 8px; }
+    }
+    @media (max-width: 700px) {
+      .menu, .menu-2 { grid-template-columns: 1fr; gap: 10px; }
+      .menu-divider { margin: 4px 0 14px; }
+      .menu button {
+        flex-direction: row;
+        justify-content: flex-start;
+        min-height: 64px;
+        padding: 14px 18px;
+      }
+      .menu button .icon { font-size: 1.6rem; }
+      .auth { width: 100%; justify-content: flex-end; }
+      body:not(.screen-mode) .header-inner { min-height: 0; gap: 22px; }
+      .summary { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+      .actions .btn { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-inner">
+      <div id="brand">
+        <h1>💰 Expense Manager</h1>
+        <p>Track your money, simply</p>
+      </div>
+      <div class="screen-head" id="screenHead" hidden>
+        <button type="button" class="back-btn" id="backBtn" title="Back">←<span class="lbl"> Back</span></button>
+        <h1 id="screenTitle"></h1>
+      </div>
+      <div class="auth" id="auth"></div>
+    </div>
+  </header>
+
+
+  <main>
+    <!-- App usage detail -->
+    <div class="info" id="homeInfo">
+      ℹ️ Keep separate expense books – <b>Monthly Expenses</b> is ready to use, and you can create more
+      (party, fuel, bank savings…). Each book has the same month-wise table with daily, weekly and monthly totals.
+      <b>Log in with Google</b> to save your data <b>encrypted</b> in your own Google Drive and use it on any device —
+      otherwise it stays in this browser only.
+    </div>
+
+    <!-- 3 large buttons (home screen only) -->
+    <nav class="menu" id="homeMenu">
+      <button data-go="books"><span class="icon">📋</span>View Your Expenses</button>
+      <button data-go="newBook"><span class="icon">➕</span>Create New Expense</button>
+      <button data-go="monthly"><span class="icon">📅</span>Monthly Expenses</button>
+    </nav>
+    <hr class="menu-divider" id="homeDivider">
+    <nav class="menu menu-2" id="homeMenu2">
+      <button data-go="shared"><span class="icon">👥</span>Shared with you</button>
+      <button data-go="favs"><span class="icon">⭐</span>Favourite</button>
+    </nav>
+
+    <!-- View your expenses: my books, then (after a divider) books shared with me -->
+    <section id="books" class="panel" hidden>
+      <h3 class="sec-title">📁 My expenses</h3>
+      <div class="books-list" id="booksList"></div>
+      <div class="msg" id="booksMsg" hidden></div>
+      <hr class="sec-divider">
+      <h3 class="sec-title">👥 Shared with you</h3>
+      <div class="books-list" id="booksShared"></div>
+    </section>
+
+    <!-- Shared with you -->
+    <section id="shared" class="panel" hidden>
+      <div class="shared-bar">
+        <button type="button" class="btn btn-primary" id="addSharedBtn">➕ Add shared expense</button>
+        <span class="hint">When someone shares an expense with your Gmail, add it here once – pick it in the Google window that opens.</span>
+      </div>
+      <div class="msg" id="sharedMsg" hidden></div>
+      <div class="books-list" id="sharedList"></div>
+    </section>
+
+    <!-- Favourite: shared expenses you starred -->
+    <section id="favs" class="panel" hidden>
+      <div class="books-list" id="favList"></div>
+    </section>
+
+    <!-- Share one expense with other people -->
+    <section id="share" class="panel" hidden>
+      <form class="share-form" id="shareForm" autocomplete="off">
+        <label for="shareEmail">Share with (Gmail address)</label>
+        <div class="share-row">
+          <input type="email" id="shareEmail" placeholder="friend@gmail.com">
+          <select id="shareRole" aria-label="Access">
+            <option value="writer">✏️ Can edit</option>
+            <option value="reader">👁 Can view</option>
+          </select>
+          <button type="submit" class="btn btn-primary" id="shareSubmit">🔗 Share</button>
+        </div>
+        <p class="hint" id="shareHint"></p>
+        <div class="err" id="shareErr" hidden></div>
+        <div class="msg" id="shareMsg" hidden></div>
+      </form>
+      <h3 class="sec-title">People with access</h3>
+      <div class="people" id="sharePeople"></div>
+    </section>
+
+    <!-- Create new expense: ask for a name, then open it -->
+    <section id="newBook" class="panel" hidden>
+      <form class="new-book" id="newBookForm" autocomplete="off">
+        <label for="bookName">Expense name</label>
+        <input type="text" id="bookName" maxlength="60" placeholder="e.g. Party expenses, Fuel expenses, Bank savings">
+        <p class="hint">It gets the same month-wise table as Monthly Expenses. You can rename it later from <b>View Your Expenses</b>.</p>
+        <div class="err" id="newBookErr" hidden></div>
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">➕ Create &amp; open</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- One expense book (Monthly Expenses or a user-created one) -->
+    <section id="monthly" class="panel" hidden>
+      <div class="month-bar" id="monthBar">
+        <div class="month-pick">
+          <button type="button" class="btn btn-light" id="prevMonth" title="Previous month">◀</button>
+          <select id="monthSelect" aria-label="Choose month"></select>
+          <button type="button" class="btn btn-light" id="nextMonth" title="Next month">▶</button>
+          <button type="button" class="btn btn-light" id="thisMonth" title="Go to this month">📍<span class="lbl"> This month</span></button>
+        </div>
+        <button type="button" class="btn btn-light edit-btn" id="editBtn" title="Edit the table">✏️<span class="lbl"> Edit</span></button>
+        <button type="button" class="btn btn-danger" id="clearBtn" title="Remove the ticked rows" disabled>🗑<span class="lbl"> Remove</span> <span id="selCount">(0)</span></button>
+        <button type="button" class="btn btn-light" id="bulkBtn" title="Paste many entries">📋<span class="lbl"> Bulk add</span></button>
+        <button type="button" class="btn btn-light landscape-btn" id="landscapeBtn" title="Landscape view – see every column">⤢</button>
+        <button type="button" class="btn btn-light wide-btn" id="wideBtn" title="Full table – scroll sideways">↔</button>
+        <button type="button" class="btn btn-light" id="filterBtn" title="Filter by payment method">🔍<span class="lbl"> Filter</span><span class="filter-count" id="filterCount" hidden></span></button>
+        <button type="button" class="btn btn-light" id="cardsBtn" title="Card management – billing cycles">⚙️</button>
+      </div>
+      <div class="filter-bar" id="filterBar" hidden>
+        <span class="filter-text" id="filterText"></span>
+        <button type="button" class="btn btn-light btn-sm" id="filterEdit">Change</button>
+        <button type="button" class="btn btn-light btn-sm" id="filterClear">✕ Clear</button>
+      </div>
+      <!-- 💳 billing cycle (shown when exactly one payment option is filtered) -->
+      <div class="cycle-bar" id="cycleBar" hidden>
+        <label class="cycle-switch" title="Show this card's billing cycle instead of the calendar month">
+          <input type="checkbox" id="cycleToggle"> 💳 <span>Billing cycle</span>
+        </label>
+        <span class="cycle-info" id="cycleInfo"></span>
+        <button type="button" class="btn btn-light btn-sm" id="cycleAdjust" title="Set this statement's exact dates">✏️ Adjust dates</button>
+        <button type="button" class="btn btn-light btn-sm" id="cycleSetup">⚙️ Set up card</button>
+        <form class="cycle-edit" id="cycleEdit" hidden>
+          <label>From <input type="date" id="ceFrom" required></label>
+          <label>To <input type="date" id="ceTo" required></label>
+          <label>Due <input type="date" id="ceDue" required></label>
+          <button type="submit" class="btn btn-primary btn-sm">Save</button>
+          <button type="button" class="btn btn-light btn-sm" id="ceReset">Reset to usual</button>
+          <button type="button" class="btn btn-light btn-sm" id="ceCancel">Cancel</button>
+          <span class="err" id="ceErr" hidden></span>
+        </form>
+      </div>
+      <div class="msg" id="mMsg" hidden></div>
+
+      <div class="bulk" id="bulkPanel" hidden>
+        <label for="bulkText">📋 Paste or type many entries</label>
+        <p class="hint">
+          Write a <b>date line</b> (<b>1st</b>, <b>4</b>, <b>01/09/2026</b>, <b>3 Sep</b>…), then one entry per line: <b>amount purpose - payment method</b>.
+          Payment method and purpose are optional (no purpose = “Unknown”). Optional <b>2026</b> / <b>September</b> lines switch year/month – otherwise the month you are viewing is used.
+          <b>400</b> or <b>-400</b> = sent &middot; <b>+1700</b> = received. The old one-line format <b>20/09/2026, 400, petrol, kiwi upi</b> works too.
+        </p>
+        <textarea id="bulkText" rows="12" placeholder="September&#10;1st&#10;200 fish - upi&#10;56 medicine - kiwi upi&#10;52 evening snacks&#10;270 chal, Ada, pencil battery&#10;&#10;3rd&#10;176 Swiggy breakfast order&#10;15 tea office&#10;+1700 from alex - phonepe upi"></textarea>
+        <div id="bulkPreview"></div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="bulkAdd" disabled>Add entries</button>
+          <button type="button" class="btn btn-light" id="bulkClose">Close</button>
+        </div>
+      </div>
+
+      <div class="month-notes">
+        <label for="monthNote">📝<span class="lbl"> Notes</span> <span class="saved" id="noteSaved"></span></label>
+        <button type="button" class="note-preview" id="notePreview" title="Click to open the full note"></button>
+        <textarea id="monthNote" rows="4" hidden></textarea>
+      </div>
+
+      <div class="table-wrap">
+        <table class="edit-table hide-time" id="mTable">
+          <thead id="mHead">
+            <tr>
+              <th class="c-tools"><input type="checkbox" id="selAll" title="Select all in this month"></th>
+              <th class="c-date-cell sortable" data-sort="date">Date</th>
+              
+              <th class="c-sent sortable num" data-sort="sent">Sent ₹</th>
+              <th class="c-recv sortable num" data-sort="received">Recv ₹</th>
+              <th class="c-amt"><span class="sort-ico" data-sort="date" id="amtSortDate" title="Sort by date">⇅</span><span class="amt-title" data-sort="amount" title="Sort by amount">Amount</span><span class="sort-ico" data-sort="amount" id="amtSortAmt" title="Sort by amount (sent first, then received)">⇅</span></th>
+              <th class="c-purpose sortable" data-sort="purpose">Purpose</th>
+              <th class="c-sv sortable" data-sort="sentVia">Send Via</th>
+              <th class="c-rv sortable" data-sort="receivedVia">Recv Via</th>
+              <th class="c-via sortable" data-sort="via">Via</th>
+              <th class="c-note sortable" data-sort="note">Note</th>
+              <th class="c-del"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+          <tfoot>
+            <tr class="total">
+              <td colspan="2" id="mTotalLabel">Total</td>
+              <td class="c-time-cell"></td>
+              <td colspan="6" class="tot-sums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net">Net: <span id="mNet">₹0.00</span></span></div></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>    </section>
+  </main>
+
+  <!-- Confirmation popup (delete / remove) -->
+  <div class="overlay" id="confirmDlg" hidden>
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
+      <div class="modal-head">
+        <h3 id="confirmTitle">Delete?</h3>
+        <button type="button" class="modal-x" id="confirmX" title="Close">✕</button>
+      </div>
+      <div id="confirmBody"></div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-light" id="confirmCancel">Cancel</button>
+        <button type="button" class="btn btn-danger-solid" id="confirmOk">Delete</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ⚙️ Card management: credit cards and their billing cycles -->
+  <div class="overlay" id="cardsDlg" hidden>
+    <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="cardsTitle">
+      <div class="modal-head">
+        <h3 id="cardsTitle">💳 Card management</h3>
+        <button type="button" class="modal-x" id="cardsClose" title="Close">✕</button>
+      </div>
+      <p class="hint">Set each credit card's billing cycle yourself: the cycle <b>starts</b> on the start day and ends the day before it next month; the bill is <b>due</b> on the due day after the statement.</p>
+      <div class="cards-list" id="cardsList"></div>
+      <form class="card-add" id="cardAdd" autocomplete="off">
+        <input type="text" id="cardName" list="cardNames" maxlength="40" placeholder="Card, e.g. Amazon Pay CC">
+        <datalist id="cardNames"></datalist>
+        <label>starts day <select id="cardStart"></select></label>
+        <label>due day <select id="cardDue"></select></label>
+        <button type="submit" class="btn btn-primary">➕ Add card</button>
+      </form>
+      <div class="err" id="cardsErr" hidden></div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-light" id="cardsModes">Payment options…</button>
+        <button type="button" class="btn btn-primary" id="cardsDone">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔍 Filter popup: show only some payment methods -->
+  <div class="overlay" id="filterDlg" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
+      <div class="modal-head">
+        <h3 id="filterTitle">🔍 Filter by payment method</h3>
+        <button type="button" class="modal-x" id="filterClose" title="Close">✕</button>
+      </div>
+      <p class="hint" id="filterHint"></p>
+      <div class="filter-quick">
+        <button type="button" class="btn btn-light btn-sm" id="filterAll">Select all</button>
+        <button type="button" class="btn btn-light btn-sm" id="filterNone">Show everything</button>
+      </div>
+      <div class="filter-list" id="filterList"></div>
+      <div class="modal-foot"><button type="button" class="btn btn-primary" id="filterDone">Done</button></div>
+    </div>
+  </div>
+
+  <!-- ⚙ Settings popup: payment options for the Via column -->
+  <div class="overlay" id="modesDlg" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modesTitle">
+      <div class="modal-head">
+        <h3 id="modesTitle">⚙️ Payment options</h3>
+        <button type="button" class="modal-x" id="modesClose" title="Close">✕</button>
+      </div>
+      <p class="hint">These appear in the <b>Via</b> column. Rename one and every entry using it follows; delete one and existing entries keep their value.</p>
+      <div class="modes-list" id="modesList"></div>
+      <form class="modes-add" id="modesAdd" autocomplete="off">
+        <input type="text" id="modesNew" maxlength="40" placeholder="New option, e.g. PhonePe UPI">
+        <button type="submit" class="btn btn-primary">➕ Add</button>
+      </form>
+      <div class="err" id="modesErr" hidden></div>
+      <div class="modal-foot"><button type="button" class="btn btn-light" id="modesDone">Done</button></div>
+    </div>
+  </div>
+
+  <footer>Expense Manager &middot; encrypted (AES-256) &middot; stored in your Google Drive, never on our servers</footer>
+
+  <script src="https://accounts.google.com/gsi/client" async></script>
+
+  <script>
+    const KEY = 'expenses_v1';
+    const $ = id => document.getElementById(id);
+
+    let expenses = load();
+
+    function load() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+      catch { return []; }
+    }
+    // Logged in -> encrypted save to Google Drive; guest -> this browser only
+    function save() { persist(); }
+
+    const money = n => '₹' + (Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmtDate = d => new Date(d + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    const monthLabel = key => {
+      const [y, m] = key.split('-');
+      return new Date(y, m - 1, 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+    };
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+
+    /* ---------- Expense books ("Monthly Expenses" + user-created ones) ---------- */
+    const BOOKS_KEY = 'books_v1';
+    const DEFAULT_BOOK = { id: 'monthly', name: 'Monthly Expenses', created: 0 };
+    // Monthly Expenses always exists (first); anything else is user-created
+    const normBooks = b => !Array.isArray(b) ? [{ ...DEFAULT_BOOK }]
+      : b.some(x => x.id === 'monthly') ? b : [{ ...DEFAULT_BOOK }, ...b];
+    let books = loadBooks();
+    function loadBooks() {
+      try { return normBooks(JSON.parse(localStorage.getItem(BOOKS_KEY))); } catch { return [{ ...DEFAULT_BOOK }]; }
+    }
+    let curBook = 'monthly';
+    const bookOf = e => e.book || 'monthly';                  // entries saved before books existed -> Monthly
+
+    /* Shared books live in their own encrypted Drive file (not in your private app-data file).
+       sharedRefs (saved in your private file) remembers which ones you own or were given:
+       { id: <Drive file id>, name, ownerName, ownerEmail, role: 'owner'|'writer'|'reader', fav } */
+    let sharedRefs = [];
+    const SH = 'sh_';                                         // in-app book id of a shared book = 'sh_' + fileId
+    const isShared = id => String(id).startsWith(SH);
+    const refOf = id => sharedRefs.find(r => SH + r.id === id);
+    const bookName = id => isShared(id) ? (refOf(id)?.name || 'Shared expense') : (books.find(b => b.id === id)?.name || 'Expenses');
+    const bookIcon = id => id === 'monthly' ? '📅' : isShared(id) ? '👥' : '📒';
+    const canEdit = id => !isShared(id) || ['owner', 'writer'].includes(refOf(id)?.role);
+    const bookExists = id => isShared(id) ? !!refOf(id) : books.some(b => b.id === id);
+
+    /* ---------- Screens: home · books list · new book · one book ---------- */
+    let screen = 'home';
+    const navStack = [];
+
+    function openScreen(name, push = true) {
+      pruneBlank();
+      if (push && name !== screen) navStack.push(screen);
+      screen = name;
+      const home = name === 'home';
+      $('brand').hidden = !home;
+      $('screenHead').hidden = home;
+      $('homeInfo').hidden = !home;
+      $('homeMenu').hidden = !home;
+      $('homeMenu2').hidden = !home;
+      $('homeDivider').hidden = !home;
+      ['books', 'newBook', 'shared', 'favs', 'share'].forEach(s => $(s).hidden = name !== s);
+      $('monthly').hidden = name !== 'book';
+      document.body.classList.toggle('screen-mode', !home);
+      document.body.classList.toggle('book-mode', name === 'book');
+      $('screenTitle').textContent =
+        name === 'books' ? '📋 Your Expenses' :
+        name === 'newBook' ? '➕ Create New Expense' :
+        name === 'shared' ? '👥 Shared with you' :
+        name === 'favs' ? '⭐ Favourite' :
+        name === 'share' ? `🔗 Share “${bookName(shareTarget)}”` :
+        name === 'book' ? `${bookIcon(curBook)} ${bookName(curBook)}` : '';
+      if (name === 'book' && !canEdit(curBook)) $('screenTitle').insertAdjacentHTML('beforeend', ' <span class="view-only-tag">👁 view only</span>');
+      if (name === 'books') renderBooks();
+      if (name === 'shared') renderShared();
+      if (name === 'favs') renderFavs();
+      if (name === 'share') renderShare();
+      if (name === 'book') renderMonthly();
+      if (name === 'newBook') {
+        $('bookName').value = '';
+        $('newBookErr').hidden = true;
+        setTimeout(() => $('bookName').focus(), 0);
+      }
+      window.scrollTo(0, 0);
+    }
+
+    function openBook(id, push = true) {
+      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); }
+      curBook = id;
+      openScreen('book', push);
+    }
+
+    $('backBtn').addEventListener('click', () => openScreen(navStack.pop() || 'home', false));
+    document.querySelectorAll('#homeMenu button, #homeMenu2 button').forEach(b => b.addEventListener('click', () => {
+      if (b.dataset.go === 'monthly') openBook('monthly');
+      else openScreen(b.dataset.go);
+    }));
+
+    /* ---------- View your expenses: list of books ---------- */
+    function renderBooks() {
+      const m = today().slice(0, 7);
+      $('booksList').innerHTML = books.map(b => {
+        const items = expenses.filter(e => bookOf(e) === b.id);
+        let s = 0, r = 0;
+        items.filter(e => e.date.startsWith(m)).forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
+        const last = items.reduce((a, e) => e.date > a ? e.date : a, '');
+        return `<div class="book-card" data-book="${b.id}" title="Open ${esc(b.name)}">
+          <div class="book-icon">${bookIcon(b.id)}</div>
+          <div class="book-main">
+            <div class="book-name">${esc(b.name)}${b.id === 'monthly' ? ' <span class="default-tag">default</span>' : ''}</div>
+            <div class="book-meta">${items.length} entr${items.length === 1 ? 'y' : 'ies'} · last entry ${last ? fmtDate(last) : '—'}</div>
+            <div class="book-meta">${monthLabel(m)}: <span class="sent">− ${money(s)}</span> · <span class="received">+ ${money(r)}</span></div>
+          </div>
+          <div class="book-actions">
+            ${b.id !== 'monthly' ? `<button type="button" class="btn btn-light btn-sm" data-act="share" title="Share with someone">🔗</button>` : ''}
+            <button type="button" class="btn btn-light btn-sm" data-act="rename" title="Rename">✏️</button>
+            ${b.id !== 'monthly' ? `<button type="button" class="btn btn-danger btn-sm" data-act="delete" title="Delete this expense book">🗑</button>` : ''}
+          </div>
+        </div>`;
+      }).join('') +
+      sharedRefs.filter(r => r.role === 'owner').map(sharedCard).join('') +
+      `<button type="button" class="book-card add-book" id="addBookCard"><span class="book-icon">➕</span><span class="book-name">Create new expense</span></button>`;
+
+      const withMe = sharedRefs.filter(r => r.role !== 'owner');
+      $('booksShared').innerHTML = withMe.length ? withMe.map(sharedCard).join('')
+        : `<div class="empty-card">${user ? 'Nothing shared with you yet. Open <b>Shared with you</b> on the home screen to add one.' : 'Log in with Google to see expenses shared with you.'}</div>`;
+    }
+
+    $('booksList').addEventListener('click', ev => {
+      if (ev.target.closest('#addBookCard')) { openScreen('newBook'); return; }
+      if (ev.target.closest('.book-card[data-shared]')) return;        // handled by the shared-card handler
+      const card = ev.target.closest('.book-card[data-book]');
+      if (!card) return;
+      const id = card.dataset.book, act = ev.target.closest('[data-act]');
+      if (!act) { openBook(id); return; }
+
+      if (act.dataset.act === 'share') { openShareScreen(id); return; }
+
+      if (act.dataset.act === 'rename') {
+        const name = (prompt('Rename expense', bookName(id)) || '').trim();
+        if (!name || name === bookName(id)) return;
+        if (books.some(b => b.id !== id && b.name.toLowerCase() === name.toLowerCase())) { booksFlash(`"${name}" already exists.`); return; }
+        books.find(b => b.id === id).name = name;
+        save();
+        renderBooks();
+        return;
+      }
+      // delete: needs a second click
+      const n = expenses.filter(e => bookOf(e) === id).length;
+      if (!act.classList.contains('armed')) {
+        act.classList.add('armed');
+        act.textContent = n ? `Delete + ${n} entries?` : 'Delete?';
+        setTimeout(() => { if (act.isConnected) { act.classList.remove('armed'); act.textContent = '🗑'; } }, 3000);
+        return;
+      }
+      const name = bookName(id);
+      books = books.filter(b => b.id !== id);
+      expenses = expenses.filter(e => bookOf(e) !== id);
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(id + '|')) delete monthNotes[k]; });
+      save();
+      renderBooks();
+      booksFlash(`🗑 Deleted "${name}".`);
+    });
+
+    function booksFlash(text) {
+      $('booksMsg').textContent = text;
+      $('booksMsg').hidden = false;
+      clearTimeout(booksFlash.t);
+      booksFlash.t = setTimeout(() => $('booksMsg').hidden = true, 3000);
+    }
+
+    /* ---------- Shared with you · Favourite ---------- */
+    const roleLabel = r => r === 'owner' ? '👑 Owner' : r === 'writer' ? '✏️ Can edit' : '👁 Can view';
+
+    function sharedCard(r) {
+      const mine = r.role === 'owner';
+      return `<div class="book-card" data-shared="${esc(r.id)}" title="Open ${esc(r.name)}">
+        <div class="book-icon">👥</div>
+        <div class="book-main">
+          <div class="book-name">${esc(r.name)} <span class="shared-tag">${mine ? 'shared by you' : 'shared'}</span></div>
+          <div class="book-meta">${mine ? 'You own this' : 'by ' + esc(r.ownerName || r.ownerEmail || 'someone') +
+            (r.ownerEmail && r.ownerEmail !== r.ownerName ? ` <small>(${esc(r.ownerEmail)})</small>` : '')} · <span class="role-tag">${roleLabel(r.role)}</span></div>
+        </div>
+        <div class="book-actions">
+          ${mine
+            ? `<button type="button" class="btn btn-light btn-sm" data-act="share" title="Manage sharing">🔗</button>
+               <button type="button" class="btn btn-danger btn-sm" data-act="delete-shared" title="Delete for everyone">🗑</button>`
+            : `<button type="button" class="btn btn-light btn-sm fav-btn ${r.fav ? 'on' : ''}" data-act="fav" title="${r.fav ? 'Remove from Favourite' : 'Add to Favourite'}">${r.fav ? '★' : '☆'}</button>
+               <button type="button" class="btn btn-light btn-sm" data-act="unlink" title="Remove from my list (the owner keeps it)">✕</button>`}
+        </div>
+      </div>`;
+    }
+
+    function renderShared() {
+      const list = sharedRefs.filter(r => r.role !== 'owner');
+      $('addSharedBtn').disabled = !user;
+      $('sharedList').innerHTML = !user
+        ? '<div class="empty-card">🔒 Log in with Google to see expenses other people shared with you.</div>'
+        : list.length ? list.map(sharedCard).join('')
+        : '<div class="empty-card">Nothing here yet. When someone shares an expense with you, tap <b>➕ Add shared expense</b> and pick it.</div>';
+    }
+
+    function renderFavs() {
+      const list = sharedRefs.filter(r => r.fav && r.role !== 'owner');
+      $('favList').innerHTML = list.length ? list.map(sharedCard).join('')
+        : '<div class="empty-card">No favourites yet. Tap <b>☆</b> on an expense in <b>Shared with you</b> to add it here.</div>';
+    }
+
+    function sharedFlash(text, isErr) {
+      const m = $('sharedMsg');
+      m.textContent = text;
+      m.style.background = isErr ? '#fee2e2' : '';
+      m.style.color = isErr ? '#991b1b' : '';
+      m.hidden = false;
+      clearTimeout(sharedFlash.t);
+      sharedFlash.t = setTimeout(() => m.hidden = true, 5000);
+    }
+
+    // one click handler for every list that shows shared cards
+    ['booksList', 'booksShared', 'sharedList', 'favList'].forEach(listId => $(listId).addEventListener('click', async ev => {
+      const card = ev.target.closest('.book-card[data-shared]');
+      if (!card) return;
+      const r = sharedRefs.find(x => x.id === card.dataset.shared);
+      if (!r) return;
+      const act = ev.target.closest('[data-act]')?.dataset.act;
+      const rerender = () => { if (screen === 'books') renderBooks(); if (screen === 'shared') renderShared(); if (screen === 'favs') renderFavs(); };
+
+      if (!act) { openShared(r.id); return; }
+      if (act === 'share') { openShareScreen(SH + r.id); return; }
+      if (act === 'fav') { r.fav = !r.fav; save(); rerender(); return; }
+
+      const btn = ev.target.closest('[data-act]');
+      if (!btn.classList.contains('armed')) {                  // every removal needs a second click
+        btn.classList.add('armed');
+        btn.textContent = act === 'unlink' ? 'Remove?' : 'Delete for all?';
+        setTimeout(() => { if (btn.isConnected) { btn.classList.remove('armed'); btn.textContent = act === 'unlink' ? '✕' : '🗑'; } }, 3000);
+        return;
+      }
+      if (act === 'delete-shared') {
+        try { await gfetch(`${DRIVE}/${r.id}`, { method: 'DELETE' }); }
+        catch (e) { if (!/404/.test(e.message)) { alert('Could not delete: ' + e.message); return; } }
+      }
+      forgetShared(r.id);
+      save();
+      rerender();
+    }));
+
+    // drop a shared book from this app (its entries/notes only live in memory here)
+    function forgetShared(fileId) {
+      sharedRefs = sharedRefs.filter(x => x.id !== fileId);
+      expenses = expenses.filter(e => bookOf(e) !== SH + fileId);
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(SH + fileId + '|')) delete monthNotes[k]; });
+      delete sharedFiles[fileId];
+    }
+
+    $('addSharedBtn').addEventListener('click', async () => {
+      if (!user) return;
+      if (!pickerConfigured()) {
+        sharedFlash('The Google file picker is not set up yet – add GOOGLE_API_KEY and GOOGLE_APP_ID in index.html (see README).', true);
+        return;
+      }
+      try {
+        const ids = await openPicker();
+        let added = 0;
+        for (const id of ids) {
+          if (sharedRefs.some(r => r.id === id)) continue;
+          try { await loadSharedFile(id); added++; }
+          catch (e) { console.error(e); sharedFlash(`That file is not a shared expense (${e.message}).`, true); }
+        }
+        if (added) { save(); renderShared(); sharedFlash(`✅ Added ${added} shared expense${added > 1 ? 's' : ''}.`); }
+      } catch (e) { sharedFlash('Could not open the Google file picker: ' + e.message, true); }
+    });
+
+    /* ---------- Share screen: owner shares a book with a Gmail (can view / can edit) ---------- */
+    let shareTarget = null;          // book id being shared ('b…' own book, or 'sh_…' already shared)
+
+    function openShareScreen(id) {
+      if (!user) { alert('Log in with Google first – shared expenses are stored in your Google Drive.'); return; }
+      shareTarget = id;
+      openScreen('share');
+    }
+
+    function renderShare() {
+      const already = isShared(shareTarget);
+      $('shareEmail').value = '';
+      $('shareErr').hidden = true;
+      $('shareMsg').hidden = true;
+      $('shareHint').innerHTML = already
+        ? 'Google emails them an invite. They open this app → <b>Shared with you</b> → <b>➕ Add shared expense</b>.'
+        : 'Sharing moves this expense (all months, notes included) into its own encrypted file in your Google Drive, so the people you add can open it. You stay the owner.';
+      renderPeople();
+    }
+
+    async function renderPeople() {
+      const box = $('sharePeople');
+      if (!isShared(shareTarget)) { box.innerHTML = '<div class="empty-card">Only you, for now.</div>'; return; }
+      box.innerHTML = '<div class="hint">Loading…</div>';
+      try {
+        const fileId = shareTarget.slice(SH.length);
+        const perms = (await (await gfetch(`${DRIVE}/${fileId}/permissions?fields=permissions(id,emailAddress,displayName,role)`)).json()).permissions || [];
+        box.innerHTML = perms.map(p => `<div class="person">
+            <div class="who">${esc(p.displayName || p.emailAddress)}<small>${esc(p.emailAddress || '')}</small></div>
+            <span class="role-tag">${roleLabel(p.role)}</span>
+            ${p.role === 'owner' ? '' : `<button type="button" class="btn btn-light btn-sm" data-perm="${esc(p.id)}" title="Remove access">✕</button>`}
+          </div>`).join('') || '<div class="empty-card">Only you, for now.</div>';
+      } catch (e) { box.innerHTML = `<div class="err">Could not load: ${esc(e.message)}</div>`; }
+    }
+
+    $('sharePeople').addEventListener('click', async ev => {
+      const b = ev.target.closest('[data-perm]');
+      if (!b) return;
+      if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Remove?'; return; }
+      try { await gfetch(`${DRIVE}/${shareTarget.slice(SH.length)}/permissions/${b.dataset.perm}`, { method: 'DELETE' }); }
+      catch (e) { alert('Could not remove access: ' + e.message); }
+      renderPeople();
+    });
+
+    $('shareForm').addEventListener('submit', async ev => {
+      ev.preventDefault();
+      const email = $('shareEmail').value.trim(), role = $('shareRole').value;
+      const err = m => { $('shareErr').textContent = m; $('shareErr').hidden = false; };
+      $('shareErr').hidden = true;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Enter a valid email address.');
+      if (email.toLowerCase() === user.email.toLowerCase()) return err('That is your own address.');
+      $('shareSubmit').disabled = true;
+      try {
+        if (!isShared(shareTarget)) shareTarget = await convertToShared(shareTarget);   // first share: move into its own file
+        const fileId = shareTarget.slice(SH.length);
+        const note = `${user.name} shared the expense "${bookName(shareTarget)}" with you. ` +
+          `Open Expense Manager (${location.origin}${location.pathname}) → Shared with you → Add shared expense.`;
+        await gfetch(`${DRIVE}/${fileId}/permissions?sendNotificationEmail=true&emailMessage=${encodeURIComponent(note)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'user', role, emailAddress: email })
+        });
+        $('screenTitle').textContent = `🔗 Share “${bookName(shareTarget)}”`;
+        $('shareEmail').value = '';
+        $('shareMsg').textContent = `✅ Shared with ${email} (${role === 'writer' ? 'can edit' : 'can view'}). Google has emailed them.`;
+        $('shareMsg').hidden = false;
+        renderShare(); $('shareMsg').hidden = false;
+      } catch (e) {
+        console.error(e);
+        err('Could not share: ' + e.message);
+      } finally {
+        $('shareSubmit').disabled = false;
+      }
+    });
+
+    /* ---------- Create new expense: name -> new book, opened straight away ---------- */
+    $('newBookForm').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const name = $('bookName').value.trim();
+      const err = msg => { $('newBookErr').textContent = msg; $('newBookErr').hidden = false; $('bookName').focus(); };
+      if (!name) return err('Please enter a name for this expense.');
+      if (books.some(b => b.name.toLowerCase() === name.toLowerCase())) return err(`"${name}" already exists – pick another name.`);
+      const b = { id: 'b' + newId(), name, created: Date.now() };
+      books.push(b);
+      save();
+      openBook(b.id, false);          // Back from the new book goes to where "Create" was opened from
+    });
+
+    const today = () => new Date().toISOString().slice(0, 10);
+
+    /* ---------- Payment options for the Via column (managed list, ⚙ settings) ---------- */
+    const MODES_KEY = 'viaOptions_v1';
+    const OLD_MODES_KEY = 'payModes_v1';
+    const DEFAULT_MODES = ['Cash'];                            // a new setup starts with just Cash
+
+    // de-duplicate (case-insensitive), keep order, drop blanks
+    const uniqModes = list => {
+      const seen = new Set();
+      return list.map(m => (m || '').trim()).filter(m => m && !seen.has(m.toLowerCase()) && seen.add(m.toLowerCase()));
+    };
+    // saved list, or (data from before this list existed) Cash + old custom ones + every name already used
+    const migrateModes = (opts, oldCustom, entries) => Array.isArray(opts) ? uniqModes(opts)
+      : uniqModes([...DEFAULT_MODES, ...(oldCustom || []), ...(entries || []).flatMap(e => [e.sentVia, e.receivedVia])]);
+
+    let payModes = loadModes();
+    function loadModes() {
+      let opts = null, old = [];
+      try { opts = JSON.parse(localStorage.getItem(MODES_KEY)); } catch {}
+      try { old = JSON.parse(localStorage.getItem(OLD_MODES_KEY)) || []; } catch {}
+      return migrateModes(opts, old, load());
+    }
+
+    const allModes = () => payModes;
+    const findMode = name => payModes.find(m => m.toLowerCase() === name.trim().toLowerCase());
+    function addMode(name) {
+      const existing = findMode(name);
+      if (existing) return existing;
+      payModes.push(name.trim());
+      saveVault();
+      return name.trim();
+    }
+    // the list, plus the row's own value if it was removed from the list (entries keep their value)
+    const modeOptions = sel => '<option value="">—</option>' +
+      payModes.map(m => `<option value="${esc(m)}"${m === sel ? ' selected' : ''}>${esc(m)}</option>`).join('') +
+      (sel && !payModes.includes(sel) ? `<option value="${esc(sel)}" selected>${esc(sel)}</option>` : '') +
+      '<option value="__manage__">⚙ Payment options…</option>';
+
+    function refreshModeSelects() {
+      document.querySelectorAll('select[data-f$="Via"]').forEach(s => {
+        const v = s.value.startsWith('__') ? (s.dataset.prev || '') : s.value;
+        s.innerHTML = modeOptions(v);
+        s.value = v;
+      });
+    }
+
+    // "⚙ Payment options…" in any Via dropdown opens the popup
+    document.addEventListener('input', ev => {
+      if (ev.target.matches?.('select[data-f$="Via"]') && ev.target.value.startsWith('__')) ev.stopImmediatePropagation();
+    }, true);
+    document.addEventListener('change', ev => {
+      const s = ev.target;
+      if (!s.matches?.('select[data-f$="Via"]')) return;
+      if (!s.value.startsWith('__')) { s.dataset.prev = s.value; return; }
+      ev.stopImmediatePropagation();
+      if (s.value === '__manage__') { s.value = s.dataset.prev || ''; openModesDialog(); return; }
+      const name = (prompt('New payment method\n(e.g. Kiwi YesBank UPI, PhonePe IndianBank UPI, PhonePe Wallet):') || '').trim();
+      if (!name) { s.value = s.dataset.prev || ''; return; }
+      const m = addMode(name);
+      refreshModeSelects();
+      s.value = m;
+      s.dataset.prev = m;
+      s.dispatchEvent(new Event('input', { bubbles: true }));
+    }, true);
+
+    /* ⚙ popup: add / rename / delete payment options */
+    const modeUse = name => expenses.filter(e => e.sentVia === name || e.receivedVia === name).length;
+
+    function openModesDialog() {
+      $('modesErr').hidden = true;
+      $('modesNew').value = '';
+      renderModes();
+      $('modesDlg').hidden = false;
+      setTimeout(() => $('modesNew').focus(), 0);
+    }
+    function closeModesDialog() {
+      $('modesDlg').hidden = true;
+      refreshModeSelects();
+    }
+    function renderModes() {
+      $('modesList').innerHTML = payModes.length ? payModes.map((m, i) => {
+        const n = modeUse(m);
+        return `<div class="mode-row" data-i="${i}">
+          <input type="text" class="mode-name" value="${esc(m)}" maxlength="40" aria-label="Option name">
+          <span class="mode-used">${n ? `${n} entr${n === 1 ? 'y' : 'ies'}` : 'unused'}</span>
+          <button type="button" class="btn btn-danger btn-sm mode-del" title="Delete option">🗑</button>
+        </div>`;
+      }).join('') : '<div class="empty-card">No options yet – add one below.</div>';
+    }
+    const modesError = msg => { $('modesErr').textContent = msg; $('modesErr').hidden = !msg; };
+
+    $('modesAdd').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const name = $('modesNew').value.trim();
+      if (!name) return modesError('Type a name first, e.g. PhonePe UPI.');
+      if (findMode(name)) return modesError(`"${findMode(name)}" is already in the list.`);
+      modesError('');
+      payModes.push(name);
+      saveVault();
+      $('modesNew').value = '';
+      renderModes();
+      $('modesNew').focus();
+    });
+
+    // rename: applies when you leave the box or press Enter; entries using the old name follow
+    $('modesList').addEventListener('change', ev => {
+      const inp = ev.target.closest('.mode-name');
+      if (!inp) return;
+      const i = +inp.closest('.mode-row').dataset.i, old = payModes[i], name = inp.value.trim();
+      if (name === old) return;
+      if (!name) { inp.value = old; return modesError('A name can’t be empty – use 🗑 to delete it.'); }
+      if (payModes.some((m, j) => j !== i && m.toLowerCase() === name.toLowerCase())) { inp.value = old; return modesError(`"${name}" is already in the list.`); }
+      modesError('');
+      payModes[i] = name;
+      if (viaFilter.delete(old)) viaFilter.add(name);        // a filter on the old name keeps working
+      if (cardCycles[old]) { cardCycles[name] = cardCycles[old]; delete cardCycles[old]; }   // and its billing cycle
+      expenses.forEach(e => {
+        if (!canEdit(bookOf(e))) return;                     // view-only shared entries stay as they are
+        if (e.sentVia === old) e.sentVia = name;
+        if (e.receivedVia === old) e.receivedVia = name;
+      });
+      saveEverything();
+      renderModes();
+    });
+    $('modesList').addEventListener('keydown', ev => { if (ev.key === 'Enter' && ev.target.matches('.mode-name')) { ev.preventDefault(); ev.target.blur(); } });
+
+    // delete: second click confirms; entries that use it keep the name
+    $('modesList').addEventListener('click', ev => {
+      const b = ev.target.closest('.mode-del');
+      if (!b) return;
+      const i = +b.closest('.mode-row').dataset.i;
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed');
+        b.textContent = 'Delete?';
+        setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = '🗑'; } }, 3000);
+        return;
+      }
+      payModes.splice(i, 1);
+      saveVault();
+      renderModes();
+    });
+
+    /* 🔍 filter by payment method (one or several), totals follow the filter */
+    const viaName = v => v || '— No payment method';
+
+    // every payment option + any other name used this month + "no payment method"
+    function filterChoices() {
+      const items = periodItems();
+      const used = items.map(e => e.sentVia || e.receivedVia || '');
+      const names = uniqModes([...payModes, ...used, ...viaFilter]);
+      return [...names, ''].map(v => {
+        const mine = items.filter(e => (e.sentVia || e.receivedVia || '') === v);
+        return { v, n: mine.length, sent: mine.reduce((a, e) => a + (+e.sent || 0), 0), recv: mine.reduce((a, e) => a + (+e.received || 0), 0) };
+      }).filter(c => c.v || c.n);                         // "no payment method" only when some entries have none
+    }
+
+    function renderFilterList() {
+      $('filterHint').innerHTML = `Pick one or more for <b>${esc(monthLabel(curMonth))}</b> – the table and every total then count only those.`;
+      $('filterList').innerHTML = filterChoices().map(c => `
+        <label class="filter-opt ${viaFilter.has(c.v) ? 'on' : ''}">
+          <input type="checkbox" data-v="${esc(c.v)}"${viaFilter.has(c.v) ? ' checked' : ''}>
+          <span class="fo-name">${esc(viaName(c.v))}</span>
+          <span class="fo-sum">${c.sent ? `<span class="sent">− ${money(c.sent)}</span>` : ''}${c.recv ? ` <span class="received">+ ${money(c.recv)}</span>` : ''}
+            <small>${c.n ? `${c.n} entr${c.n === 1 ? 'y' : 'ies'}` : 'none this month'}</small></span>
+        </label>`).join('');
+    }
+
+    function updateFilterUI() {
+      const on = viaFilter.size > 0;
+      $('filterBtn').classList.toggle('on', on);
+      $('filterCount').hidden = !on;
+      $('filterCount').textContent = viaFilter.size;
+      $('filterBar').hidden = !on;
+      $('filterText').innerHTML = on ? '🔍 Showing only: ' + [...viaFilter].map(v => `<b>${esc(viaName(v))}</b>`).join(', ') : '';
+      updateCycleUI();
+    }
+
+    // 💳 billing-cycle bar: only for a single filtered payment option
+    const dueText = iso => {
+      const left = Math.round((dateOf(iso) - dateOf(today())) / 864e5);
+      const when = left < 0 ? `was due ${-left} day${left === -1 ? '' : 's'} ago` : left === 0 ? 'due today' : `in ${left} day${left === 1 ? '' : 's'}`;
+      return `<span class="${left >= 0 && left <= 5 ? 'due-soon' : ''}">(${when})</span>`;
+    };
+
+    function updateCycleUI() {
+      const card = cycleCard();
+      $('cycleBar').hidden = !card;
+      $('mTotalLabel').parentElement.classList.toggle('cycle', cycleOn());
+      $('cycleEdit').hidden = true;
+      if (!card) return;
+      const setUp = isCard(card);
+      $('cycleToggle').disabled = !setUp;
+      $('cycleToggle').checked = cycleView && setUp;
+      $('cycleSetup').hidden = setUp;
+      $('cycleAdjust').hidden = !cycleOn() || !canEdit(curBook);
+      if (!setUp) { $('cycleInfo').innerHTML = `<b>${esc(card)}</b> has no billing cycle yet – set it up to see bills.`; return; }
+      if (!cycleView) {
+        const c = cycleOf(card);
+        $('cycleInfo').innerHTML = `Cycle starts day <b>${c.start}</b> · due day <b>${c.due}</b> – turn on to see this card by statement.`;
+        return;
+      }
+      const p = period();
+      $('cycleInfo').innerHTML = `<b>${shortDate(p.from)} – ${shortDate(p.to)}</b> · statement ${shortDate(p.to)} · ` +
+        `bill due <b>${shortDate(p.due)}</b> ${dueText(p.due)}${p.adjusted ? ' <span class="adj-tag">✏️ adjusted</span>' : ''}`;
+    }
+
+    $('cycleToggle').addEventListener('change', ev => { cycleView = ev.target.checked; applyFilter(); });
+    $('cycleSetup').addEventListener('click', () => openCardsDialog(cycleCard()));
+
+    // ✏️ exact dates for this one statement (banks sometimes shift the dates)
+    $('cycleAdjust').addEventListener('click', () => {
+      const p = period();
+      $('ceFrom').value = p.from; $('ceTo').value = p.to; $('ceDue').value = p.due;
+      $('ceErr').hidden = true;
+      $('ceReset').hidden = !p.adjusted;
+      $('cycleEdit').hidden = false;
+    });
+    $('ceCancel').addEventListener('click', () => { $('cycleEdit').hidden = true; });
+    $('cycleEdit').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const from = $('ceFrom').value, to = $('ceTo').value, due = $('ceDue').value;
+      const err = m => { $('ceErr').textContent = m; $('ceErr').hidden = false; };
+      if (!from || !to || !due) return err('Fill in all three dates.');
+      if (from > to) return err('"From" must be before "To".');
+      if (dateOf(to) - dateOf(from) > 62 * 864e5) return err('A cycle can’t be longer than 2 months.');
+      if (due < to) return err('The due date comes after the statement ("To").');
+      const card = cycleCard();
+      cardCycles[card] = { ...cycleOf(card), overrides: { ...cycleOf(card).overrides, [curMonth]: { from, to, due } } };
+      saveVault();
+      applyFilter();
+    });
+    $('ceReset').addEventListener('click', () => {
+      const card = cycleCard(), ov = { ...cycleOf(card).overrides };
+      delete ov[curMonth];
+      cardCycles[card] = { ...cycleOf(card), overrides: ov };
+      saveVault();
+      applyFilter();
+    });
+
+    /* ⚙️ Card management popup */
+    const dayOpts = sel => Array.from({ length: 28 }, (_, i) => i + 1).map(d => `<option value="${d}"${d === sel ? ' selected' : ''}>${d}</option>`).join('');
+
+    function openCardsDialog(prefill) {
+      $('cardsErr').hidden = true;
+      $('cardName').value = prefill && !isCard(prefill) ? prefill : '';
+      $('cardStart').innerHTML = dayOpts(1);
+      $('cardDue').innerHTML = dayOpts(1);
+      renderCards();
+      $('cardsDlg').hidden = false;
+      if (prefill && !isCard(prefill)) setTimeout(() => $('cardStart').focus(), 0);
+    }
+    const closeCardsDialog = () => { $('cardsDlg').hidden = true; if (screen === 'book') applyFilter(); };
+
+    function renderCards() {
+      const cards = Object.keys(cardCycles);
+      $('cardNames').innerHTML = payModes.filter(m => !isCard(m)).map(m => `<option value="${esc(m)}">`).join('');
+      $('cardsList').innerHTML = cards.length ? cards.map(card => {
+        const c = cycleOf(card), nowKey = +today().slice(8) >= c.start && c.start > 1 ? shiftMonth(today().slice(0, 7), 1) : today().slice(0, 7);
+        const u = usualCycle(card, nowKey), prev = usualCycle(card, shiftMonth(nowKey, -1));
+        const nAdj = Object.keys(c.overrides || {}).length;
+        return `<div class="card-row" data-card="${esc(card)}">
+          <div class="card-main">
+            <div class="card-name">💳 ${esc(card)}</div>
+            <div class="card-meta">Now: ${shortDate(isoDate(u.from))} – ${shortDate(isoDate(u.to))} · last bill due <b>${shortDate(isoDate(prev.due))}</b> ${dueText(isoDate(prev.due))}${nAdj ? ` · ✏️ ${nAdj} adjusted` : ''}</div>
+          </div>
+          <label>starts <select class="card-start">${dayOpts(c.start)}</select></label>
+          <label>due <select class="card-due">${dayOpts(c.due)}</select></label>
+          <button type="button" class="btn btn-light btn-sm card-view" title="Show this card's current bill">View bill</button>
+          <button type="button" class="btn btn-danger btn-sm card-del" title="Remove billing cycle (the payment option stays)">🗑</button>
+        </div>`;
+      }).join('') : '<div class="empty-card">No cards yet – add one below.</div>';
+    }
+
+    $('cardAdd').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const name = $('cardName').value.trim();
+      const err = m => { $('cardsErr').textContent = m; $('cardsErr').hidden = !m; };
+      if (!name) return err('Type or pick the card’s name.');
+      const existing = findMode(name) || name;
+      if (isCard(existing)) return err(`"${existing}" is already a card.`);
+      err('');
+      if (!findMode(name)) payModes.push(name);                 // new name -> also a payment option
+      cardCycles[existing] = { start: +$('cardStart').value, due: +$('cardDue').value, overrides: {} };
+      saveVault();
+      $('cardName').value = '';
+      renderCards();
+    });
+    $('cardsList').addEventListener('change', ev => {
+      const row = ev.target.closest('.card-row');
+      if (!row) return;
+      const card = row.dataset.card;
+      cardCycles[card] = { ...cycleOf(card), start: +row.querySelector('.card-start').value, due: +row.querySelector('.card-due').value };
+      saveVault();
+      renderCards();
+    });
+    $('cardsList').addEventListener('click', ev => {
+      const row = ev.target.closest('.card-row');
+      if (!row) return;
+      const card = row.dataset.card;
+      if (ev.target.closest('.card-view')) {                  // jump to this card's current bill
+        viaFilter.clear(); viaFilter.add(card); cycleView = true;
+        const c = cycleOf(card);
+        curMonth = +today().slice(8) >= c.start && c.start > 1 ? shiftMonth(today().slice(0, 7), 1) : today().slice(0, 7);
+        $('cardsDlg').hidden = true;
+        if (screen !== 'book') openBook(curBook);
+        applyFilter();
+        return;
+      }
+      const b = ev.target.closest('.card-del');
+      if (!b) return;
+      if (!b.classList.contains('armed')) {
+        b.classList.add('armed'); b.textContent = 'Remove?';
+        setTimeout(() => { if (b.isConnected) { b.classList.remove('armed'); b.textContent = '🗑'; } }, 3000);
+        return;
+      }
+      delete cardCycles[card];
+      saveVault();
+      renderCards();
+    });
+    $('cardsBtn').addEventListener('click', () => openCardsDialog());
+    $('cardsClose').addEventListener('click', closeCardsDialog);
+    $('cardsDone').addEventListener('click', closeCardsDialog);
+    $('cardsModes').addEventListener('click', () => { $('cardsDlg').hidden = true; openModesDialog(); });
+    $('cardsDlg').addEventListener('click', ev => { if (ev.target === $('cardsDlg')) closeCardsDialog(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('cardsDlg').hidden) closeCardsDialog(); });
+
+    function applyFilter() {
+      pruneBlank();
+      selected.clear();                                     // selection only ever covers what you can see
+      renderMonthly();
+      updateFilterUI();
+    }
+
+    $('filterList').addEventListener('change', ev => {
+      const cb = ev.target.closest('input[data-v]');
+      if (!cb) return;
+      if (cb.checked) viaFilter.add(cb.dataset.v); else viaFilter.delete(cb.dataset.v);
+      cb.closest('.filter-opt').classList.toggle('on', cb.checked);
+      applyFilter();
+    });
+    $('filterAll').addEventListener('click', () => { filterChoices().forEach(c => viaFilter.add(c.v)); renderFilterList(); applyFilter(); });
+    $('filterNone').addEventListener('click', () => { viaFilter.clear(); renderFilterList(); applyFilter(); });
+    const openFilter = () => { renderFilterList(); $('filterDlg').hidden = false; };
+    const closeFilter = () => { $('filterDlg').hidden = true; };
+    $('filterBtn').addEventListener('click', openFilter);
+    $('filterEdit').addEventListener('click', openFilter);
+    $('filterClear').addEventListener('click', () => { viaFilter.clear(); applyFilter(); });
+    $('filterClose').addEventListener('click', closeFilter);
+    $('filterDone').addEventListener('click', closeFilter);
+    $('filterDlg').addEventListener('click', ev => { if (ev.target === $('filterDlg')) closeFilter(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('filterDlg').hidden) closeFilter(); });
+
+    $('modesClose').addEventListener('click', closeModesDialog);
+    $('modesDone').addEventListener('click', closeModesDialog);
+    $('modesDlg').addEventListener('click', ev => { if (ev.target === $('modesDlg')) closeModesDialog(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('modesDlg').hidden) closeModesDialog(); });
+
+    /* ---------- Duplicates (kept, only highlighted) ---------- */
+    const dupKey = e => [bookOf(e), e.date, e.time || '', +e.sent || 0, +e.received || 0, (e.purpose || '').trim().toLowerCase()].join('|');
+    function duplicateIds() {
+      const groups = {};
+      expenses.forEach(e => { if (e.purpose || +e.sent || +e.received) (groups[dupKey(e)] ||= []).push(e.id); });
+      return new Set(Object.values(groups).filter(g => g.length > 1).flat());
+    }
+
+    // Upright phones use ONE amount column (− sent / + received) and ONE "via" column
+    const isReceived = e => +e.received > 0 && !(+e.sent > 0);
+    const amountCell = e => {
+      const rec = isReceived(e), val = rec ? +e.received : +e.sent;
+      return `<td class="c-amt"><div class="amt-wrap ${rec ? 'plus' : 'minus'}">
+          <button type="button" class="sign-btn" title="Tap to switch: − sent / + received">${rec ? '+' : '−'}</button>
+          <input type="text" inputmode="decimal" data-f="amount" placeholder="0" value="${val || ''}">
+        </div></td>`;
+    };
+
+    // Editable cells for one expense row
+    const rowInputs = e => `
+        <td class="c-tools"><div class="tools">
+          <input type="checkbox" class="row-sel" title="Select"${selected.has(e.id) ? ' checked' : ''}>
+          <button type="button" class="star-btn ${e.starred ? 'on' : ''}" title="${e.starred ? 'Unstar' : 'Star this entry'}">${e.starred ? '★' : '☆'}</button>
+        </div></td>
+        <td class="c-date-cell"><div class="dt-cell">
+          <input type="date" data-f="date" value="${esc(e.date || today())}"><button type="button" class="date-pick" title="Change date">📅</button>
+          <input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
+          <span class="dt-view"><span class="dv-date">${dayName(e.date)}</span>${e.time ? `<span class="dv-sep"> · </span><span class="dv-time">${fmtTime(e.time)}</span>` : ''}<span class="dv-compact">${compactDT(e)}</span></span>
+        </div></td>
+        <td class="c-sent"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="sent" value="${+e.sent || ''}"></td>
+        <td class="c-recv"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="received" value="${+e.received || ''}"></td>
+        ${amountCell(e)}
+        <td class="c-purpose"><textarea data-f="purpose" rows="1" placeholder="Purpose" title="${esc(e.purpose)}">${esc(e.purpose)}</textarea><span class="dup-tag" hidden>⚠ Duplicate</span></td>
+        <td class="c-sv"><select data-f="sentVia" data-prev="${esc(e.sentVia)}">${modeOptions(e.sentVia)}</select></td>
+        <td class="c-rv"><select data-f="receivedVia" data-prev="${esc(e.receivedVia)}">${modeOptions(e.receivedVia)}</select></td>
+        <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select></td>
+        <td class="c-note"><input type="text" data-f="note" placeholder="Note" value="${esc(e.note)}" title="${esc(e.note)}"></td>
+        <td class="c-del">${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
+
+    /* ---------- Monthly notes (salary, rent, dues…) ---------- */
+    const NOTES_KEY = 'monthNotes_v1';
+    let monthNotes = (() => { try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || {}; } catch { return {}; } })();
+    function saveNotes() { persist(); }
+
+    // month note: a one-line preview; click it to open the full note for editing
+    const growNote = () => { const t = $('monthNote'); t.style.height = 'auto'; t.style.height = Math.max(t.scrollHeight + 2, 72) + 'px'; };
+    function renderNotePreview() {
+      const text = (monthNotes[noteKey(curMonth)] || '').trim();
+      const lines = text.split('\n').filter(l => l.trim());
+      const p = $('notePreview');
+      p.classList.toggle('empty', !text);
+      p.innerHTML = text
+        ? esc(lines[0]) + (lines.length > 1 ? `<span class="more">+${lines.length - 1} more line${lines.length > 2 ? 's' : ''}</span>` : '')
+        : `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…`;
+    }
+    $('notePreview').addEventListener('click', () => {
+      if (!canEdit(curBook)) return;                        // view-only shared expense
+      $('notePreview').hidden = true;
+      $('monthNote').hidden = false;
+      $('monthNote').focus();
+      growNote();
+    });
+    $('monthNote').addEventListener('blur', () => {
+      $('monthNote').hidden = true;
+      $('monthNote').style.height = '';
+      $('notePreview').hidden = false;
+      renderNotePreview();
+    });
+
+    $('monthNote').addEventListener('input', ev => {
+      growNote();
+      const v = ev.target.value;
+      if (v.trim()) monthNotes[noteKey(curMonth)] = v; else delete monthNotes[noteKey(curMonth)];
+      saveNotes();
+      const st = $('noteSaved');
+      st.textContent = '✓ Saved';
+      clearTimeout(st.t);
+      st.t = setTimeout(() => st.textContent = '', 1500);
+    });
+
+    /* ---------- Monthly table (one month at a time, editable) ---------- */
+    let curMonth = today().slice(0, 7);
+
+    const shiftMonth = (key, d) => {
+      const [y, m] = key.split('-').map(Number);
+      const dt = new Date(y, m - 1 + d, 1);
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
+    };
+    // entries of the open book in one month
+    const monthItems = key => expenses
+      .filter(e => bookOf(e) === curBook && e.date.startsWith(key))
+      .sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
+    // ✏️ Edit mode: the table is view-only until you turn it on
+    let editMode = false;
+    const fmtTime = t => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`; };
+
+    // 🔍 payment filter: empty = show everything; '' stands for "no payment method"
+    const viaFilter = new Set();
+    const passesFilter = e => !viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '');
+    // what the table shows (and totals count) for the open month
+    function visibleItems() { return periodItems().filter(passesFilter); }
+
+    /* ---------- 💳 credit card billing cycle ----------
+       cardCycles: { '<payment option>': { start: 16, due: 1 } }  (day of month, 1–28)
+       With exactly one payment option filtered and "Billing cycle" on, the table shows that card's
+       cycle instead of the calendar month: month "Sep 2026" = 16 Aug – 15 Sep, bill due 1 Oct. */
+    const CYCLES_KEY = 'cardCycles_v1';
+    let cardCycles = loadCycles();
+    function loadCycles() { try { return JSON.parse(localStorage.getItem(CYCLES_KEY)) || {}; } catch { return {}; } }
+    let cycleView = false;
+    const isoDate = dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    // the single payment option being filtered (billing cycles are per card)
+    function cycleCard() { const v = [...viaFilter]; return v.length === 1 && v[0] ? v[0] : null; }
+    // cards = payment options with a billing cycle set up in ⚙ Card management
+    const isCard = name => !!cardCycles[name];
+    const cycleOf = card => ({ start: 1, due: 1, overrides: {}, ...(cardCycles[card] || {}) });
+    const cycleOn = () => cycleView && !!cycleCard() && isCard(cycleCard());
+    const dateOf = iso => new Date(iso + 'T00:00:00');
+
+    // usual cycle of a card for statement month `key` (YYYY-MM): { from, to, due } as Dates
+    function usualCycle(card, key) {
+      const [y, m] = key.split('-').map(Number), c = cycleOf(card);
+      let from = new Date(y, m - 1, 1), to = new Date(y, m, 0);
+      if (c.start > 1) { from = new Date(y, m - 2, c.start); to = new Date(y, m - 1, c.start - 1); }
+      const due = new Date(to); due.setDate(due.getDate() + 1);
+      while (due.getDate() !== c.due) due.setDate(due.getDate() + 1);       // first "due day" after the statement
+      return { from, to, due };
+    }
+
+    // the date range the table shows: calendar month, or the card's billing cycle
+    // (a cycle can be adjusted by hand: cardCycles[card].overrides['YYYY-MM'] = { from, to, due })
+    function period() {
+      const [y, m] = curMonth.split('-').map(Number);
+      let from = new Date(y, m - 1, 1), to = new Date(y, m, 0), due = null, adjusted = false;
+      if (cycleOn()) {
+        const card = cycleCard(), ov = cycleOf(card).overrides?.[curMonth];
+        if (ov) { from = dateOf(ov.from); to = dateOf(ov.to); due = dateOf(ov.due); adjusted = true; }
+        else ({ from, to, due } = usualCycle(card, curMonth));
+      }
+      const days = [];
+      for (const d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) days.push(isoDate(d));
+      return { from: isoDate(from), to: isoDate(to), days, due: due && isoDate(due), cycle: cycleOn(), adjusted };
+    }
+    function periodItems() {
+      const { from, to } = period();
+      return expenses.filter(e => bookOf(e) === curBook && e.date >= from && e.date <= to)
+        .sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
+    }
+    // month notes per book; Monthly Expenses keeps the original "YYYY-MM" keys
+    const noteKey = m => curBook === 'monthly' ? m : `${curBook}|${m}`;
+    // nothing typed yet (a pre-filled payment method alone doesn't count)
+    const isBlank = e => !+e.sent && !+e.received && !e.purpose && !e.note;
+
+    // drop rows that were added but never filled in
+    function pruneBlank() {
+      const before = expenses.length;
+      expenses = expenses.filter(e => !isBlank(e));
+      if (expenses.length !== before) save();
+    }
+
+    function goMonth(key) {
+      pruneBlank();
+      if (key !== curMonth) selected.clear();
+      curMonth = key;
+      renderMonthly();
+    }
+
+    function renderMonthly() {
+      // month dropdown: every month with data or notes, plus this month and the one being viewed
+      const counts = {};
+      expenses.filter(e => bookOf(e) === curBook).forEach(e => counts[e.date.slice(0, 7)] = (counts[e.date.slice(0, 7)] || 0) + 1);
+      const noteMonths = Object.keys(monthNotes).map(k => curBook === 'monthly' ? (/^\d{4}-\d{2}$/.test(k) ? k : null) : (k.startsWith(curBook + '|') ? k.slice(curBook.length + 1) : null)).filter(Boolean);
+      const keys = new Set([...Object.keys(counts), ...noteMonths, today().slice(0, 7), curMonth]);
+      // narrow screens get short labels so the toolbar stays on one line: "Sep 2026 (18)", phones "Sep 26 (18)"
+      const w = window.innerWidth;
+      const label = k => w < 760
+        ? new Date(+k.slice(0, 4), +k.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: w < 600 ? '2-digit' : 'numeric' })
+        : '📅 ' + monthLabel(k);
+      $('monthSelect').innerHTML = [...keys].sort().reverse().map(k =>
+        `<option value="${k}" ${k === curMonth ? 'selected' : ''}>${label(k)}${counts[k] ? ` (${counts[k]})` : ''}</option>`
+      ).join('');
+      $('thisMonth').hidden = curMonth === today().slice(0, 7);
+
+      $('monthNote').value = monthNotes[noteKey(curMonth)] || '';
+      renderNotePreview();
+      $('monthNote').placeholder = `Plan for ${monthLabel(curMonth)} – e.g. Salary ₹50,000 on 1st · Rent ₹15,000 due 5th · Owe Rahul ₹2,000 · EMI on 10th`;
+
+      document.querySelectorAll('#mHead th[data-sort]').forEach(th => {
+        th.classList.toggle('asc', th.dataset.sort === sortCol && sortDir === 1);
+        th.classList.toggle('desc', th.dataset.sort === sortCol && sortDir === -1);
+      });
+      // Amount header (upright phones): ⇅ date · Amount · ⇅ amount
+      [['amtSortDate', 'date'], ['amtSortAmt', 'amount']].forEach(([id, col]) => {
+        const on = sortCol === col;
+        $(id).classList.toggle('on', on);
+        $(id).textContent = on ? (sortDir === 1 ? '▲' : '▼') : '⇅';
+      });
+
+      const cols = showTime ? 9 : 8;          // tools, date, [time], sent, recv, purpose, via, note, ✕
+      $('mTable').classList.toggle('flat', sortCol !== 'date');     // flat list shows the full date box
+      const items = visibleItems().sort(compareRows);
+      const row = (e, cls = '') => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
+      let html = '';
+
+      if (sortCol !== 'date') {
+        // sorted by another column: plain list
+        html = items.map(e => row(e)).join('');
+      } else {
+        // every day of the month gets a date row; entries sit under their date; weekly subtotal after each week
+        const days = period().days;                        // calendar month, or the card's billing cycle
+        if (sortDir === -1) days.reverse();
+        const weeks = [];
+        days.forEach(d => {
+          const k = weekStart(d);
+          let w = weeks.find(x => x.key === k);
+          if (!w) weeks.push(w = { key: k, days: [] });
+          w.days.push(d);
+        });
+        const todayStr = today();
+
+        // billing cycle spanning two months: a separator between the previous month's part and this month's
+        let lastMonthShown = null;
+        const monthPart = key => {
+          const part = items.filter(e => e.date.startsWith(key));
+          const ps = part.reduce((a, e) => a + (+e.sent || 0), 0), pr = part.reduce((a, e) => a + (+e.received || 0), 0);
+          const lbl = new Date(+key.slice(0, 4), +key.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+          return `<span class="ms-part"><b>${lbl}</b> part: <span class="sent">− ${money(ps)}</span>${pr ? ` · <span class="received">+ ${money(pr)}</span>` : ''}</span>`;
+        };
+        const separator = (prevKey, nextKey) => `<tr class="month-sep"><td colspan="${cols}">
+            <span class="ms-line">${monthPart(prevKey)}<span class="ms-arrow">${sortDir === 1 ? '▲ │ ▼' : '▼ │ ▲'}</span>${monthPart(nextKey)}</span></td></tr>`;
+
+        weeks.forEach(w => {
+          // with a filter on, weeks / days without matching entries are hidden
+          if (viaFilter.size && !items.some(e => weekStart(e.date) === w.key)) return;
+          const wOpen = !collapsed.has('w:' + w.key);
+          if (wOpen) w.days.forEach(d => {
+            const dayItems = items.filter(e => e.date === d);
+            if (viaFilter.size && !dayItems.length) return;
+            if (cycleOn() && lastMonthShown && d.slice(0, 7) !== lastMonthShown) html += separator(lastMonthShown, d.slice(0, 7));
+            lastMonthShown = d.slice(0, 7);
+            const dOpen = !collapsed.has('d:' + d);
+            const dt = new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8));
+            const wd = dt.getDay();
+            html += `<tr class="day-head${wd === 0 || wd === 6 ? ' weekend' : ''}${d === todayStr ? ' is-today' : ''}${dayItems.length ? '' : ' no-entries'}" data-date="${d}" title="Click to ${dOpen ? 'collapse' : 'expand'}">
+              <td class="c-tools"><div class="tools">
+                <input type="checkbox" class="grp-sel" data-grp="d:${d}" title="Select this day"${dayItems.length ? '' : ' disabled'}>
+                <span class="caret">${dayItems.length ? (dOpen ? '▾' : '▸') : ''}</span>
+              </div></td>
+              <td class="c-date-cell day-label"><span class="dl-long">${dt.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}</span><span class="dl-short">${dt.toLocaleDateString('en-IN', { weekday: 'short' })}, ${d.slice(8)}</span></td>
+              <td class="c-time-cell"></td>
+              <td class="c-sent num day-sent"></td>
+              <td class="c-recv num day-recv"></td>
+              <td colspan="4" class="day-info"><div class="sums">
+                ${d === todayStr ? '<span class="today-tag">Today</span>' : ''}<span class="day-count">${dayItems.length ? `${dayItems.length} entr${dayItems.length > 1 ? 'ies' : 'y'}` : 'no entries'}</span>
+                <button type="button" class="day-add" data-date="${d}" title="Add an entry for this date">＋ Add</button>
+              </div></td></tr>`;
+            if (dOpen) html += dayItems.map(e => row(e, 'day-entry')).join('');
+          });
+          html += `<tr class="week-total${wOpen ? '' : ' closed'}" data-week="${w.key}" title="Click to ${wOpen ? 'collapse' : 'expand'} this week">
+            <td class="c-tools"><div class="tools">
+              <input type="checkbox" class="grp-sel" data-grp="w:${w.key}" title="Select this week">
+              <span class="caret">${wOpen ? '▾' : '▸'}</span>
+            </div></td>
+            <td class="c-date-cell wk-label-cell"><span class="wk-label"></span></td><td class="c-time-cell"></td>
+            <td class="c-sent num wk-sent"></td><td class="c-recv num wk-recv"></td>
+            <td colspan="4" class="wk-net"></td></tr>`;
+        });
+      }
+
+      $('tbody').innerHTML = html ||
+        `<tr><td colspan="${cols}" class="empty">No entries for ${monthLabel(curMonth)} yet. Click <b>➕ Add Row</b> or <b>📋 Bulk add</b>.</td></tr>`;
+      $('tbody').querySelectorAll('tr[data-id]').forEach(markRow);
+      $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
+      markDuplicates();
+      updateMonthTotals();
+      updateSelection();
+      updateFilterUI();
+
+      // shared with me as "can view": always read-only; otherwise read-only until ✏️ Edit is on
+      const ro = !canEdit(curBook), locked = ro || !editMode;
+      $('monthly').classList.toggle('readonly', ro);
+      $('monthly').classList.toggle('viewmode', !ro && !editMode);
+      $('editBtn').hidden = ro;
+      if (editMode && !ro) document.documentElement.classList.add('tbl-wide');   // editing = full table
+      $('wideBtn').classList.toggle('lock', editMode && !ro);
+      $('editBtn').classList.toggle('on', editMode && !ro);
+      $('editBtn').innerHTML = editMode ? '✔<span class="lbl"> Done</span>' : '✏️<span class="lbl"> Edit</span>';
+      $('editBtn').title = editMode ? 'Done editing – back to view only' : 'Edit the table';
+      if (locked) {
+        $('tbody').querySelectorAll('select, .sign-btn').forEach(el => el.disabled = true);
+        $('tbody').querySelectorAll('input:not(.row-sel):not(.grp-sel), textarea').forEach(el => { el.readOnly = true; if (el.type === 'date' || el.type === 'time') el.disabled = true; });
+        if (ro) $('tbody').querySelectorAll('.star-btn').forEach(el => el.disabled = true);      // ⭐ still works in view mode
+      }
+    }
+
+    // Monday of the week, as YYYY-MM-DD
+    function weekStart(date) {
+      const [y, m, d] = date.split('-').map(Number);
+      const dt = new Date(y, m - 1, d - (new Date(y, m - 1, d).getDay() + 6) % 7);
+      return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+    }
+    // a week clipped to what the table shows (month or billing cycle)
+    function weekSpan(key) {
+      const [y, m, d] = key.split('-').map(Number);
+      const { from, to } = period();
+      const f = new Date(from + 'T00:00:00'), l = new Date(to + 'T00:00:00');
+      const start = new Date(y, m - 1, d), end = new Date(y, m - 1, d + 6);
+      return [start < f ? f : start, end > l ? l : end];
+    }
+    // "14 – 20 Sep" / "29 Aug – 4 Sep"
+    function weekLabel(key) {
+      const [a, b] = weekSpan(key);
+      const mon = x => x.toLocaleDateString('en-IN', { month: 'short' });
+      if (a.getMonth() !== b.getMonth()) return `${a.getDate()} ${mon(a)} – ${b.getDate()} ${mon(b)}`;
+      return a.getDate() === b.getDate() ? `${a.getDate()} ${mon(b)}` : `${a.getDate()} – ${b.getDate()} ${mon(b)}`;
+    }
+    // for the week row: "7 – 13" (month is in the picker), or "29 Aug – 4 Sep" when it spans two months
+    function weekRangeText(key) {
+      const [a, b] = weekSpan(key);
+      return a.getMonth() !== b.getMonth() ? weekLabel(key) : a.getDate() === b.getDate() ? `${a.getDate()}` : `${a.getDate()} – ${b.getDate()}`;
+    }
+
+    function markDuplicates() {
+      const dups = duplicateIds();
+      $('tbody').querySelectorAll('tr[data-id]').forEach(tr => {
+        const on = dups.has(tr.dataset.id);
+        tr.classList.toggle('dup', on);
+        tr.querySelector('.dup-tag').hidden = !on;
+        tr.title = on ? 'Possible duplicate: same date, amount and purpose as another entry. Edit, add a note or delete it.' : '';
+      });
+    }
+
+    /* ---------- Time lives in the Date column (no separate Time column) ---------- */
+    const showTime = false;
+    function applyTimeToggle() { $('mTable').classList.add('hide-time'); }
+    const dayName = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
+    // phones held sideways: "Tue,01 - 9:05P"
+    const compactDT = e => {
+      const d = new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' }) + ',' + e.date.slice(8);
+      if (!e.time) return d;
+      const [h, m] = e.time.split(':').map(Number);
+      return `${d} - ${h % 12 || 12}:${String(m).padStart(2, '0')}${h < 12 ? 'A' : 'P'}`;
+    };
+
+    /* ---------- Sorting: date by default, click a column name to change ---------- */
+    let sortCol = 'date', sortDir = 1;
+    // date, then time (entries without a time after timed ones), then manual/insert order
+    const cmp = (x, y) => x < y ? -1 : x > y ? 1 : 0;      // plain order ('~' sorts after digits)
+    const byDate = (a, b) => cmp(a.date, b.date) || cmp(a.time || '~', b.time || '~') || a.created - b.created;
+    const viaOf = e => e.sentVia || e.receivedVia || '';
+    function compareRows(a, b) {
+      if (sortCol === 'via') {
+        const x = viaOf(a).toLowerCase(), y = viaOf(b).toLowerCase();
+        if (!x !== !y) return x ? -1 : 1;
+        return x.localeCompare(y) * sortDir || byDate(a, b);
+      }
+      if (sortCol === 'date') return byDate(a, b) * sortDir;
+      if (sortCol === 'amount') {
+        // all amounts: sent entries first, then received; within each, ascending (or descending on 2nd tap)
+        const ra = isReceived(a) ? 1 : 0, rb = isReceived(b) ? 1 : 0;
+        const va = ra ? +a.received || 0 : +a.sent || 0, vb = rb ? +b.received || 0 : +b.sent || 0;
+        if (!va !== !vb) return va ? -1 : 1;              // empty amounts last
+        return (ra - rb) || (va - vb) * sortDir || byDate(a, b);
+      }
+      const num = sortCol === 'sent' || sortCol === 'received';
+      const x = num ? +a[sortCol] || 0 : (a[sortCol] || '').toLowerCase();
+      const y = num ? +b[sortCol] || 0 : (b[sortCol] || '').toLowerCase();
+      if (!x !== !y) return x ? -1 : 1;                  // empty cells always last
+      const r = num ? x - y : x.localeCompare(y);
+      return r * sortDir || byDate(a, b);
+    }
+    $('mHead').addEventListener('click', ev => {
+      const th = ev.target.closest('[data-sort]');
+      if (!th) return;
+      const col = th.dataset.sort;
+      if (col === sortCol) sortDir = -sortDir;
+      else { sortCol = col; sortDir = (col === 'sent' || col === 'received') ? -1 : 1; }   // sent/recv: biggest first; amount: smallest first
+      pruneBlank();
+      renderMonthly();
+    });
+
+    function updateMonthTotals() {
+      let s = 0, r = 0;
+      visibleItems().forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
+      const net = r - s;
+      const [ty, tm] = curMonth.split('-').map(Number);
+      $('mTotalLabel').textContent = cycleOn() ? '💳 Bill total' : viaFilter.size ? '🔍 Filtered total'
+        : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`;
+      $('mTotalLabel').title = `Total for ${monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
+      $('mTotalLabel').parentElement.classList.toggle('filtered', viaFilter.size > 0);
+      $('mSent').textContent = money(s);
+      $('mRecv').textContent = money(r);
+      $('mNet').textContent = money(net);
+      $('mNet').className = net < 0 ? 'sent' : 'received';
+
+      $('tbody').querySelectorAll('tr.day-head').forEach(tr => {
+        let ds = 0, dr = 0;
+        visibleItems().filter(e => e.date === tr.dataset.date).forEach(e => { ds += +e.sent || 0; dr += +e.received || 0; });
+        tr.querySelector('.day-sent').innerHTML = ds ? `<span class="day-pill out">${money(ds)}</span>` : '';
+        tr.querySelector('.day-recv').innerHTML = dr ? `<span class="day-pill in">${money(dr)}</span>` : '';
+      });
+
+      $('tbody').querySelectorAll('tr.week-total').forEach(tr => {
+        let ws = 0, wr = 0;
+        visibleItems().filter(e => weekStart(e.date) === tr.dataset.week)
+          .forEach(e => { ws += +e.sent || 0; wr += +e.received || 0; });
+        const wn = wr - ws;
+        const [wa, wb] = weekSpan(tr.dataset.week);
+        const range = weekRangeText(tr.dataset.week);
+        tr.querySelector('.wk-label').innerHTML = wa.getMonth() !== wb.getMonth()
+          // a week across two months (billing cycles): "31 Aug–6 Sep" / "31/8–6/9"
+          ? `<span class="wl-long">${range.replace(/ – /, '–')}</span><span class="wl-short">${wa.getDate()}/${wa.getMonth() + 1}–${wb.getDate()}/${wb.getMonth() + 1}</span>`
+          : `<span class="wl-long">Week ${range}</span><span class="wl-short">Wk ${range.replace(/ – /, '–')}</span>`;
+        tr.querySelector('.wk-label').title = `Week ${weekLabel(tr.dataset.week)}`;
+        tr.querySelector('.wk-sent').innerHTML = `<span class="sent">${money(ws)}</span>`;
+        tr.querySelector('.wk-recv').innerHTML = `<span class="received">${money(wr)}</span>`;
+        tr.querySelector('.wk-net').innerHTML = `Net: <span class="${wn < 0 ? 'sent' : 'received'}">${money(wn)}</span>`;
+      });
+    }
+
+    // outline a started-but-incomplete row in red (needs Purpose + an amount)
+    function markRow(tr) {
+      const e = expenses.find(x => x.id === tr.dataset.id);
+      if (!e) return;
+      const needPurpose = !isBlank(e) && !e.purpose;
+      const needAmount = !isBlank(e) && !+e.sent && !+e.received;
+      tr.classList.toggle('invalid', needPurpose || needAmount);
+      tr.querySelector('[data-f=purpose]').classList.toggle('bad', needPurpose);
+      tr.querySelectorAll('[data-f=sent],[data-f=received],[data-f=amount]').forEach(i => i.classList.toggle('bad', needAmount));
+    }
+
+    // message under the table; with `undo` it gets an Undo button and stays 10 s
+    function mFlash(text, undo) {
+      $('mMsg').textContent = text;
+      if (undo) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'undo';
+        b.textContent = '↩ Undo';
+        b.onclick = () => { $('mMsg').hidden = true; undo(); };
+        $('mMsg').appendChild(b);
+      }
+      $('mMsg').hidden = false;
+      clearTimeout(mFlash.t);
+      mFlash.t = setTimeout(() => $('mMsg').hidden = true, undo ? 10000 : 3000);
+    }
+
+    $('prevMonth').addEventListener('click', () => goMonth(shiftMonth(curMonth, -1)));
+    $('nextMonth').addEventListener('click', () => goMonth(shiftMonth(curMonth, 1)));
+    // 📍 in billing-cycle view jumps to the cycle that contains today (after the statement day that's next month's)
+    $('thisMonth').addEventListener('click', () => {
+      const t = today();
+      goMonth(cycleOn() && +t.slice(8) >= cycleOf(cycleCard()).start && cycleOf(cycleCard()).start > 1 ? shiftMonth(t.slice(0, 7), 1) : t.slice(0, 7));
+    });
+    $('monthSelect').addEventListener('change', ev => goMonth(ev.target.value));
+
+
+    // live edit: every keystroke updates the entry and saves
+    $('tbody').addEventListener('input', ev => {
+      const inp = ev.target, tr = inp.closest('tr[data-id]');
+      if (!tr || !inp.dataset.f || inp.dataset.f === 'date') return;
+      const e = expenses.find(x => x.id === tr.dataset.id);
+      if (!e) return;
+      const f = inp.dataset.f;
+      const wrap = tr.querySelector('.amt-wrap');
+      if (f === 'amount') {
+        // merged column: typing "-400" / "+1700" sets the sign, the box keeps just the number
+        let v = inp.value, rec = wrap.classList.contains('plus');
+        const s = v.match(/^\s*([+\-−])/);
+        if (s) { rec = s[1] === '+'; v = v.replace(/^\s*[+\-−]\s*/, ''); inp.value = v; }
+        setSign(wrap, rec);
+        applyAmount(e, rec, parseFloat(v.replace(/,/g, '')) || 0);
+      } else if (f === 'anyVia') {
+        // one Via column: it belongs to the sent side, or the received side for received entries
+        const rec = wrap.offsetParent ? wrap.classList.contains('plus') : isReceived(e);
+        if (rec) { e.receivedVia = inp.value; e.sentVia = ''; }
+        else { e.sentVia = inp.value; e.receivedVia = ''; }
+      } else {
+        if (f === 'purpose' && /\n/.test(inp.value)) inp.value = inp.value.replace(/\s*\n\s*/g, ' ');   // pasted line breaks
+        e[f] = inp.type === 'number' ? (parseFloat(inp.value) || 0) : inp.value.trim();
+        if (f === 'sent' || f === 'received') {
+          // keep the payment method on the side that has the amount, and the merged −/+ box in step
+          const v = viaOf(e);
+          if (!(e.sentVia && e.receivedVia)) {
+            if (isReceived(e)) { e.receivedVia = v; e.sentVia = ''; } else { e.sentVia = v; e.receivedVia = ''; }
+          }
+          setSign(wrap, isReceived(e));
+          wrap.querySelector('input').value = (isReceived(e) ? +e.received : +e.sent) || '';
+        }
+        if (f === 'purpose') { fitPurpose(inp); inp.title = inp.value; }
+      }
+      markRow(tr);
+      markDuplicates();
+      if (inp.type === 'number' || f === 'amount') updateMonthTotals();
+      save();
+    });
+
+    // purpose box: one line, or two when the text doesn't fit (the rest is in the tooltip)
+    function fitPurpose(ta) {
+      ta.rows = 1;
+      const lh = parseFloat(getComputedStyle(ta).lineHeight) || 18;
+      if (ta.scrollHeight > ta.clientHeight + lh / 2) ta.rows = 2;
+    }
+
+    // − / + for the merged amount column; the payment method follows the amount's side
+    function applyAmount(e, rec, n) {
+      if (rec) { e.received = n; e.sent = 0; e.receivedVia = e.receivedVia || e.sentVia; e.sentVia = ''; }
+      else { e.sent = n; e.received = 0; e.sentVia = e.sentVia || e.receivedVia; e.receivedVia = ''; }
+    }
+    function setSign(wrap, rec) {
+      wrap.classList.toggle('plus', rec);
+      wrap.classList.toggle('minus', !rec);
+      wrap.querySelector('.sign-btn').textContent = rec ? '+' : '−';
+    }
+    $('tbody').addEventListener('click', ev => {
+      const btn = ev.target.closest('.sign-btn');
+      if (!btn) return;
+      const tr = btn.closest('tr[data-id]'), e = expenses.find(x => x.id === tr.dataset.id);
+      if (!e) return;
+      const wrap = btn.parentElement, rec = !wrap.classList.contains('plus');
+      setSign(wrap, rec);
+      applyAmount(e, rec, parseFloat(wrap.querySelector('input').value.replace(/,/g, '')) || 0);
+      markRow(tr);
+      markDuplicates();
+      updateMonthTotals();
+      save();
+    });
+
+    // date edits apply when the picker closes; entries can move to another month
+    $('tbody').addEventListener('change', ev => {
+      const inp = ev.target, tr = inp.closest('tr[data-id]');
+      if (!tr || inp.dataset.f !== 'date') return;
+      const e = expenses.find(x => x.id === tr.dataset.id);
+      if (!e) return;
+      if (!inp.value) { inp.value = e.date; return; }
+      e.date = inp.value;
+      save();
+      renderMonthly();
+      if (e.date.startsWith(curMonth)) {
+        $('tbody').querySelector(`tr[data-id="${e.id}"] [data-f=date]`)?.focus();
+      } else {
+        mFlash(`📅 Entry moved to ${monthLabel(e.date.slice(0, 7))}.`);
+      }
+    });
+
+    // 📅 in a grouped entry row: open the date picker (the date itself is shown on the date row)
+    $('tbody').addEventListener('click', ev => {
+      const btn = ev.target.closest('.date-pick');
+      if (!btn) return;
+      const inp = btn.parentElement.querySelector('[data-f=date]');
+      try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
+    });
+
+    // ☆ star / unstar – starred rows are pinned on top
+    $('tbody').addEventListener('click', ev => {
+      const btn = ev.target.closest('.star-btn');
+      if (!btn) return;
+      const e = expenses.find(x => x.id === btn.closest('tr').dataset.id);
+      if (!e) return;
+      e.starred = !e.starred;
+      if (!e.starred) delete e.starred;
+      save();
+      renderMonthly();
+    });
+
+    /* ---------- Select rows + Clear (selected / month / week / date) with undo ---------- */
+    const selected = new Set();
+    const collapsed = new Set();        // 'd:YYYY-MM-DD' (a day) or 'w:YYYY-MM-DD' (a week, keyed by its Monday)
+
+    // ids of the entries in a day ('d:…') or week ('w:…') of the month being viewed
+    const groupIds = key => visibleItems()
+      .filter(e => key.startsWith('d:') ? e.date === key.slice(2) : weekStart(e.date) === key.slice(2))
+      .map(e => e.id);
+
+    function updateSelection() {
+      // forget selections that no longer exist in this month
+      const inMonth = new Set(visibleItems().map(e => e.id));
+      [...selected].forEach(id => { if (!inMonth.has(id)) selected.delete(id); });
+
+      $('tbody').querySelectorAll('tr[data-id]').forEach(tr => {
+        const on = selected.has(tr.dataset.id);
+        tr.classList.toggle('selected', on);
+        tr.querySelector('.row-sel').checked = on;
+      });
+      $('selAll').checked = inMonth.size > 0 && selected.size === inMonth.size;
+      $('selAll').indeterminate = selected.size > 0 && selected.size < inMonth.size;
+
+      // day / week checkboxes: ticked when all of their entries are selected
+      $('tbody').querySelectorAll('.grp-sel').forEach(cb => {
+        const ids = groupIds(cb.dataset.grp);
+        const n = ids.filter(id => selected.has(id)).length;
+        cb.disabled = !ids.length;
+        cb.checked = ids.length > 0 && n === ids.length;
+        cb.indeterminate = n > 0 && n < ids.length;
+      });
+      disarmClear();
+    }
+
+    function disarmClear() {
+      clearTimeout(disarmClear.t);
+      $('clearBtn').classList.remove('armed');
+      $('clearBtn').innerHTML = `🗑<span class="lbl"> Remove</span> <span id="selCount">(${selected.size})</span>`;
+      $('clearBtn').disabled = !selected.size;
+    }
+
+    $('tbody').addEventListener('change', ev => {
+      const cb = ev.target.closest('.row-sel, .grp-sel');
+      if (!cb) return;
+      const ids = cb.classList.contains('grp-sel') ? groupIds(cb.dataset.grp) : [cb.closest('tr').dataset.id];
+      ids.forEach(id => cb.checked ? selected.add(id) : selected.delete(id));
+      updateSelection();
+    });
+
+    // click a date row / week-total row to collapse or expand it
+    $('tbody').addEventListener('click', ev => {
+      const head = ev.target.closest('tr.day-head, tr.week-total');
+      if (!head || ev.target.closest('input, button, select')) return;
+      if (head.classList.contains('no-entries')) return;
+      const key = head.classList.contains('day-head') ? 'd:' + head.dataset.date : 'w:' + head.dataset.week;
+      if (collapsed.has(key)) collapsed.delete(key); else collapsed.add(key);
+      renderMonthly();
+    });
+
+    // "＋ Add" on a date row: new entry under that date
+    $('tbody').addEventListener('click', ev => {
+      const btn = ev.target.closest('.day-add');
+      if (!btn) return;
+      addEntryOn(btn.dataset.date);
+    });
+
+    function addEntryOn(date) {
+      collapsed.delete('d:' + date);
+      collapsed.delete('w:' + weekStart(date));
+      // under a payment filter, start the entry with the (first) filtered method so it stays visible
+      const via = [...viaFilter].find(v => v) || '';
+      const e = { id: newId(), book: curBook, created: Date.now(),
+                  date, sent: 0, received: 0, purpose: '', sentVia: via, receivedVia: '', note: '' };
+      expenses.push(e);
+      renderMonthly();
+      const row = $('tbody').querySelector(`tr[data-id="${e.id}"]`);
+      const amt = row?.querySelector('[data-f=amount]');
+      (amt?.offsetParent ? amt : row?.querySelector('[data-f=sent]'))?.focus();   // merged amount box on upright phones
+    }
+
+    $('selAll').addEventListener('change', ev => {
+      selected.clear();
+      if (ev.target.checked) visibleItems().forEach(e => selected.add(e.id));
+      updateSelection();
+    });
+
+    /* confirmation popup (used by 🗑 on a row and by 🗑 Remove) */
+    function askConfirm({ title, html, ok = 'Delete', onOk }) {
+      $('confirmTitle').textContent = title;
+      $('confirmBody').innerHTML = html;
+      $('confirmOk').textContent = ok;
+      $('confirmDlg').hidden = false;
+      $('confirmOk').onclick = () => { $('confirmDlg').hidden = true; onOk(); };
+      setTimeout(() => $('confirmCancel').focus(), 0);
+    }
+    const closeConfirm = () => { $('confirmDlg').hidden = true; };
+    $('confirmCancel').addEventListener('click', closeConfirm);
+    $('confirmX').addEventListener('click', closeConfirm);
+    $('confirmDlg').addEventListener('click', ev => { if (ev.target === $('confirmDlg')) closeConfirm(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('confirmDlg').hidden) closeConfirm(); });
+
+    const entryLine = e => `<li><b>${esc(e.purpose || 'No purpose')}</b> · ${fmtDate(e.date)} · ` +
+      (+e.received && !+e.sent ? `<span class="received">+ ${money(e.received)}</span>` : `<span class="sent">− ${money(e.sent)}</span>`) + '</li>';
+
+    // delete entries (with undo)
+    let lastCleared = [];
+    function deleteEntries(targets) {
+      const ids = new Set(targets.map(e => e.id));
+      lastCleared = targets.map(e => ({ ...e }));
+      expenses = expenses.filter(e => !ids.has(e.id));
+      ids.forEach(id => selected.delete(id));
+      save();
+      renderMonthly();
+      mFlash(`🗑 Deleted ${targets.length} entr${targets.length > 1 ? 'ies' : 'y'}.`, () => {
+        const have = new Set(expenses.map(e => e.id));
+        expenses.push(...lastCleared.filter(e => !have.has(e.id)));
+        lastCleared = [];
+        save();
+        renderMonthly();
+        mFlash('↩ Restored.');
+      });
+    }
+
+    $('clearBtn').addEventListener('click', () => {
+      const targets = visibleItems().filter(e => selected.has(e.id));
+      if (!targets.length) return;
+      const s = targets.reduce((a, e) => a + (+e.sent || 0), 0), r = targets.reduce((a, e) => a + (+e.received || 0), 0);
+      askConfirm({
+        title: `🗑 Remove ${targets.length} entr${targets.length > 1 ? 'ies' : 'y'}?`,
+        html: `<ul class="confirm-list">${targets.slice(0, 6).map(entryLine).join('')}${targets.length > 6 ? `<li>… and ${targets.length - 6} more</li>` : ''}</ul>
+          <p class="hint">Total: <span class="sent">− ${money(s)}</span>${r ? ` · <span class="received">+ ${money(r)}</span>` : ''}. You can undo right after.</p>`,
+        ok: `Remove ${targets.length}`,
+        onOk: () => deleteEntries(targets)
+      });
+    });
+
+    // 🗑 on a row: confirm first (an entry nothing was typed into goes straight away)
+    $('tbody').addEventListener('click', ev => {
+      const btn = ev.target.closest('.row-del');
+      if (!btn) return;
+      const e = expenses.find(x => x.id === btn.closest('tr').dataset.id);
+      if (!e) return;
+      if (isBlank(e)) { expenses = expenses.filter(x => x.id !== e.id); save(); renderMonthly(); return; }
+      askConfirm({ title: '🗑 Delete this entry?', html: `<ul class="confirm-list">${entryLine(e)}</ul><p class="hint">You can undo right after.</p>`, onOk: () => deleteEntries([e]) });
+    });
+
+    /* view mode tooltip: full Purpose / Note / payment method, and the 📝 note on phones */
+    const tip = document.createElement('div');
+    tip.className = 'cell-tip'; tip.hidden = true; tip.setAttribute('role', 'tooltip');
+    document.body.appendChild(tip);
+    const hideTip = () => { tip.hidden = true; };
+    function showTip(anchor, text, ev) {
+      tip.textContent = text;
+      tip.hidden = false;
+      const r = anchor.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+      tip.style.left = Math.max(8, Math.min(r.left, innerWidth - tw - 8)) + 'px';
+      tip.style.top = (r.bottom + 6 + th > innerHeight ? r.top - th - 6 : r.bottom + 6) + 'px';
+      ev?.stopPropagation();
+    }
+    // does a <select>'s chosen text fit in the box?
+    const measureCtx = document.createElement('canvas').getContext('2d');
+    function selectCut(sel) {
+      const cs = getComputedStyle(sel);
+      measureCtx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+      const text = sel.selectedOptions[0]?.textContent || '';
+      return measureCtx.measureText(text).width > sel.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) + 1;
+    }
+
+    $('tbody').addEventListener('click', ev => {
+      // 📝 (upright phones): the note as a tooltip
+      const nb = ev.target.closest('.note-btn');
+      if (nb) {
+        const e = expenses.find(x => x.id === nb.closest('tr').dataset.id);
+        if (e?.note) showTip(nb, e.note, ev);
+        return;
+      }
+      // Purpose / Note that doesn't fit (read-only in view mode)
+      const f = ev.target.closest('textarea[data-f=purpose][readonly], input[data-f=note][readonly]');
+      if (f) {
+        const cut = f.scrollHeight > f.clientHeight + 2 || f.scrollWidth > f.clientWidth + 1;
+        if (cut && f.value) showTip(f, f.value, ev); else hideTip();
+        return;
+      }
+      // payment method (Via) that doesn't fit – the dropdown is locked in view mode, so the tap lands on the cell
+      const vc = ev.target.closest('td.c-via, td.c-sv, td.c-rv');
+      const sel = vc?.querySelector('select:disabled');
+      if (sel && sel.value && selectCut(sel)) showTip(sel, sel.selectedOptions[0].textContent, ev);
+    });
+    document.addEventListener('click', ev => { if (!tip.hidden && !ev.target.closest('.cell-tip')) hideTip(); });
+    $('mTable').parentElement.addEventListener('scroll', hideTip, { passive: true });
+
+    // ✏️ Edit / ✔ Done – on an upright phone, editing always uses the full table (↔ can't collapse it)
+    $('editBtn').addEventListener('click', () => {
+      editMode = !editMode;
+      document.documentElement.classList.toggle('tbl-wide', editMode);
+      $('wideBtn').classList.toggle('on', editMode);
+      if (!editMode) { pruneBlank(); selected.clear(); }
+      renderMonthly();
+    });
+
+    // ↔ full table on upright phones (scroll sideways)
+    $('wideBtn').addEventListener('click', () => {
+      const on = document.documentElement.classList.toggle('tbl-wide');
+      $('wideBtn').classList.toggle('on', on);
+      $('wideBtn').title = on ? 'Back to the compact list' : 'Full table – scroll sideways';
+      renderMonthly();
+    });
+
+    // Enter moves to the next entry of the same day, or adds a new entry at the end of that day
+    $('tbody').addEventListener('keydown', ev => {
+      if (ev.key !== 'Enter' || !['INPUT', 'TEXTAREA'].includes(ev.target.tagName) || ev.target.id === 'monthNote') return;
+      if (ev.target.readOnly) { ev.preventDefault(); return; }              // view mode: nothing to add
+      ev.preventDefault();                                   // no line breaks inside Purpose
+      const tr = ev.target.closest('tr[data-id]');
+      if (!tr) return;
+      const next = tr.nextElementSibling;
+      if (next?.dataset.id) next.querySelector(`[data-f=${ev.target.dataset.f}]`)?.focus();
+      else addEntryOn(expenses.find(x => x.id === tr.dataset.id).date);
+    });
+
+    /* ---------- Bulk add / paste ---------- */
+    // accepts 20/09/2026, 20-9-26, 20.09.2026, 2026-09-20
+    function parseDate(s) {
+      s = (s || '').trim();
+      let m, y, mo, d;
+      if ((m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/))) [, y, mo, d] = m;
+      else if ((m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2}|\d{4})$/))) { [, d, mo, y] = m; if (y.length === 2) y = '20' + y; }
+      else return null;
+      const dt = new Date(+y, mo - 1, +d);
+      if (dt.getFullYear() !== +y || dt.getMonth() !== mo - 1 || dt.getDate() !== +d) return null;
+      return `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    }
+
+    const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july',
+                         'august', 'september', 'october', 'november', 'december'];
+    // "September", "Sept", "sep." -> 1..12, otherwise null
+    const monthNum = w => {
+      w = (w || '').toLowerCase().replace(/\.$/, '');
+      if (w.length < 3) return null;
+      const i = MONTH_NAMES.findIndex(n => n.startsWith(w));
+      return i < 0 ? null : i + 1;
+    };
+    const ymd = (y, m, d) => {
+      const dt = new Date(y, m - 1, d);
+      if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+      return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    };
+
+    // "400" / "-400" = sent, "+1700" = received; optional ₹ / Rs; commas in the amount are ignored
+    function makeEntry(date, sign, amount, purpose, via, note = '') {
+      const received = sign === '+';
+      via = via ? (findMode(via) || via) : '';
+      return {
+        date, purpose: purpose || 'Unknown',
+        sent: received ? 0 : amount, received: received ? amount : 0,
+        sentVia: received ? '' : via, receivedVia: received ? via : '', note
+      };
+    }
+
+    /* Understands both styles, mixed freely:
+       1) headers + entries          2) one line per entry
+          2026                          20/09/2026, 400, petrol, kiwi upi
+          September                     21/09/2026, +1700, from alex, phonepe upi
+          1st
+          200 fish - upi
+          52 evening snacks
+          3rd  (or 3, 03/09/2026, 3 Sep, Sep 3 ...)
+       Payment method after " - " is optional; missing purpose becomes "Unknown". */
+    function parseBulk(text) {
+      const rows = [], errors = [], badLines = [];
+      const [cy, cm] = curMonth.split('-').map(Number);     // default: the month being viewed
+      let year = cy, month = cm, date = null;
+
+      text.split(/\r?\n/).forEach((raw, i) => {
+        const line = raw.trim();
+        if (!line || /^[.\-_=*~·…•\s]+$/.test(line)) return;            // blank or "......" separator
+        const fail = msg => { errors.push(`Line ${i + 1}: ${msg}`); badLines.push({ line: raw, date }); };
+        let m;
+
+        // --- one-line format: date, amount, purpose, via, note
+        if ((m = line.match(/^(\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4})\s*[,\t]\s*(.*)$/))) {
+          const d = parseDate(m[1]);
+          if (!d) return fail(`can't read date "${m[1]}"`);
+          const tab = m[2].includes('\t');
+          const parts = (tab ? m[2].split('\t') : m[2].split(',')).map(s => s.trim());
+          let amt = (parts[0] || '').replace(/\s|₹|^rs\.?/gi, '');
+          if (tab) amt = amt.replace(/,/g, '');
+          const a = amt.match(/^([+-]?)(\d+(?:\.\d+)?)$/);
+          if (!a || !+a[2]) return fail(`can't read amount "${parts[0] || ''}"`);
+          rows.push(makeEntry(d, a[1], +a[2], parts[1], parts[2], parts.slice(3).filter(Boolean).join(', ')));
+          return;
+        }
+
+        // --- header lines (set the date for the entries below)
+        if ((m = line.match(/^((?:19|20)\d{2})$/))) { year = +m[1]; date = null; return; }                // 2026
+        if ((m = line.match(/^([a-z]+)\.?,?\s*((?:19|20)\d{2})?:?$/i)) && monthNum(m[1])) {               // September [2026]
+          month = monthNum(m[1]); if (m[2]) year = +m[2]; date = null; return;
+        }
+        if ((m = line.match(/^(\d{1,4}[-/.]\d{1,2}[-/.]\d{1,4}):?$/))) {                                   // 01/09/2026
+          date = parseDate(m[1]);
+          if (!date) return fail(`can't read date "${m[1]}"`);
+          [year, month] = date.split('-').map(Number);
+          return;
+        }
+        if ((m = line.match(/^(\d{1,2})(?:st|nd|rd|th)?\.?:?$/i)) && (/\D/.test(line) || +m[1] <= 31)) {   // 1st / 4  (a bare 40 is an amount)
+          date = ymd(year, month, +m[1]);
+          if (!date) fail(`${m[1]} is not a valid day in ${monthLabel(`${year}-${String(month).padStart(2, '0')}`)}`);
+          return;
+        }
+        if ((m = line.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]+)\.?,?\s*((?:19|20)\d{2})?:?$/i)) && monthNum(m[2])) {   // 1st Sep [2026]
+          month = monthNum(m[2]); if (m[3]) year = +m[3];
+          date = ymd(year, month, +m[1]);
+          if (!date) fail(`can't read date "${line}"`);
+          return;
+        }
+        if ((m = line.match(/^([a-z]+)\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*((?:19|20)\d{2})?:?$/i)) && monthNum(m[1])) {   // Sep 1st [2026]
+          month = monthNum(m[1]); if (m[3]) year = +m[3];
+          date = ymd(year, month, +m[2]);
+          if (!date) fail(`can't read date "${line}"`);
+          return;
+        }
+
+        // --- entry line: amount purpose [- payment method]
+        if ((m = line.match(/^([+-]?)\s*(?:₹|rs\.?)?\s*(\d[\d,]*(?:\.\d+)?)\b\s*(.*)$/i))) {
+          if (!date) return fail('add a date line (like "1st" or "01/09/2026") above this entry');
+          const amount = +m[2].replace(/,/g, '');
+          if (!amount) return fail('amount is 0');
+          let rest = m[3].trim(), via = '', sep;
+          if ((sep = rest.match(/^[-–]\s*(.+)$/))) { via = sep[1]; rest = ''; }                 // "56 - kiwi upi"
+          else if ((sep = rest.match(/^(.*\S)\s+[-–]\s*(.+)$/))) { rest = sep[1]; via = sep[2]; } // last " - " = payment method
+          rest = rest.replace(/^[:,]\s*/, '').replace(/,\s*$/, '').trim();
+          rows.push(makeEntry(date, m[1], amount, rest, via.trim()));
+          return;
+        }
+
+        fail(`can't understand "${line}"`);
+      });
+      return { rows, errors, badLines };
+    }
+
+    function renderBulkPreview() {
+      const { rows, errors } = parseBulk($('bulkText').value);
+      const existing = new Set(expenses.map(dupKey));
+      const seen = new Set();
+      let dups = 0;
+      const lines = [...rows].sort(byDate).map(r => {
+        const k = dupKey(r);
+        const dup = existing.has(k) || seen.has(k);
+        seen.add(k);
+        if (dup) dups++;
+        return `<tr class="${dup ? 'dup' : ''}">
+          <td>${fmtDate(r.date)}</td>
+          <td class="num ${r.received ? 'received' : 'sent'}">${r.received ? '+ ' + money(r.received) : '− ' + money(r.sent)}</td>
+          <td>${esc(r.purpose)}${dup ? ' <span class="dup-tag">⚠ Duplicate</span>' : ''}</td>
+          <td>${esc(r.sentVia || r.receivedVia) || '-'}</td>
+          <td>${esc(r.note) || ''}</td>
+        </tr>`;
+      }).join('');
+
+      let html = '';
+      if (rows.length) html += `<div class="ok">✅ ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'} ready (sorted by date)</div>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th class="num">Amount</th><th>Purpose</th><th>Via</th><th>Note</th></tr></thead>
+        <tbody>${lines}</tbody></table></div>`;
+      if (dups) html += `<div class="warn">⚠ ${dups} possible duplicate(s) – they will still be added and highlighted, so you can review them.</div>`;
+      if (errors.length) html += `<div class="err">${errors.map(esc).join('<br>')}</div>`;
+      $('bulkPreview').innerHTML = html;
+      $('bulkAdd').disabled = !rows.length;
+      $('bulkAdd').textContent = rows.length ? `➕ Add ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'}` : 'Add entries';
+    }
+
+    $('bulkBtn').addEventListener('click', () => {
+      $('bulkPanel').hidden = !$('bulkPanel').hidden;
+      if (!$('bulkPanel').hidden) { renderBulkPreview(); $('bulkText').focus(); }
+    });
+    $('bulkClose').addEventListener('click', () => $('bulkPanel').hidden = true);
+    $('bulkText').addEventListener('input', renderBulkPreview);
+
+    $('bulkAdd').addEventListener('click', () => {
+      const { rows, badLines } = parseBulk($('bulkText').value);
+      if (!rows.length) return;
+      const base = Date.now();
+      rows.forEach((r, i) => expenses.push({
+        id: base.toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 6),
+        created: base + i, ...r, book: curBook
+      }));
+      rows.forEach(r => { if (r.sentVia || r.receivedVia) addMode(r.sentVia || r.receivedVia); });
+      save();
+
+      const months = [...new Set(rows.map(r => r.date.slice(0, 7)))].sort();
+      if (!months.includes(curMonth)) curMonth = months[months.length - 1];
+      // keep only lines that need fixing, each under its date so it still makes sense
+      let lastDate = null;
+      $('bulkText').value = badLines.map(({ line, date }) => {
+        const head = date && date !== lastDate ? date.split('-').reverse().join('/') + '\n' : '';
+        lastDate = date;
+        return head + line;
+      }).join('\n');
+      renderMonthly();
+      renderBulkPreview();
+      if (!badLines.length) $('bulkPanel').hidden = true;
+      mFlash(`✅ Added ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'}` +
+        (months.length > 1 ? ` across ${months.length} months (${months.map(monthLabel).join(', ')})` : ` to ${monthLabel(months[0])}`) +
+        (badLines.length ? ` · ${badLines.length} line(s) left to fix` : ''));
+    });
+
+    /* =====================================================================
+       Google login + encrypted storage in the user's own Google Drive
+       - Data is JSON-encoded, encrypted in the browser with AES-256-GCM
+         (key derived from APP_SECRET + the user's Google ID via PBKDF2), then saved to
+         the hidden app-data folder of the user's Drive. No database needed.
+       ===================================================================== */
+
+    // Paste your OAuth Client ID here (see README.md for how to create it)
+    const GOOGLE_CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+
+    // Static encryption secret. Change it to your own random string BEFORE first use –
+    // changing it later makes existing saved data unreadable.
+    const APP_SECRET = 'xP9#vL2$qR7!mZ4&kT8@wN3^bH6*eJ1%';
+
+    // For "Shared with you": Google Picker API key + Cloud project number (see README.md)
+    const GOOGLE_API_KEY = 'YOUR_API_KEY';
+    const GOOGLE_APP_ID = 'YOUR_PROJECT_NUMBER';
+
+    const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+    // drive.file: only files this app creates (shared expenses) or that you pick in the Google picker
+    const FILE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+    const SCOPES = 'openid email profile ' + DRIVE_SCOPE + ' ' + FILE_SCOPE;
+    const FILE_NAME = 'expense-manager.enc.json';
+    const PBKDF2_ITER = 310000;
+    const DRIVE = 'https://www.googleapis.com/drive/v3/files';
+    const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
+
+    let user = null;            // { sub, name, email, picture }
+    let cryptoKey = null;       // AES key; null until the Drive data is loaded
+    let cloud = { fileId: null, modified: null, salt: null };
+    let accessToken = null, tokenExp = 0, tokenClient = null, pendingToken = null;
+    let syncState = 'idle';
+    let dirty = false, saving = false, saveTimer = null;
+
+    const configured = () => !GOOGLE_CLIENT_ID.startsWith('YOUR_');
+    const lastUser = () => { try { return JSON.parse(localStorage.getItem('lastUser')); } catch { return null; } };
+    const forgetLast = () => { try { localStorage.removeItem('lastUser'); } catch {} };
+    function loadNotes() { try { return JSON.parse(localStorage.getItem(NOTES_KEY)) || {}; } catch { return {}; } }
+
+    /* ---------- Saving (real time) ---------- */
+    let vaultDirty = false;
+    // my private data only – shared expenses are saved to their own files
+    const privateExpenses = () => expenses.filter(e => !isShared(bookOf(e)));
+    const privateNotes = () => Object.fromEntries(Object.entries(monthNotes).filter(([k]) => !isShared(k)));
+
+    function persist() {
+      if (!user) {
+        try {
+          localStorage.setItem(KEY, JSON.stringify(privateExpenses()));
+          localStorage.setItem(NOTES_KEY, JSON.stringify(privateNotes()));
+          localStorage.setItem(MODES_KEY, JSON.stringify(payModes));
+          localStorage.setItem(CYCLES_KEY, JSON.stringify(cardCycles));
+          localStorage.setItem(BOOKS_KEY, JSON.stringify(books));
+        } catch {}
+        return;
+      }
+      if (!cryptoKey) return;
+      if (screen === 'book' && isShared(curBook)) {            // editing a shared expense -> its own file
+        const f = sharedFiles[curBook.slice(SH.length)];
+        if (!f || !canEdit(curBook)) return;
+        f.dirty = true;
+      } else {
+        vaultDirty = true;
+      }
+      dirty = true;
+      setSync('saving');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(flush, 700);   // batch rapid typing into one upload
+    }
+
+    // settings (payment options, lists) always belong to my private file, whatever screen is open
+    function saveVault() {
+      if (!user) return persist();
+      if (!cryptoKey) return;
+      vaultDirty = true; dirty = true;
+      setSync('saving');
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(flush, 700);
+    }
+    // a change that can touch entries in several books (e.g. renaming a payment option)
+    function saveEverything() {
+      if (!user) return persist();
+      Object.keys(sharedFiles).forEach(id => { if (canEdit(SH + id)) sharedFiles[id].dirty = true; });
+      saveVault();
+    }
+
+    async function flush() {
+      if (!user || !cryptoKey || !dirty) return;
+      if (saving) { clearTimeout(saveTimer); saveTimer = setTimeout(flush, 400); return; }
+      saving = true; dirty = false;
+      const doVault = vaultDirty; vaultDirty = false;
+      const shared = Object.keys(sharedFiles).filter(id => sharedFiles[id].dirty);
+      shared.forEach(id => sharedFiles[id].dirty = false);
+      try {
+        if (doVault) await uploadData();
+        for (const id of shared) if (refOf(SH + id)) await uploadShared(id);
+        setSync(dirty ? 'saving' : 'saved');
+      } catch (e) {
+        console.error(e);
+        dirty = true;
+        vaultDirty = vaultDirty || doVault;
+        shared.forEach(id => { if (sharedFiles[id]) sharedFiles[id].dirty = true; });
+        setSync(e.reauth ? 'reauth' : 'error');
+      } finally {
+        saving = false;
+      }
+    }
+
+    window.addEventListener('beforeunload', e => {
+      if (user && (dirty || saving)) { flush(); e.preventDefault(); e.returnValue = ''; }
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && dirty) { clearTimeout(saveTimer); flush(); }
+    });
+
+    /* ---------- Encryption (Web Crypto) ---------- */
+    const te = new TextEncoder(), td = new TextDecoder();
+    function toB64(buf) {
+      const bytes = new Uint8Array(buf);
+      let s = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+      return btoa(s);
+    }
+    const fromB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+    async function deriveKey(pass, salt, iter) {
+      const base = await crypto.subtle.importKey('raw', te.encode(pass), 'PBKDF2', false, ['deriveKey']);
+      return crypto.subtle.deriveKey(
+        { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' },
+        base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    }
+    async function encryptData(obj, key = cryptoKey, salt = cloud.salt, extra = {}) {
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, te.encode(JSON.stringify(obj)));
+      return {
+        app: 'expense-manager', v: 1, ...extra, alg: 'AES-256-GCM', kdf: 'PBKDF2-SHA256', iter: PBKDF2_ITER,
+        salt: toB64(salt), iv: toB64(iv), data: toB64(ct)
+      };
+    }
+    async function decryptData(env, key) {
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(env.iv) }, key, fromB64(env.data));
+      return JSON.parse(td.decode(pt));
+    }
+
+    // Each user gets their own key: static app secret + their Google account ID
+    const userKey = (salt, iter) => deriveKey(`${APP_SECRET}:${user.sub}`, salt, iter);
+    // Shared expenses must open for everyone they're shared with: app secret + the file's own random salt.
+    // Who can read the file at all is decided by Google Drive sharing.
+    const sharedKey = (salt, iter) => deriveKey(`${APP_SECRET}:shared-expense`, salt, iter);
+
+    /* ---------- Shared expenses: one encrypted Drive file per shared book ---------- */
+    const sharedFiles = {};   // fileId -> { key, salt, modified, dirty }
+
+    const sharedPayload = fileId => {
+      const bid = SH + fileId, r = refOf(bid);
+      const notes = {};
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) notes[k.slice(bid.length + 1)] = monthNotes[k]; });
+      return {
+        name: r.name, ownerName: r.ownerName, ownerEmail: r.ownerEmail,
+        expenses: expenses.filter(e => bookOf(e) === bid).map(({ book, ...e }) => e),
+        monthNotes: notes, savedAt: new Date().toISOString()
+      };
+    };
+
+    async function uploadShared(fileId) {
+      const f = sharedFiles[fileId];
+      const body = JSON.stringify(await encryptData(sharedPayload(fileId), f.key, f.salt, { kind: 'shared-expense' }));
+      const r = await gfetch(`${UPLOAD}/${fileId}?uploadType=media&fields=id,modifiedTime`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body
+      });
+      f.modified = (await r.json()).modifiedTime;
+    }
+
+    // First share of one of my books: move it out of my private file into its own Drive file
+    async function convertToShared(bookId) {
+      const b = books.find(x => x.id === bookId);
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const key = await sharedKey(salt, PBKDF2_ITER);
+      const notes = {};
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bookId + '|')) notes[k.slice(bookId.length + 1)] = monthNotes[k]; });
+      const payload = {
+        name: b.name, ownerName: user.name, ownerEmail: user.email,
+        expenses: expenses.filter(e => bookOf(e) === bookId).map(({ book, ...e }) => e),
+        monthNotes: notes, savedAt: new Date().toISOString()
+      };
+      const body = JSON.stringify(await encryptData(payload, key, salt, { kind: 'shared-expense' }));
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify({
+        name: `${b.name} · Expense Manager.json`, mimeType: 'application/json',
+        description: 'Shared expense from Expense Manager (encrypted). Open it in the Expense Manager app.',
+        appProperties: { expenseManager: 'shared-expense' }
+      })], { type: 'application/json' }));
+      form.append('file', new Blob([body], { type: 'application/json' }));
+      const f = await (await gfetch(`${UPLOAD}?uploadType=multipart&fields=id,modifiedTime`, { method: 'POST', body: form })).json();
+
+      // move entries + notes over to the shared book id, forget the private book
+      const bid = SH + f.id;
+      sharedFiles[f.id] = { key, salt, modified: f.modifiedTime };
+      sharedRefs.push({ id: f.id, name: b.name, ownerName: user.name, ownerEmail: user.email, role: 'owner', fav: false });
+      expenses.forEach(e => { if (bookOf(e) === bookId) e.book = bid; });
+      Object.keys(notes).forEach(m => { monthNotes[`${bid}|${m}`] = notes[m]; delete monthNotes[`${bookId}|${m}`]; });
+      books = books.filter(x => x.id !== bookId);
+      if (curBook === bookId) curBook = bid;
+      save();                                   // private file no longer holds this book
+      return bid;
+    }
+
+    // Download + decrypt a shared file and put its entries in memory (adds it to my list if new)
+    async function loadSharedFile(fileId) {
+      const meta = await (await gfetch(`${DRIVE}/${fileId}?fields=id,name,modifiedTime,ownedByMe,capabilities(canEdit),owners(displayName,emailAddress)`)).json();
+      const env = await (await gfetch(`${DRIVE}/${fileId}?alt=media`)).json();
+      if (env?.kind !== 'shared-expense') throw new Error('not an Expense Manager file');
+      const salt = fromB64(env.salt);
+      const key = sharedFiles[fileId]?.key || await sharedKey(salt, env.iter || PBKDF2_ITER);
+      const data = await decryptData(env, key);
+      sharedFiles[fileId] = { ...(sharedFiles[fileId] || {}), key, salt, modified: meta.modifiedTime };
+
+      const bid = SH + fileId;
+      expenses = expenses.filter(e => bookOf(e) !== bid).concat((data.expenses || []).map(e => ({ ...e, book: bid })));
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) delete monthNotes[k]; });
+      Object.entries(data.monthNotes || {}).forEach(([m, v]) => monthNotes[`${bid}|${m}`] = v);
+
+      const role = meta.ownedByMe ? 'owner' : meta.capabilities?.canEdit ? 'writer' : 'reader';
+      let r = sharedRefs.find(x => x.id === fileId);
+      if (!r) sharedRefs.push(r = { id: fileId, fav: false });
+      Object.assign(r, { name: data.name || r.name || 'Shared expense', role,
+        ownerName: data.ownerName || meta.owners?.[0]?.displayName || '', ownerEmail: data.ownerEmail || meta.owners?.[0]?.emailAddress || '' });
+      return r;
+    }
+
+    // Open a shared book: always fetch the latest version first
+    async function openShared(fileId, push = true) {
+      if (!user) { alert('Log in with Google to open shared expenses.'); return; }
+      const bid = SH + fileId;
+      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); }
+      curBook = bid;
+      openScreen('book', push);
+      $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
+      try {
+        await loadSharedFile(fileId);
+        $('mMsg').hidden = true;
+        if (screen === 'book' && curBook === bid) openScreen('book', false);
+      } catch (e) {
+        console.error(e);
+        mFlash(/40[34]/.test(e.message) ? '🔒 You no longer have access to this shared expense.' : 'Could not load: ' + e.message);
+      }
+    }
+
+    // Google Picker – the way to give this app access to a file someone shared with you
+    function pickerConfigured() { return !GOOGLE_API_KEY.startsWith('YOUR_') && !GOOGLE_APP_ID.startsWith('YOUR_'); }
+    function loadPickerLib() {
+      return new Promise((res, rej) => {
+        if (window.google?.picker) return res();
+        const go = () => window.gapi.load('picker', { callback: res, onerror: rej });
+        if (window.gapi) return go();
+        const s = document.createElement('script');
+        s.src = 'https://apis.google.com/js/api.js';
+        s.onload = go; s.onerror = () => rej(new Error('could not load Google Picker'));
+        document.head.appendChild(s);
+      });
+    }
+    async function openPicker() {
+      if (!accessToken || Date.now() > tokenExp) await requestToken('');
+      await loadPickerLib();
+      return new Promise(res => {
+        const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+          .setOwnedByMe(false).setMimeTypes('application/json').setQuery('Expense Manager');
+        new google.picker.PickerBuilder()
+          .addView(view)
+          .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+          .setOAuthToken(accessToken).setDeveloperKey(GOOGLE_API_KEY).setAppId(GOOGLE_APP_ID)
+          .setTitle('Pick the expense shared with you')
+          .setCallback(d => {
+            if (d.action === google.picker.Action.PICKED) res(d.docs.map(x => x.id));
+            else if (d.action === google.picker.Action.CANCEL) res([]);
+          })
+          .build().setVisible(true);
+      });
+    }
+
+    /* ---------- Google OAuth ---------- */
+    function initGoogle() {
+      if (tokenClient) return true;
+      if (!configured() || !window.google?.accounts?.oauth2) return false;
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: SCOPES,
+        callback: r => {
+          const p = pendingToken; pendingToken = null;
+          if (!p) return;
+          if (r.error) return p.rej(new Error(r.error_description || r.error));
+          if (!google.accounts.oauth2.hasGrantedAllScopes(r, DRIVE_SCOPE))
+            return p.rej(new Error('Please allow Google Drive access – it is where your encrypted data is saved.'));
+          accessToken = r.access_token;
+          tokenExp = Date.now() + (r.expires_in - 60) * 1000;
+          p.res(accessToken);
+        },
+        error_callback: err => {
+          const p = pendingToken; pendingToken = null;
+          if (!p) return;
+          const e = new Error(err.message || err.type || 'Login failed');
+          e.type = err.type;
+          p.rej(e);
+        }
+      });
+      return true;
+    }
+    window.addEventListener('load', initGoogle);
+
+    // Must be called from a click so the Google popup isn't blocked
+    function requestToken(prompt) {
+      return new Promise((res, rej) => {
+        if (!initGoogle()) return rej(new Error('Google login is still loading – try again in a moment.'));
+        pendingToken = { res, rej };
+        const hint = user?.email || lastUser()?.email || '';
+        tokenClient.requestAccessToken({ prompt, hint, login_hint: hint });
+      });
+    }
+
+    async function gfetch(url, opts = {}) {
+      if (!accessToken || Date.now() > tokenExp) {
+        try { await requestToken(''); }
+        catch { const e = new Error('Session expired'); e.reauth = true; throw e; }
+      }
+      const r = await fetch(url, { ...opts, headers: { ...(opts.headers || {}), Authorization: 'Bearer ' + accessToken } });
+      if (r.status === 401) {
+        accessToken = null;
+        const e = new Error('Session expired'); e.reauth = true; throw e;
+      }
+      if (!r.ok) throw new Error(`Google Drive error ${r.status}: ${await r.text()}`);
+      return r;
+    }
+
+    /* ---------- Google Drive (hidden app-data folder) ---------- */
+    async function findFile() {
+      const q = encodeURIComponent(`name='${FILE_NAME}' and trashed=false`);
+      const r = await gfetch(`${DRIVE}?spaces=appDataFolder&q=${q}&orderBy=modifiedTime desc&fields=files(id,modifiedTime)`);
+      return (await r.json()).files[0] || null;
+    }
+    async function downloadFile(id) {
+      return (await gfetch(`${DRIVE}/${id}?alt=media`)).json();
+    }
+    async function uploadData() {
+      const body = JSON.stringify(await encryptData({
+        expenses: privateExpenses(), monthNotes: privateNotes(), viaOptions: payModes, cardCycles, books, sharedRefs, savedAt: new Date().toISOString()
+      }));
+      let r;
+      if (cloud.fileId) {
+        r = await gfetch(`${UPLOAD}/${cloud.fileId}?uploadType=media&fields=id,modifiedTime`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body
+        });
+      } else {
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify({ name: FILE_NAME, parents: ['appDataFolder'] })], { type: 'application/json' }));
+        form.append('file', new Blob([body], { type: 'application/json' }));
+        r = await gfetch(`${UPLOAD}?uploadType=multipart&fields=id,modifiedTime`, { method: 'POST', body: form });
+      }
+      const f = await r.json();
+      cloud.fileId = f.id;
+      cloud.modified = f.modifiedTime;
+    }
+
+    // Pick up changes made on another device (phone <-> laptop)
+    async function pullRemote() {
+      if (!user || !cryptoKey || dirty || saving || document.hidden || !accessToken || Date.now() > tokenExp) return;
+      try {
+        const f = await findFile();
+        if (!f || f.modifiedTime === cloud.modified) return;
+        const env = await downloadFile(f.id);
+        const data = await decryptData(env, cryptoKey);
+        if (dirty || saving) return;   // local edits win; they'll be uploaded next
+        cloud.fileId = f.id;
+        cloud.modified = f.modifiedTime;
+        // replace my private data, keep the shared expenses that are loaded in memory
+        const sharedNow = expenses.filter(e => isShared(bookOf(e)));
+        const sharedNotes = Object.fromEntries(Object.entries(monthNotes).filter(([k]) => isShared(k)));
+        expenses = (data.expenses || []).concat(sharedNow);
+        monthNotes = { ...(data.monthNotes || {}), ...sharedNotes };
+        payModes = migrateModes(data.viaOptions, data.payModes, data.expenses); cardCycles = data.cardCycles || {};
+        books = normBooks(data.books);
+        sharedRefs = data.sharedRefs || [];
+        refreshView();
+      } catch (e) { console.warn('Sync check failed', e); }
+    }
+
+    // someone else edited the shared expense that is open right now -> reload it
+    async function pullShared() {
+      if (!user || screen !== 'book' || !isShared(curBook) || dirty || saving || document.hidden || !accessToken || Date.now() > tokenExp) return;
+      const fileId = curBook.slice(SH.length), f = sharedFiles[fileId];
+      if (!f) return;
+      try {
+        const meta = await (await gfetch(`${DRIVE}/${fileId}?fields=modifiedTime`)).json();
+        if (meta.modifiedTime === f.modified || dirty || saving) return;
+        await loadSharedFile(fileId);
+        if (!$('monthly').contains(document.activeElement)) renderMonthly();
+      } catch (e) { console.warn('Shared sync check failed', e); }
+    }
+    setInterval(pullShared, 15000);
+    window.addEventListener('focus', pullShared);
+    setInterval(pullRemote, 20000);
+    window.addEventListener('focus', pullRemote);
+
+    /* ---------- Login / signup / logout ---------- */
+    async function login(prompt) {
+      try {
+        await requestToken(prompt);
+        setAuthUI('loading');
+        const p = await (await gfetch('https://www.googleapis.com/oauth2/v3/userinfo')).json();
+        user = { sub: p.sub, name: p.name || p.email, email: p.email, picture: p.picture };
+        try { localStorage.setItem('lastUser', JSON.stringify({ name: user.name, email: user.email })); } catch {}
+        setAuthUI();
+        await openVault();
+      } catch (e) {
+        if (e.type !== 'popup_closed') {
+          console.error(e);
+          alert('Login failed: ' + e.message);
+        }
+        await logout(true);
+      }
+    }
+
+    async function openVault() {
+      setSync('loading');
+      const file = await findFile();
+      let data;
+
+      if (file) {
+        // Existing user: download and decrypt
+        const env = await downloadFile(file.id);
+        cloud = { fileId: file.id, modified: file.modifiedTime, salt: fromB64(env.salt) };
+        const key = await userKey(cloud.salt, env.iter || PBKDF2_ITER);
+        try { data = await decryptData(env, key); }
+        catch { throw new Error('Could not decrypt your saved data (was APP_SECRET changed?).'); }
+        cryptoKey = key;
+      } else {
+        // First login = sign up: new encrypted file, carry over any guest data
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        cloud = { fileId: null, modified: null, salt };
+        cryptoKey = await userKey(salt, PBKDF2_ITER);
+        data = { expenses: load(), monthNotes: loadNotes(), viaOptions: loadModes(), cardCycles: loadCycles(), books: loadBooks() };
+      }
+
+      expenses = data.expenses || [];
+      monthNotes = data.monthNotes || {};
+      payModes = migrateModes(data.viaOptions, data.payModes, data.expenses); cardCycles = data.cardCycles || {};
+      books = normBooks(data.books);
+      sharedRefs = data.sharedRefs || [];
+      if (!file) {
+        await uploadData();
+        // guest data now lives (encrypted) in Drive – remove the plain copy
+        try { localStorage.removeItem(KEY); localStorage.removeItem(NOTES_KEY); localStorage.removeItem(MODES_KEY); localStorage.removeItem(OLD_MODES_KEY); localStorage.removeItem(CYCLES_KEY); localStorage.removeItem(BOOKS_KEY); } catch {}
+      }
+      setSync('saved');
+      refreshView();
+    }
+
+    async function logout(silent) {
+      if (!silent && user && (dirty || saving)) {
+        clearTimeout(saveTimer);
+        await flush();
+      }
+      if (!silent) forgetLast();
+      user = null; cryptoKey = null; accessToken = null; tokenExp = 0;
+      cloud = { fileId: null, modified: null, salt: null };
+      dirty = false; vaultDirty = false;
+      expenses = load();
+      monthNotes = loadNotes();
+      payModes = loadModes();
+      cardCycles = loadCycles();
+      books = loadBooks();
+      sharedRefs = [];
+      Object.keys(sharedFiles).forEach(k => delete sharedFiles[k]);
+      setAuthUI();
+      refreshView();
+    }
+
+    function startLogin(prompt) {
+      if (!configured()) {
+        alert('Google login is not set up yet.\n\nCreate an OAuth Client ID (see README.md) and paste it into GOOGLE_CLIENT_ID in index.html.');
+        return;
+      }
+      if (location.protocol === 'file:') {
+        alert('Google login needs the app to run on a web server.\n\nRun:  node server.js\nthen open  http://localhost:8000');
+        return;
+      }
+      login(prompt);
+    }
+
+    function refreshView() {
+      if (!bookExists(curBook)) {                          // open book was deleted / logged out of a shared one
+        curBook = 'monthly';
+        if (screen === 'book') { openScreen('home', false); navStack.length = 0; return; }
+      }
+      if (screen === 'book') {
+        $('screenTitle').textContent = `${bookIcon(curBook)} ${bookName(curBook)}`;
+        if (!canEdit(curBook)) $('screenTitle').insertAdjacentHTML('beforeend', ' <span class="view-only-tag">👁 view only</span>');
+      }
+      if (!$('books').hidden) renderBooks();
+      if (!$('shared').hidden) renderShared();
+      if (!$('favs').hidden) renderFavs();
+      if (!$('monthly').hidden && !$('monthly').contains(document.activeElement)) renderMonthly();
+    }
+
+    /* ---------- Header: login button / profile ---------- */
+    const G_ICON = '<svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+
+    function setAuthUI(state) {
+      const a = $('auth');
+      if (state === 'loading') { a.innerHTML = '<span>⏳ Signing in…</span>'; return; }
+
+      if (user) {
+        const avatar = user.picture
+          ? `<img src="${esc(user.picture)}" alt="" referrerpolicy="no-referrer">`
+          : `<span class="avatar">${esc(user.name[0].toUpperCase())}</span>`;
+        a.innerHTML = `
+          <div class="profile">
+            ${avatar}
+            <div><span class="name">${esc(user.name)}</span><span class="sync" id="syncStatus"></span></div>
+          </div>
+          <button class="logout" id="logoutBtn">Logout</button>`;
+        $('logoutBtn').onclick = () => logout();
+        setSync(syncState);
+        return;
+      }
+
+      const last = lastUser();
+      a.innerHTML = last
+        ? `<button class="g-btn" id="loginBtn">${G_ICON} Continue as ${esc(last.name.split(' ')[0])}</button>
+           <button class="link-btn" id="otherBtn">Use another account</button>`
+        : `<button class="g-btn" id="loginBtn">${G_ICON} Login / Sign up with Google</button>`;
+      $('loginBtn').onclick = () => startLogin(last ? '' : 'select_account');
+      if (last) $('otherBtn').onclick = () => { forgetLast(); startLogin('select_account'); };
+    }
+
+    function setSync(state) {
+      syncState = state;
+      const el = $('syncStatus');
+      if (!el) return;
+      el.innerHTML = {
+        loading: '⏳ Loading from Drive…',
+        saving: '⏳ Saving…',
+        saved: '☁️ Saved to Drive · 🔒 encrypted',
+        error: '⚠️ Not saved <button id="retryBtn">Retry</button>',
+        reauth: '⚠️ Session expired <button id="retryBtn">Reconnect</button>'
+      }[state] || '';
+      const b = $('retryBtn');
+      if (b) b.onclick = async () => {
+        try {
+          if (state === 'reauth' || !accessToken || Date.now() > tokenExp) await requestToken('');
+          dirty = true;
+          flush();
+        } catch (e) { alert(e.message); }
+      };
+    }
+
+    // switch month labels between long/short when the screen size or orientation changes
+    ['(max-width: 759px)', '(max-width: 599px)', '(orientation: portrait)'].forEach(q => window.matchMedia(q).addEventListener('change', () => {
+      if (!$('monthly').hidden && !$('monthly').contains(document.activeElement)) renderMonthly();
+    }));
+
+    // phones: the one-line note gets out of the way while you scroll the entries
+    $('mTable').parentElement.addEventListener('scroll', ev => {
+      const w = ev.target, m = $('monthly');
+      if (w.scrollTop > 24 && w.scrollHeight - w.clientHeight > 80) m.classList.add('list-scrolled');
+      else if (w.scrollTop < 4) m.classList.remove('list-scrolled');
+    }, { passive: true });
+
+    // ⤢ Landscape: full-screen + turn sideways, so the whole grid (all columns) fits
+    $('landscapeBtn').addEventListener('click', async () => {
+      const inFull = document.fullscreenElement || document.webkitFullscreenElement;
+      if (inFull) {                                     // second tap: back to normal
+        try { screen.orientation?.unlock?.(); } catch {}
+        try { await (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch {}
+        return;
+      }
+      try {
+        const el = document.documentElement;
+        await (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+        await screen.orientation.lock('landscape');
+      } catch {
+        mFlash('↻ Turn your phone sideways to see every column (landscape view).');
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      $('landscapeBtn').textContent = document.fullscreenElement ? '⤡' : '⤢';
+      $('landscapeBtn').title = document.fullscreenElement ? 'Exit landscape view' : 'Landscape view – see every column';
+    });
+
+    /* ---------- Init ---------- */
+    applyTimeToggle();
+    openScreen('home', false);
+    setAuthUI();
+  </script>
+</body>
+</html>
