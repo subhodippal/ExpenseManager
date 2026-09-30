@@ -102,8 +102,34 @@
       display: grid; place-items: center;
     }
     .profile .name { font-weight: 600; line-height: 1.2; }
+    .profile .avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .profile .avatar:has(img) { padding: 0; overflow: hidden; }
     .profile .sync { font-size: .78rem; opacity: .9; display: block; }
     .profile .sync button { background: none; border: none; color: #fde68a; text-decoration: underline; cursor: pointer; font-size: .78rem; }
+    /* header profile: avatar (tap = edit profile) with a small save-status dot, name, Logout */
+    button.profile { background: none; border: none; color: inherit; font: inherit; cursor: pointer; padding: 0; text-align: left; }
+    .avatar-wrap { position: relative; flex: 0 0 auto; display: inline-grid; }
+    .profile .avatar.hero { padding: 0; overflow: hidden; background: #fff; }
+    .avatar.hero svg, .pf-preview svg, .pf-hero svg { width: 100%; height: 100%; display: block; }
+    .sync-dot { position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; background: #22c55e; }
+    .sync-dot.saving, .sync-dot.loading { background: #f59e0b; animation: dotPulse 1s ease-in-out infinite; }
+    .sync-dot.error { background: #ef4444; }
+    @keyframes dotPulse { 50% { opacity: .35; } }
+    .sync-err { font-size: .78rem; display: inline-flex; align-items: center; gap: 4px; }
+    .sync-err:empty { display: none; }
+    .sync-err button { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5); color: #fff; border-radius: 6px; padding: 1px 8px; cursor: pointer; font-size: .75rem; }
+    .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .profile-modal { max-width: 420px; }
+    .pf-top { display: flex; align-items: center; gap: 16px; }
+    .pf-preview { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; flex: 0 0 auto; display: grid; place-items: center;
+      background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; font-size: 2rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+    .pf-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .pf-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .pf-upload { cursor: pointer; position: relative; }
+    .pf-heroes { display: flex; gap: 10px; flex-wrap: wrap; }
+    .pf-hero { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; padding: 0; cursor: pointer; border: 3px solid transparent; background: none; transition: transform .15s; }
+    .pf-hero:hover { transform: translateY(-2px); }
+    .pf-hero.on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--card), 0 0 0 4px #7c3aed; }
     .logout {
       background: rgba(255,255,255,.18); color: #fff;
       border: 1px solid rgba(255,255,255,.4); border-radius: 8px;
@@ -233,7 +259,7 @@
     #monthly #tbody input[data-f=received] { color: var(--recv-item); font-weight: 600; }
     .edit-table .c-date-cell { width: 120px; }            /* edit: 📅 + time box */
     #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 96px; }   /* view: "Wed, 30 Sept" / time */
-    #mTable.flat .c-date-cell { width: 222px !important; }                      /* flat list, edit: date box + time box */
+    #mTable.flat .c-date-cell { width: 196px !important; }                      /* flat list, edit: date (text) + time box */
     #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 150px !important; }   /* flat list, view: "Tue, 22 Sept · 9:05 pm" */
     .edit-table .c-time-cell { width: 88px; }
     .edit-table .c-sent, .edit-table .c-recv { width: 82px; }
@@ -241,6 +267,12 @@
     .edit-table .c-note { width: 16%; }
     .edit-table:not(.hide-time) .c-note { width: 12%; }
     .edit-table .c-del { width: 40px; text-align: center; }
+    /* "By" (who added it) – shared books only */
+    .edit-table .c-by { display: none; width: 84px; }
+    #mTable.with-by .c-by { display: table-cell; }
+    .by-chip { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;
+      font-size: .72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: #eef2ff; color: #4338ca; }
+    html[data-theme=dark] .by-chip { background: #1e1b2e; color: #c4b5fd; }
     .edit-table input, .edit-table textarea {
       border: 1px solid transparent;
       border-radius: 6px;
@@ -256,6 +288,7 @@
       line-height: 1.3; white-space: pre-wrap; overflow-wrap: anywhere;
     }
     .edit-table input[type=number] { text-align: right; }
+    #monthly:not(.viewmode):not(.readonly) .edit-table input[type=number]:disabled { opacity: .35; cursor: not-allowed; background: transparent; }
     .edit-table tr.invalid input.bad { border-color: var(--sent); background: #fef2f2; }
     .edit-table tfoot td { font-weight: 700; background: #f9fafb; padding: 10px 12px; }
     .row-del {
@@ -342,7 +375,7 @@
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .note-preview:hover { border-color: #a855f7; }
-    .note-preview.empty { color: var(--muted); }
+    .note-preview.is-empty { color: var(--muted); }
     .note-preview .more { color: #7e22ce; font-size: .8rem; margin-left: 6px; }
     .month-notes textarea {
       flex: 1; min-height: 72px; resize: vertical; overflow-y: auto;
@@ -351,7 +384,14 @@
 
     /* Inside a book the page itself doesn't scroll: header, toolbar, note and column
        titles stay put, the monthly total stays at the bottom, only the entries scroll */
-    body.book-mode { position: fixed; inset: 0; height: 100vh; height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+    /* height = the part of the screen you can actually see (set from JS as --app-h, so the browser's
+       address / tool bars never cover the total row); min-height: 0 undoes body's 100vh, which on
+       phones is the height *without* the address bar and pushed the total row off-screen */
+    body.book-mode {
+      position: fixed; inset: 0; min-height: 0; height: 100dvh; height: var(--app-h, 100dvh);
+      overflow: hidden; display: flex; flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom, 0px);        /* iPhone home bar */
+    }
     body.book-mode main { flex: 1; min-height: 0; width: 100%; display: flex; flex-direction: column; padding-bottom: 10px; }
     body.book-mode #monthly { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 16px; }
     body.book-mode #monthly > * { flex-shrink: 0; }
@@ -365,11 +405,15 @@
     .screen-head { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
     .screen-head h1 { font-size: clamp(1.15rem, 3.4vw, 1.6rem); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .back-btn {
-      flex: 0 0 auto; background: rgba(255,255,255,.18); color: #fff;
-      border: 1px solid rgba(255,255,255,.45); border-radius: 8px;
-      padding: 7px 14px; font-size: .95rem; font-weight: 600; cursor: pointer;
+      flex: 0 0 auto; width: 38px; height: 38px; padding: 0; border-radius: 50%; cursor: pointer;
+      display: grid; place-items: center; color: #fff;
+      background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.35);
+      box-shadow: 0 2px 8px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.25);
+      backdrop-filter: blur(6px); transition: background .15s, transform .15s;
     }
-    .back-btn:hover { background: rgba(255,255,255,.3); }
+    .back-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+    .back-btn:hover { background: rgba(255,255,255,.3); transform: translateX(-2px); }
+    .back-btn:active { transform: scale(.92); }
     body.screen-mode header { padding: 10px 16px; }
     body.screen-mode .header-inner { flex-wrap: nowrap; }
 
@@ -403,7 +447,6 @@
     .default-tag { background: #e0e7ff; color: #3730a3; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; vertical-align: middle; }
     .book-actions { display: flex; gap: 4px; flex: 0 0 auto; }
     .book-actions .btn { padding: 6px 8px; }
-    .book-actions .fav-btn { padding: 4px 2px; }
     .mem { white-space: nowrap; }
     .add-book { border-style: dashed; color: var(--primary); justify-content: center; min-height: 92px; }
     #booksMsg { margin-top: 12px; }
@@ -420,7 +463,10 @@
     .sec-title { font-size: 1rem; color: #3730a3; margin: 0 0 10px; }
     .shared-tag { background: #ede9fe; color: #5b21b6; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; vertical-align: middle; }
     .role-tag { background: #f1f5f9; color: #475569; font-size: .7rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; }
-    .fav-btn { background: none !important; font-size: 1.35rem; line-height: 1; color: #94a3b8; }
+    .fav-btn { background: none !important; line-height: 0; color: #94a3b8; padding: 6px !important; display: inline-grid; place-items: center; }
+    .fav-btn .heart-ico { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; transition: transform .15s; }
+    .fav-btn.on .heart-ico { fill: currentColor; }
+    .fav-btn:not(.locked):active .heart-ico { transform: scale(1.25); }
     .fav-btn.on { color: #ef4444; }
     .fav-btn:hover { color: #ef4444; }
     .fav-btn.locked { opacity: 1; cursor: default; }        /* My Monthly Expenses: always a favourite */
@@ -745,7 +791,7 @@
       .dt-cell input[data-f=date] { width: 104px; font-size: .74rem; padding: 4px 2px; }
       .dt-cell .date-pick { padding: 2px; font-size: .8rem; }
       #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 62px; }   /* "Wed, 30" */
-      #mTable.flat .c-date-cell { width: 192px !important; }
+      #mTable.flat .c-date-cell { width: 170px !important; }
       #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 128px !important; }
       .dl-long { display: none; }
       .dl-short { display: inline; }
@@ -756,6 +802,7 @@
       .edit-table .c-via { width: 96px; }
       .edit-table .c-del { width: 28px; }
       .edit-table .c-note { width: 12%; }
+      .edit-table .c-by { width: 70px; }
       .star-btn { font-size: 1rem; }
       tr.day-head td, tr.week-total td, tr.total td { padding: 4px 6px; font-size: .8rem; }
       .dup-tag { font-size: .62rem; padding: 0 4px; }
@@ -779,7 +826,8 @@
       body.screen-mode .profile img, body.screen-mode .profile .avatar { width: 26px; height: 26px; }
       body.screen-mode .profile .name, body.screen-mode .profile .sync, body.screen-mode .logout,
       body.screen-mode .g-btn, body.screen-mode .link-btn, .back-btn .lbl { display: none; }
-      .back-btn { padding: 2px 10px; font-size: .9rem; }
+      .back-btn { width: 28px; height: 28px; }
+      .back-btn svg { width: 16px; height: 16px; }
       body.book-mode main { padding: 2px 6px 4px; }
       body.book-mode #monthly { padding: 4px 8px; }
       .month-bar { padding-bottom: 3px; gap: 4px; }
@@ -820,6 +868,10 @@
       html:not(.tbl-wide) #mTable thead .c-sent, html:not(.tbl-wide) #mTable thead .c-recv, html:not(.tbl-wide) #mTable thead .c-sv, html:not(.tbl-wide) #mTable thead .c-rv,
       html:not(.tbl-wide) #tbody tr[data-id] .c-sent, html:not(.tbl-wide) #tbody tr[data-id] .c-recv, html:not(.tbl-wide) #tbody tr[data-id] .c-sv, html:not(.tbl-wide) #tbody tr[data-id] .c-rv,
       html:not(.tbl-wide) #tbody tr[data-id] .star-btn, html:not(.tbl-wide) #tbody tr[data-id] .dup-tag { display: none !important; }
+      html:not(.tbl-wide) #mTable thead .c-by, html:not(.tbl-wide) #mTable:not(.with-by) .c-by { display: none !important; }
+      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] { grid-template-columns: 18px 90px minmax(0, 1fr) 84px 46px; grid-template-areas: none; }
+      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] .c-by { display: block !important; grid-column: 3; grid-row: 2; padding: 0 0 2px 4px; line-height: 1; }
+      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] .by-chip { font-size: .62rem; padding: 0 6px; }
       /* view mode: ☆/★ at the start of the line (where the checkbox is when editing) */
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { display: inline-block !important; font-size: .95rem; padding: 0; }
       html:not(.tbl-wide) #mTable thead .c-amt, html:not(.tbl-wide) #mTable thead .c-via, html:not(.tbl-wide) #tbody tr[data-id] .c-amt, html:not(.tbl-wide) #tbody tr[data-id] .c-via { display: block; }
@@ -958,11 +1010,21 @@
       .modal-head h3 { font-size: .92rem; }
     }
 
-    /* the landscape button only makes sense on phones */
+    /* the landscape button only makes sense on phones held upright */
     .landscape-btn { display: none !important; }
-    @media (max-width: 600px), (max-height: 520px) and (orientation: landscape) {
+    @media (max-width: 600px) and (orientation: portrait) {
       .landscape-btn { display: inline-block !important; }
     }
+    /* ⤢ turned on: the whole page is drawn sideways (90°), so you can read it landscape
+       even with the phone's auto-rotate switched off */
+    html.rot90, html.rot90 body { overflow: hidden; }
+    html.rot90 body.book-mode {
+      inset: auto; top: 0; left: var(--app-w, 100vw);
+      width: var(--app-h, 100vh); height: var(--app-w, 100vw);
+      transform-origin: top left; transform: rotate(90deg);
+    }
+    html.rot90 .landscape-btn { display: inline-block !important; background: #dbeafe; color: #1e40af; }
+    html.rot90 .wide-btn { display: none !important; }
     /* phones: the one-line note hides while you scroll the entries */
     @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
       #monthly.list-scrolled .month-notes { display: none; }
@@ -992,6 +1054,11 @@
       .panel { padding: 16px; }
       .actions .btn { flex: 1; }
     }
+    /* edit mode: the date can't be changed – it shows as text (flat list), only the time is a box */
+    #monthly:not(.viewmode):not(.readonly) .dt-view { display: inline-block; flex: 0 1 auto; min-width: 0; color: var(--text); }
+    #monthly:not(.viewmode):not(.readonly) .dt-view :is(.dv-sep, .dv-time, .dv-compact) { display: none !important; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.flat .dt-view .dv-date { display: inline !important; }
+
     /* ---------- 🌙 Dark theme (html[data-theme=dark], toggled in the header) ---------- */
     .theme-btn {
       flex: 0 0 auto; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 1rem; line-height: 1;
@@ -1087,7 +1154,7 @@
         <p>Track your money, simply</p>
       </div>
       <div class="screen-head" id="screenHead" hidden>
-        <button type="button" class="back-btn" id="backBtn" title="Back">←<span class="lbl"> Back</span></button>
+        <button type="button" class="back-btn" id="backBtn" title="Back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
         <h1 id="screenTitle"></h1>
       </div>
       <div class="auth" id="auth"></div>
@@ -1248,6 +1315,7 @@
               <th class="c-sv sortable" data-sort="sentVia">Send Via</th>
               <th class="c-rv sortable" data-sort="receivedVia">Recv Via</th>
               <th class="c-via sortable" data-sort="via">Via</th>
+              <th class="c-by sortable" data-sort="by" title="Who added the entry">By</th>
               <th class="c-note sortable" data-sort="note">Note</th>
               <th class="c-del"></th>
             </tr>
@@ -1257,7 +1325,7 @@
             <tr class="total">
               <td colspan="2" id="mTotalLabel">Total</td>
               <td class="c-time-cell"></td>
-              <td colspan="6" class="tot-sums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net">Net: <span id="mNet">₹0.00</span></span></div></td>
+              <td colspan="6" class="tot-sums" id="totSums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net">Net: <span id="mNet">₹0.00</span></span></div></td>
             </tr>
           </tfoot>
         </table>
@@ -1278,6 +1346,33 @@
       <button type="button" class="btn btn-light g-login" id="loginGoogle">Continue with Google</button>
       <div class="msg" id="loginMsg" hidden></div>
       <div class="err" id="loginErr" hidden></div>
+    </form>
+  </div>
+
+  <!-- 👤 Profile: your name + photo (or a cartoon hero face) -->
+  <div class="overlay" id="profileDlg" hidden>
+    <form class="modal profile-modal" id="profileForm" autocomplete="off">
+      <div class="modal-head">
+        <h3>👤 Your profile</h3>
+        <button type="button" class="modal-x" id="profileX" title="Close">✕</button>
+      </div>
+      <div class="pf-top">
+        <span class="pf-preview" id="pfPreview"></span>
+        <div class="pf-actions">
+          <label class="btn btn-light btn-sm pf-upload">📷 Upload photo<input type="file" id="pfFile" accept="image/*" class="visually-hidden"></label>
+          <button type="button" class="btn btn-light btn-sm" id="pfClear">No photo</button>
+        </div>
+      </div>
+      <p class="hint">…or pick a hero:</p>
+      <div class="pf-heroes" id="pfHeroes"></div>
+      <label for="pfName">Your name</label>
+      <input type="text" id="pfName" maxlength="30" placeholder="e.g. Subhodip">
+      <p class="hint">Friends see this name on expenses you share and on entries you add.</p>
+      <div class="err" id="pfErr" hidden></div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-light" id="pfCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
     </form>
   </div>
 
@@ -1417,12 +1512,14 @@
 
     // ⚡ Quick access: any book (mine: its id, shared: 'sh_' + id) starred with ☆ – shown on the home screen
     const QUICK_KEY = 'quick_v1';
+    // a round heart icon (outline when off, filled when on – see .fav-btn CSS)
+    const HEART = '<svg class="heart-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.3 10.6 19C5.4 14.4 2 11.3 2 7.6 2 4.5 4.4 2.2 7.4 2.2c1.7 0 3.4.8 4.6 2.1 1.2-1.3 2.9-2.1 4.6-2.1 3 0 5.4 2.3 5.4 5.4 0 3.7-3.4 6.8-8.6 11.4L12 20.3z"/></svg>';
     let quick = loadQuick();
     function loadQuick() { try { return new Set(JSON.parse(localStorage.getItem(QUICK_KEY)) || []); } catch { return new Set(); } }
     // My Monthly Expenses (or its shared copy) is always a favourite – its ♥ can't be turned off
     const isMyMonthly = id => id === 'monthly' || (!!monthlyShared && id === SH + monthlyShared);
-    const lockedHeart = '<button type="button" class="btn btn-light btn-sm fav-btn on locked" disabled title="Always in Quick access">♥</button>';
-    const quickBtn = id => isMyMonthly(id) ? lockedHeart : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(id) ? 'on' : ''}" data-act="quick" title="${quick.has(id) ? 'Remove from Quick access' : 'Add to Quick access'}">${quick.has(id) ? '♥' : '♡'}</button>`;
+    const lockedHeart = '<button type="button" class="btn btn-light btn-sm fav-btn on locked" disabled title="Always in Quick access">' + HEART + '</button>';
+    const quickBtn = id => isMyMonthly(id) ? lockedHeart : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(id) ? 'on' : ''}" data-act="quick" title="${quick.has(id) ? 'Remove from Quick access' : 'Add to Quick access'}">${HEART}</button>`;
     function toggleQuick(id) { if (isMyMonthly(id)) return; if (quick.has(id)) quick.delete(id); else quick.add(id); saveVault(); }
 
     /* ---------- Screens: home · books list · new book · one book ---------- */
@@ -1432,6 +1529,7 @@
     function openScreen(name, push = true) {
       pruneBlank();
       if (push && name !== screen) navStack.push(screen);
+      if (name !== 'book' && document.documentElement.classList.contains('rot90')) setRotated(false);
       const prev = screen;
       screen = name;
       const home = name === 'home';
@@ -1580,10 +1678,10 @@
         </div>
         <div class="book-actions">
           ${mine
-            ? `${isMyMonthly(SH + r.id) ? lockedHeart : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(SH + r.id) ? 'on' : ''}" data-act="fav" title="${quick.has(SH + r.id) ? 'Remove from Quick access' : 'Add to Quick access'}">${quick.has(SH + r.id) ? '♥' : '♡'}</button>`}
+            ? `${isMyMonthly(SH + r.id) ? lockedHeart : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(SH + r.id) ? 'on' : ''}" data-act="fav" title="${quick.has(SH + r.id) ? 'Remove from Quick access' : 'Add to Quick access'}">${HEART}</button>`}
                <button type="button" class="btn btn-light btn-sm" data-act="share" title="Manage sharing">🔗</button>
                ${r.id === monthlyShared ? '' : '<button type="button" class="btn btn-danger btn-sm" data-act="delete-shared" title="Delete for everyone">🗑</button>'}`
-            : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(SH + r.id) ? 'on' : ''}" data-act="fav" title="${quick.has(SH + r.id) ? 'Remove from Quick access' : 'Add to Quick access'}">${quick.has(SH + r.id) ? '♥' : '♡'}</button>
+            : `<button type="button" class="btn btn-light btn-sm fav-btn ${quick.has(SH + r.id) ? 'on' : ''}" data-act="fav" title="${quick.has(SH + r.id) ? 'Remove from Quick access' : 'Add to Quick access'}">${HEART}</button>
                <button type="button" class="btn btn-light btn-sm" data-act="unlink" title="Remove from my list (the owner keeps it)">🗑</button>`}
         </div>
       </div>`;
@@ -1639,7 +1737,7 @@
         return `<div class="book-card quick-card" data-quick="${esc(id)}" title="Open ${esc(bookName(id))}">
           <div class="book-icon">${bookIcon(id)}</div>
           <div class="book-main"><div class="book-name">${esc(bookName(id))}</div><div class="book-meta">${meta}</div></div>
-          <div class="book-actions">${isMyMonthly(id) ? lockedHeart : '<button type="button" class="btn btn-light btn-sm fav-btn on" data-act="unquick" title="Remove from Quick access">♥</button>'}</div>
+          <div class="book-actions">${isMyMonthly(id) ? lockedHeart : '<button type="button" class="btn btn-light btn-sm fav-btn on" data-act="unquick" title="Remove from Quick access">' + HEART + '</button>'}</div>
         </div>`;
       }).join('');
     }
@@ -2217,6 +2315,10 @@
       return new Set(Object.values(groups).filter(g => g.length > 1).flat());
     }
 
+    // who added an entry – shown as "By" in shared books
+    const byMe = () => user ? { by: user.name, byEmail: myEmail() } : {};
+    const byName = e => e.byEmail && e.byEmail === myEmail() ? 'You' : (e.by || (e.byEmail || '').split('@')[0] || '—');
+
     // Upright phones use ONE amount column (− sent / + received) and ONE "via" column
     const isReceived = e => +e.received > 0 && !(+e.sent > 0);
     const amountCell = e => {
@@ -2234,9 +2336,8 @@
           <button type="button" class="star-btn ${e.starred ? 'on' : ''}" title="${e.starred ? 'Unstar' : 'Star this entry'}">${e.starred ? '★' : '☆'}</button>
         </div></td>
         <td class="c-date-cell"><div class="dt-cell">
-          <input type="date" data-f="date" value="${esc(e.date || today())}"><button type="button" class="date-pick" title="Change date">📅</button>
-          <input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
           <span class="dt-view"><span class="dv-date">${dayName(e.date)}</span>${e.time ? `<span class="dv-sep"> · </span><span class="dv-time">${fmtTime(e.time)}</span>` : ''}<span class="dv-compact">${compactDT(e)}</span></span>
+          <input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
         </div></td>
         <td class="c-sent"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="sent" value="${+e.sent || ''}"></td>
         <td class="c-recv"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="received" value="${+e.received || ''}"></td>
@@ -2245,6 +2346,7 @@
         <td class="c-sv"><select data-f="sentVia" data-prev="${esc(e.sentVia)}">${modeOptions(e.sentVia)}</select></td>
         <td class="c-rv"><select data-f="receivedVia" data-prev="${esc(e.receivedVia)}">${modeOptions(e.receivedVia)}</select></td>
         <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select></td>
+        <td class="c-by" title="Added by ${esc(e.by || e.byEmail || 'unknown')}"><span class="by-chip">${esc(byName(e))}</span></td>
         <td class="c-note"><input type="text" data-f="note" placeholder="Note" value="${esc(e.note)}" title="${esc(e.note)}"></td>
         <td class="c-del">${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
 
@@ -2259,7 +2361,7 @@
       const text = (monthNotes[noteKey(curMonth)] || '').trim();
       const lines = text.split('\n').filter(l => l.trim());
       const p = $('notePreview');
-      p.classList.toggle('empty', !text);
+      p.classList.toggle('is-empty', !text);
       p.innerHTML = text
         ? esc(lines[0]) + (lines.length > 1 ? `<span class="more">+${lines.length - 1} more line${lines.length > 2 ? 's' : ''}</span>` : '')
         : `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…`;
@@ -2408,8 +2510,11 @@
         $(id).textContent = on ? (sortDir === 1 ? '▲' : '▼') : '⇅';
       });
 
-      const cols = showTime ? 9 : 8;          // tools, date, [time], sent, recv, purpose, via, note, ✕
+      const cols = (showTime ? 9 : 8) + (isShared(curBook) ? 1 : 0);   // tools, date, [time], sent, recv, purpose, via, [by], note, ✕
       $('mTable').classList.toggle('flat', sortCol !== 'date');     // flat list shows the full date box
+      const showBy = isShared(curBook);
+      $('mTable').classList.toggle('with-by', showBy);
+      const span = showBy ? 5 : 4;                                  // purpose … note area of date / week rows
       const items = visibleItems().sort(compareRows);
       const row = (e, cls = '') => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
       let html = '';
@@ -2462,7 +2567,7 @@
               <td class="c-time-cell"></td>
               <td class="c-sent num day-sent"></td>
               <td class="c-recv num day-recv"></td>
-              <td colspan="4" class="day-info"><div class="sums">
+              <td colspan="${span}" class="day-info"><div class="sums">
                 ${d === todayStr ? '<span class="today-tag">Today</span>' : ''}<span class="day-count">${dayItems.length ? `${dayItems.length} entr${dayItems.length > 1 ? 'ies' : 'y'}` : 'no entries'}</span>
                 <button type="button" class="day-add" data-date="${d}" title="Add an entry for this date">＋ Add</button>
               </div></td></tr>`;
@@ -2475,7 +2580,7 @@
             </div></td>
             <td class="c-date-cell wk-label-cell"><span class="wk-label"></span></td><td class="c-time-cell"></td>
             <td class="c-sent num wk-sent"></td><td class="c-recv num wk-recv"></td>
-            <td colspan="4" class="wk-net"></td></tr>`;
+            <td colspan="${span}" class="wk-net"></td></tr>`;
         });
       }
 
@@ -2484,6 +2589,7 @@
       $('tbody').querySelectorAll('tr[data-id]').forEach(markRow);
       $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
       markDuplicates();
+      $('totSums').colSpan = showBy ? 7 : 6;
       updateMonthTotals();
       updateSelection();
       updateFilterUI();
@@ -2567,6 +2673,7 @@
         return x.localeCompare(y) * sortDir || byDate(a, b);
       }
       if (sortCol === 'date') return byDate(a, b) * sortDir;
+      if (sortCol === 'by') return byName(a).localeCompare(byName(b)) * sortDir || byDate(a, b);
       if (sortCol === 'amount') {
         // all amounts: sent entries first, then received; within each, ascending (or descending on 2nd tap)
         const ra = isReceived(a) ? 1 : 0, rb = isReceived(b) ? 1 : 0;
@@ -2637,6 +2744,14 @@
       const needPurpose = !isBlank(e) && !e.purpose;
       const needAmount = !isBlank(e) && !+e.sent && !+e.received;
       tr.classList.toggle('invalid', needPurpose || needAmount);
+      // only sent OR received: while one has an amount the other box is locked
+      const sIn = tr.querySelector('[data-f=sent]'), rIn = tr.querySelector('[data-f=received]');
+      if (sIn && rIn) {
+        sIn.disabled = +e.received > 0 && !+e.sent;
+        rIn.disabled = +e.sent > 0;
+        sIn.title = sIn.disabled ? 'This entry is money received – clear Recv to enter a sent amount' : '';
+        rIn.title = rIn.disabled ? 'This entry is money sent – clear Sent to enter a received amount' : '';
+      }
       tr.querySelector('[data-f=purpose]').classList.toggle('bad', needPurpose);
       tr.querySelectorAll('[data-f=sent],[data-f=received],[data-f=amount]').forEach(i => i.classList.toggle('bad', needAmount));
     }
@@ -2690,6 +2805,13 @@
       } else {
         if (f === 'purpose' && /\n/.test(inp.value)) inp.value = inp.value.replace(/\s*\n\s*/g, ' ');   // pasted line breaks
         e[f] = inp.type === 'number' ? (parseFloat(inp.value) || 0) : inp.value.trim();
+        // one entry = either sent or received: typing one amount clears the other
+        const other = f === 'sent' ? 'received' : f === 'received' ? 'sent' : null;
+        if (other && +e[f] > 0 && +e[other]) {
+          e[other] = 0;
+          const o = tr.querySelector(`[data-f=${other}]`);
+          if (o) o.value = '';
+        }
         if (f === 'sent' || f === 'received') {
           // keep the payment method on the side that has the amount, and the merged −/+ box in step
           const v = viaOf(e);
@@ -2736,31 +2858,6 @@
       markDuplicates();
       updateMonthTotals();
       save();
-    });
-
-    // date edits apply when the picker closes; entries can move to another month
-    $('tbody').addEventListener('change', ev => {
-      const inp = ev.target, tr = inp.closest('tr[data-id]');
-      if (!tr || inp.dataset.f !== 'date') return;
-      const e = expenses.find(x => x.id === tr.dataset.id);
-      if (!e) return;
-      if (!inp.value) { inp.value = e.date; return; }
-      e.date = inp.value;
-      save();
-      renderMonthly();
-      if (e.date.startsWith(curMonth)) {
-        $('tbody').querySelector(`tr[data-id="${e.id}"] [data-f=date]`)?.focus();
-      } else {
-        mFlash(`📅 Entry moved to ${monthLabel(e.date.slice(0, 7))}.`);
-      }
-    });
-
-    // 📅 in a grouped entry row: open the date picker (the date itself is shown on the date row)
-    $('tbody').addEventListener('click', ev => {
-      const btn = ev.target.closest('.date-pick');
-      if (!btn) return;
-      const inp = btn.parentElement.querySelector('[data-f=date]');
-      try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
     });
 
     // ☆ star / unstar – starred rows are pinned on top
@@ -2845,7 +2942,7 @@
       collapsed.delete('w:' + weekStart(date));
       // under a payment filter, start the entry with the (first) filtered method so it stays visible
       const via = [...viaFilter].find(v => v) || '';
-      const e = { id: newId(), book: curBook, created: Date.now(),
+      const e = { id: newId(), book: curBook, created: Date.now(), ...byMe(),
                   date, sent: 0, received: 0, purpose: '', sentVia: via, receivedVia: '', note: '' };
       expenses.push(e);
       renderMonthly();
@@ -2928,9 +3025,14 @@
     function showTip(anchor, text, ev) {
       tip.textContent = text;
       tip.hidden = false;
-      const r = anchor.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
-      tip.style.left = Math.max(8, Math.min(r.left, innerWidth - tw - 8)) + 'px';
-      tip.style.top = (r.bottom + 6 + th > innerHeight ? r.top - th - 6 : r.bottom + 6) + 'px';
+      let r = anchor.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+      if (isRotated()) {                                   // screen (x, y) -> turned page (y, W - x)
+        r = { left: r.top, right: r.bottom, top: W - r.right, bottom: W - r.left };
+        [W, H] = [H, W];
+      }
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      tip.style.left = Math.max(8, Math.min(r.left, W - tw - 8)) + 'px';
+      tip.style.top = (r.bottom + 6 + th > H ? r.top - th - 6 : r.bottom + 6) + 'px';
       ev?.stopPropagation();
     }
     // does a <select>'s chosen text fit in the box?
@@ -2968,8 +3070,8 @@
     // ✏️ Edit / ✔ Done – on an upright phone, editing always uses the full table (↔ can't collapse it)
     $('editBtn').addEventListener('click', () => {
       editMode = !editMode;
-      document.documentElement.classList.toggle('tbl-wide', editMode);
       $('wideBtn').classList.toggle('on', editMode);
+      document.documentElement.classList.toggle('tbl-wide', editMode || isRotated());      // turned page keeps the full grid
       if (!editMode) { pruneBlank(); selected.clear(); }
       renderMonthly();
     });
@@ -3157,7 +3259,7 @@
       const base = Date.now();
       rows.forEach((r, i) => expenses.push({
         id: base.toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 6),
-        created: base + i, ...r, book: curBook
+        created: base + i, ...r, book: curBook, ...byMe()
       }));
       rows.forEach(r => { if (r.sentVia || r.receivedVia) addMode(r.sentVia || r.receivedVia); });
       save();
@@ -3346,7 +3448,7 @@
     async function uploadData() {
       const body = JSON.stringify(await encryptData({
         expenses: privateExpenses(), monthNotes: privateNotes(), viaOptions: payModes, cardCycles, books,
-        quick: [...quick], monthlyShared, savedAt: nowIso()
+        quick: [...quick], monthlyShared, profile, savedAt: nowIso()
       }));
       const r = await dbSaveVault(body);
       cloud.modified = r.updated_at;
@@ -3364,6 +3466,8 @@
       // older saves only starred shared books ('favShared', plain ids)
       quick = new Set(data.quick || (data.favShared || []).map(id => SH + id));
       monthlyShared = data.monthlyShared || null;
+      profile = data.profile || {};
+      applyProfile();
     }
 
     async function openVault() {
@@ -3394,6 +3498,7 @@
       }
       await refreshSharedList();
       subscribeRealtime();
+      setAuthUI();
       setSync('saved');
       refreshView();
     }
@@ -3409,6 +3514,7 @@
         if (dirty || saving) return;   // local edits win; they'll be uploaded next
         cloud.modified = row.updated_at;
         applyVault(data);
+        setAuthUI();
         refreshView();
       } catch (e) { console.warn('Sync check failed', e); }
     }
@@ -3439,7 +3545,7 @@
       const notes = {};
       Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) notes[k.slice(bid.length + 1)] = monthNotes[k]; });
       return {
-        name: r.name, ownerName: r.ownerName, ownerEmail: r.ownerEmail,
+        name: r.name, ownerName: r.role === 'owner' ? user.name : r.ownerName, ownerEmail: r.ownerEmail,
         expenses: expenses.filter(e => bookOf(e) === bid).map(({ book, ...e }) => e),
         monthNotes: notes, savedAt: nowIso()
       };
@@ -3463,6 +3569,7 @@
       Object.keys(monthNotes).forEach(k => {
         if (bookId === 'monthly' ? /^\d{4}-\d{2}$/.test(k) : k.startsWith(bookId + '|')) notes[bookId === 'monthly' ? k : k.slice(bookId.length + 1)] = monthNotes[k];
       });
+      expenses.forEach(e => { if (bookOf(e) === bookId && !e.byEmail) { e.by = user.name; e.byEmail = myEmail(); } });
       const payload = {
         name: b.name, ownerName: user.name, ownerEmail: myEmail(),
         expenses: expenses.filter(e => bookOf(e) === bookId).map(({ book, ...e }) => e),
@@ -3475,7 +3582,7 @@
       const bid = SH + row.id;
       sharedFiles[row.id] = { key, salt, modified: row.updated_at };
       sharedRefs.push({ id: row.id, name: b.name, ownerName: user.name, ownerEmail: myEmail(), role: 'owner', members: [] });
-      expenses.forEach(e => { if (bookOf(e) === bookId) e.book = bid; });
+      expenses.forEach(e => { if (bookOf(e) === bookId) { e.book = bid; if (!e.byEmail) { e.by = user.name; e.byEmail = myEmail(); } } });
       Object.keys(notes).forEach(m => { monthNotes[`${bid}|${m}`] = notes[m]; delete monthNotes[noteKeyOf(m)]; });
       if (bookId === 'monthly') monthlyShared = row.id;       // the home button now opens the shared copy
       else books = books.filter(x => x.id !== bookId);
@@ -3565,7 +3672,8 @@
     async function startSession(session) {
       if (!session?.user || (user && user.id === session.user.id)) return;
       const u = session.user, md = u.user_metadata || {};
-      user = { id: u.id, email: u.email, name: md.full_name || md.name || (u.email || '').split('@')[0], picture: md.avatar_url || md.picture || '' };
+      const defaultName = md.full_name || md.name || (u.email || '').split('@')[0];
+      user = { id: u.id, email: u.email, name: defaultName, defaultName, picture: md.avatar_url || md.picture || '', avatar: md.avatar_url || md.picture || '' };
       closeLogin();
       setAuthUI();
       try { await openVault(); }
@@ -3595,7 +3703,7 @@
       payModes = loadModes();
       cardCycles = loadCycles();
       books = loadBooks();
-      sharedRefs = []; quick = loadQuick(); monthlyShared = null;
+      sharedRefs = []; quick = loadQuick(); monthlyShared = null; profile = {};
       Object.keys(sharedFiles).forEach(k => delete sharedFiles[k]);
       if (!silent && wasUser && sb) { try { await sb.auth.signOut(); } catch {} }
       setAuthUI();
@@ -3673,16 +3781,15 @@
       if (state === 'loading') { a.innerHTML = '<span>⏳ Signing in…</span>'; return; }
 
       if (user) {
-        const avatar = user.picture
-          ? `<img src="${esc(user.picture)}" alt="" referrerpolicy="no-referrer">`
-          : `<span class="avatar">${esc((user.name || '?')[0].toUpperCase())}</span>`;
         a.innerHTML = `
-          <div class="profile" title="${esc(user.email)}">
-            ${avatar}
-            <div><span class="name">${esc(user.name)}</span><span class="sync" id="syncStatus"></span></div>
-          </div>
+          <button type="button" class="profile" id="profileBtn" title="${esc(user.email)} – tap to change your name or photo">
+            <span class="avatar-wrap">${avatarHtml(user.avatar, user.name)}<span class="sync-dot" id="syncDot"></span></span>
+            <span class="name">${esc(user.name)}</span>
+          </button>
+          <span class="sync-err" id="syncStatus"></span>
           <button class="logout" id="logoutBtn">Logout</button>`;
         $('logoutBtn').onclick = () => logout();
+        $('profileBtn').onclick = openProfile;
         setSync(syncState);
         addThemeBtn();
         return;
@@ -3691,6 +3798,94 @@
       $('loginBtn').onclick = startLogin;
       addThemeBtn();
     }
+
+    /* ---------- 👤 Profile: name + photo or a cartoon hero face ---------- */
+    // 5 original cartoon superhero faces (drawn here, so nothing is downloaded)
+    const HEROES = [
+      // masked hero
+      '<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fde68a"/><circle cx="32" cy="37" r="20" fill="#f5c9a0"/><path d="M12 34c0-14 9-23 20-23s20 9 20 23c-4-6-10-9-20-9s-16 3-20 9z" fill="#3b2314"/><path d="M12 34c6-4 34-4 40 0v7c-6-3-34-3-40 0z" fill="#dc2626"/><ellipse cx="24" cy="37.5" rx="4" ry="2.6" fill="#fff"/><ellipse cx="40" cy="37.5" rx="4" ry="2.6" fill="#fff"/><path d="M26 47q6 5 12 0" stroke="#7c2d12" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>',
+      // armor bot
+      '<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#bfdbfe"/><path d="M32 12v5" stroke="#64748b" stroke-width="3"/><circle cx="32" cy="9" r="3.5" fill="#f43f5e"/><rect x="13" y="16" width="38" height="40" rx="16" fill="#94a3b8"/><rect x="18" y="24" width="28" height="26" rx="10" fill="#e2e8f0"/><rect x="21" y="31" width="9" height="4.5" rx="2.2" fill="#0ea5e9"/><rect x="34" y="31" width="9" height="4.5" rx="2.2" fill="#0ea5e9"/><path d="M26 43h12" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/><circle cx="13" cy="36" r="4" fill="#64748b"/><circle cx="51" cy="36" r="4" fill="#64748b"/></svg>',
+      // green giant
+      '<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#dcfce7"/><circle cx="32" cy="37" r="21" fill="#65a30d"/><path d="M11 33c1-13 10-21 21-21s20 8 21 21c-5-5-9-7-12-7l-3 4-4-5-4 5-3-4c-5 0-11 2-16 7z" fill="#1c1917"/><path d="M19 32l10 3.5M45 32l-10 3.5" stroke="#1c1917" stroke-width="3" stroke-linecap="round"/><circle cx="25" cy="39" r="2.6" fill="#fff"/><circle cx="39" cy="39" r="2.6" fill="#fff"/><rect x="23" y="46" width="18" height="6" rx="3" fill="#fff" stroke="#365314" stroke-width="1.5"/></svg>',
+      // star captain
+      '<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#fecaca"/><circle cx="32" cy="38" r="20" fill="#f5c9a0"/><path d="M12 40c0-16 9-27 20-27s20 11 20 27c-3-4-6-6-9-6H21c-3 0-6 2-9 6z" fill="#1d4ed8"/><path d="M13 30l-6-3 5 9zM51 30l6-3-5 9z" fill="#fff"/><polygon points="32,16 34.2,21.5 40,21.8 35.5,25.4 37,31 32,27.8 27,31 28.5,25.4 24,21.8 29.8,21.5" fill="#fff"/><ellipse cx="25" cy="37" rx="3.4" ry="2.2" fill="#fff"/><ellipse cx="39" cy="37" rx="3.4" ry="2.2" fill="#fff"/><path d="M27 48q5 4 10 0" stroke="#7c2d12" stroke-width="2.4" fill="none" stroke-linecap="round"/></svg>',
+      // thunder viking
+      '<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#e0e7ff"/><path d="M10 64c0-24 5-44 22-44s22 20 22 44z" fill="#facc15"/><circle cx="32" cy="36" r="16" fill="#f5c9a0"/><path d="M16 30c0-10 7-16 16-16s16 6 16 16z" fill="#9ca3af"/><path d="M17 26c-6-2-10-8-10-13 4 3 8 5 12 6zM47 26c6-2 10-8 10-13-4 3-8 5-12 6z" fill="#f8fafc"/><circle cx="26" cy="36" r="2.2" fill="#1e3a8a"/><circle cx="38" cy="36" r="2.2" fill="#1e3a8a"/><path d="M19 42c3 11 23 11 26 0-3 4-8 5-13 5s-10-1-13-5z" fill="#eab308"/><path d="M28 43q4 3 8 0" stroke="#7c2d12" stroke-width="2" fill="none" stroke-linecap="round"/></svg>'
+    ];
+    // avatar: 'hero:N', a (tiny) photo, or the first letter of the name
+    const avatarInner = (av, name) => /^hero:\d$/.test(av || '') ? HEROES[+av.slice(5)] || ''
+      : av ? `<img src="${esc(av)}" alt="" referrerpolicy="no-referrer">` : esc((name || '?')[0].toUpperCase());
+    const avatarHtml = (av, name) => `<span class="avatar${/^hero:/.test(av || '') ? ' hero' : ''}">${avatarInner(av, name)}</span>`;
+
+    // my profile (saved in my private data): { name, avatar }
+    let profile = {};
+    function applyProfile() {
+      if (!user) return;
+      user.name = (profile.name || '').trim() || user.defaultName;
+      user.avatar = profile.avatar === 'none' ? '' : profile.avatar || user.picture || '';
+    }
+
+    // a photo is shrunk to a small, low-quality square – it's only ever shown as a round icon
+    function compressImage(file, size = 72, quality = 0.5) {
+      return new Promise((resolve, reject) => {
+        const url = URL.createObjectURL(file), img = new Image();
+        img.onload = () => {
+          const s = Math.min(img.naturalWidth, img.naturalHeight), c = document.createElement('canvas');
+          c.width = c.height = size;
+          const g = c.getContext('2d');
+          g.fillStyle = '#fff'; g.fillRect(0, 0, size, size);
+          g.drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, size, size);
+          URL.revokeObjectURL(url);
+          resolve(c.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('That file is not an image.')); };
+        img.src = url;
+      });
+    }
+
+    let pfAvatar = '';                     // what the popup is showing (saved only on Save)
+    const pfShow = () => {
+      $('pfPreview').innerHTML = avatarInner(pfAvatar, $('pfName').value || user?.defaultName);
+      $('pfHeroes').querySelectorAll('.pf-hero').forEach(b => b.classList.toggle('on', pfAvatar === 'hero:' + b.dataset.hero));
+      $('pfClear').hidden = !pfAvatar;
+    };
+    function openProfile() {
+      if (!user) return;
+      pfAvatar = user.avatar || '';
+      $('pfName').value = user.name;
+      $('pfErr').hidden = true;
+      $('pfHeroes').innerHTML = HEROES.map((svg, i) => `<button type="button" class="pf-hero" data-hero="${i}" title="Hero ${i + 1}">${svg}</button>`).join('');
+      pfShow();
+      $('profileDlg').hidden = false;
+      setTimeout(() => $('pfName').focus(), 0);
+    }
+    const closeProfile = () => { $('profileDlg').hidden = true; $('pfFile').value = ''; };
+    $('pfHeroes').addEventListener('click', ev => { const b = ev.target.closest('.pf-hero'); if (b) { pfAvatar = 'hero:' + b.dataset.hero; pfShow(); } });
+    $('pfClear').addEventListener('click', () => { pfAvatar = ''; pfShow(); });
+    $('pfName').addEventListener('input', () => { if (!pfAvatar) pfShow(); });
+    $('pfFile').addEventListener('change', async () => {
+      const f = $('pfFile').files[0];
+      if (!f) return;
+      try { pfAvatar = await compressImage(f); $('pfErr').hidden = true; pfShow(); }
+      catch (e) { $('pfErr').textContent = e.message; $('pfErr').hidden = false; }
+    });
+    $('profileForm').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const name = $('pfName').value.trim();
+      if (!name) { $('pfErr').textContent = 'Please enter a name.'; $('pfErr').hidden = false; return; }
+      profile = { name, avatar: pfAvatar || 'none' };
+      applyProfile();
+      Object.keys(sharedFiles).forEach(id => { if (refOf(SH + id)?.role === 'owner') sharedFiles[id].dirty = true; });   // "shared by …" follows
+      saveVault();
+      closeProfile();
+      setAuthUI();
+      refreshView();
+    });
+    $('profileX').addEventListener('click', closeProfile);
+    $('pfCancel').addEventListener('click', closeProfile);
+    $('profileDlg').addEventListener('click', ev => { if (ev.target === $('profileDlg')) closeProfile(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('profileDlg').hidden) closeProfile(); });
 
     /* ---------- 🌙 / ☀️ theme ---------- */
     const isDark = () => document.documentElement.dataset.theme === 'dark';
@@ -3707,14 +3902,14 @@
 
     function setSync(state) {
       syncState = state;
-      const el = $('syncStatus');
+      const el = $('syncStatus'), dot = $('syncDot');
       if (!el) return;
-      el.innerHTML = {
-        loading: '⏳ Loading…',
-        saving: '⏳ Saving…',
-        saved: '☁️ Saved · 🔒 encrypted',
-        error: '⚠️ Not saved <button id="retryBtn">Retry</button>'
-      }[state] || '';
+      // just a small dot on the avatar: green = saved (encrypted), amber = saving, red = not saved
+      if (dot) {
+        dot.className = 'sync-dot ' + state;
+        dot.title = { loading: 'Loading…', saving: 'Saving…', saved: 'Saved · encrypted', error: 'Not saved' }[state] || '';
+      }
+      el.innerHTML = state === 'error' ? '⚠️ <button id="retryBtn">Retry</button>' : '';
       const b = $('retryBtn');
       if (b) b.onclick = () => { dirty = true; vaultDirty = true; flush(); };
     }
@@ -3731,29 +3926,32 @@
       else if (w.scrollTop < 4) m.classList.remove('list-scrolled');
     }, { passive: true });
 
-    // ⤢ Landscape: full-screen + turn sideways, so the whole grid (all columns) fits
-    $('landscapeBtn').addEventListener('click', async () => {
-      const inFull = document.fullscreenElement || document.webkitFullscreenElement;
-      if (inFull) {                                     // second tap: back to normal
-        try { screen.orientation?.unlock?.(); } catch {}
-        try { await (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch {}
-        return;
-      }
-      try {
-        const el = document.documentElement;
-        await (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
-        await screen.orientation.lock('landscape');
-      } catch {
-        mFlash('↻ Turn your phone sideways to see every column (landscape view).');
-      }
-    });
-    document.addEventListener('fullscreenchange', () => {
-      $('landscapeBtn').textContent = document.fullscreenElement ? '⤡' : '⤢';
-      $('landscapeBtn').title = document.fullscreenElement ? 'Exit landscape view' : 'Landscape view – see every column';
-    });
+    // ⤢ Landscape view: the page is drawn turned 90° (works even with auto-rotate off) and shows the full grid
+    const isRotated = () => document.documentElement.classList.contains('rot90');
+    function setRotated(on) {
+      const h = document.documentElement;
+      h.classList.toggle('rot90', on);
+      h.classList.toggle('tbl-wide', on || editMode || $('wideBtn').classList.contains('on'));
+      $('landscapeBtn').textContent = on ? '⤡' : '⤢';
+      $('landscapeBtn').title = on ? 'Back to upright view' : 'Landscape view – turn your phone sideways (works with auto-rotate off)';
+      hideTip();
+      if (screen === 'book') renderMonthly();
+    }
+    $('landscapeBtn').addEventListener('click', () => setRotated(!isRotated()));
+    // phone really turned sideways (auto-rotate on) -> no need to draw it turned
+    window.matchMedia('(orientation: landscape)').addEventListener('change', q => { if (q.matches && isRotated()) setRotated(false); });
 
     /* ---------- Init ---------- */
     applyTimeToggle();
+    // the visible screen height (changes when the phone's address bar shows / hides or the phone turns)
+    const setAppHeight = () => {
+      document.documentElement.style.setProperty('--app-h', window.innerHeight + 'px');
+      document.documentElement.style.setProperty('--app-w', window.innerWidth + 'px');
+    };
+    setAppHeight();
+    window.addEventListener('resize', setAppHeight);
+    window.addEventListener('orientationchange', () => setTimeout(setAppHeight, 250));
+    document.addEventListener('fullscreenchange', setAppHeight);
     /* ---------- 📲 Installable app (PWA) ---------- */
     // offline copy + "install" support; only on a real web address (not file://)
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
