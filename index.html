@@ -68,7 +68,8 @@
       /* the gradient also fills the notch / status-bar strip of an installed iPhone app (viewport-fit=cover) */
       border-top: env(safe-area-inset-top, 0px) solid transparent; background-origin: border-box;
       padding-left: max(16px, env(safe-area-inset-left, 0px)) !important; padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
-      background: linear-gradient(135deg, var(--primary), #7c3aed);
+      /* top colour = the phone's status bar (theme-color #4f46e5), so the two look like one piece */
+      background: linear-gradient(180deg, #4f46e5 0%, #6d3be8 55%, #7c3aed 100%);
       color: #fff;
       padding: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,.15);
@@ -1003,8 +1004,9 @@
       .month-pick .btn { flex: 0 0 auto; padding: 6px 12px; }
       .month-bar > .btn { flex: 1 1 0; min-width: 0; padding: 6px 0; display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; overflow: hidden; }
       .month-bar #selCount { font-size: .72rem; }
-      /* line 1: ◀ month ▶ 📍 + 📤 · line 2: ✏️ ⭐ ↔ ⛶ rotate 🔍 ⚙️ (editing: ✔ 🗑 🧾 first) */
-      .month-pick { flex: 1 1 calc(100% - 50px); }
+      /* line 1: ◀ month ▶ 📍 🔍 📤 · line 2: ✏️ ⭐ ↔ ⛶ rotate ⚙️ (editing: ✔ 🗑 🧾 first) */
+      .month-pick { order: -2; flex: 1 1 calc(100% - 98px); }
+      .month-bar > #filterBtn { order: -1; flex: 0 0 44px; }
       .month-bar > #ioBtn { order: 0; flex: 0 0 44px; }
       #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #starOnlyBtn { order: 4; } #wideBtn { order: 5; }
       #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
@@ -1157,7 +1159,11 @@
       --sent-item: #fca5a5; --recv-item: #86efac;
       --bg: #000000; --card: #111111; --text: #e6e6e6; --muted: #9a9a9a; --border: #2e2e2e;
     }
-    html[data-theme=dark] header { background: linear-gradient(135deg, #2563eb, #7c3aed); }   /* same header as the light theme */
+    html[data-theme=dark] header { background: linear-gradient(180deg, #4f46e5 0%, #6d3be8 55%, #7c3aed 100%); }   /* same header as the light theme */
+    /* phone held sideways: left → right, starting from the status-bar colour */
+    @media (max-height: 520px) and (orientation: landscape) {
+      header, html[data-theme=dark] header { background: linear-gradient(90deg, #4f46e5 0%, #6d3be8 55%, #7c3aed 100%); }
+    }
     html[data-theme=dark] .info { background: #1f1f1f; color: #d6d6d6; border-left-color: #555; }
     html[data-theme=dark] input, html[data-theme=dark] textarea, html[data-theme=dark] select { background-color: #121212; color: var(--text); }
     html[data-theme=dark] .edit-table :is(input, textarea, select) { background: #161616; }
@@ -1669,7 +1675,7 @@
 
     function openScreen(name, push = true) {
       pruneBlank();
-      if (push && name !== screen) navStack.push(screen);
+      if (push && name !== screen) { navStack.push(screen); try { history.pushState({ em: navStack.length }, ''); } catch {} }
       if (name !== 'book' && document.documentElement.classList.contains('rot90')) setRotated(false);
       const prev = screen;
       screen = name;
@@ -1709,7 +1715,28 @@
       openScreen('book', push);
     }
 
-    $('backBtn').addEventListener('click', () => openScreen(navStack.pop() || 'home', false));
+    // ← (and the phone's own Back button / swipe): one screen back. Every screen opened adds a browser
+    // history step, so Back in a phone browser or the installed app stays inside the app.
+    let skipPop = 0;                                   // history steps we take back ourselves (← button)
+    function goBack() {
+      const to = navStack.pop() || 'home';
+      openScreen(to, false);
+      if (to !== 'home' || history.state?.em) { skipPop++; try { history.back(); } catch { skipPop--; } }
+    }
+    $('backBtn').addEventListener('click', goBack);
+    const openOverlay = () => [...document.querySelectorAll('.overlay')].find(o => !o.hidden);
+    window.addEventListener('popstate', () => {
+      if (skipPop) { skipPop--; return; }
+      const o = openOverlay();
+      if (o) {                                         // Back closes a popup first and stays on the screen
+        o.hidden = true;
+        try { history.pushState({ em: navStack.length }, ''); } catch {}
+        if (o.id === 'cardsDlg') closeCardsDialog();
+        return;
+      }
+      if (screen !== 'home') openScreen(navStack.pop() || 'home', false);
+    });
+    try { history.replaceState({ em: 0 }, ''); } catch {}
 
     // "use in landscape" hint (CSS shows it on upright phones only): 4 s each time a book opens, ✕ closes it
     function showRotateTip() {
@@ -4451,7 +4478,10 @@
         else { const el = document.documentElement; await (el.requestFullscreen || el.webkitRequestFullscreen).call(el, { navigationUI: 'hide' }); }
       } catch { mFlash('Full screen is not available in this browser.'); }
     });
-    const syncFs = () => { $('fsBtn').classList.toggle('on', !!fsEl()); $('fsBtn').title = fsEl() ? 'Exit full screen' : 'Full screen'; };
+    const syncFs = () => {
+      $('fsBtn').classList.toggle('on', !!fsEl()); $('fsBtn').title = fsEl() ? 'Exit full screen' : 'Full screen';
+      if (fsEl() && screen === 'book') mFlash('⛶ Fullscreen mode enabled');     // shows for 3 s
+    };
     document.addEventListener('fullscreenchange', syncFs);
     document.addEventListener('webkitfullscreenchange', syncFs);
     // phone really turned sideways (auto-rotate on) -> no need to draw it turned
