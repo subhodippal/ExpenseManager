@@ -2774,13 +2774,14 @@
         const separator = (prevKey, nextKey) => `<tr class="month-sep"><td colspan="${cols}">
             <span class="ms-line">${monthPart(prevKey)}<span class="ms-arrow">${sortDir === 1 ? '▲ │ ▼' : '▼ │ ▲'}</span>${monthPart(nextKey)}</span></td></tr>`;
 
+        // view mode (and with a filter on): only the days / weeks that have entries; editing shows every date (for ＋ Add)
+        const hideEmpty = filtering() || !editMode || !canEdit(curBook);
         weeks.forEach(w => {
-          // with a filter on, weeks / days without matching entries are hidden
-          if (filtering() && !items.some(e => weekStart(e.date) === w.key)) return;
+          if (hideEmpty && !items.some(e => weekStart(e.date) === w.key)) return;
           const wOpen = !collapsed.has('w:' + w.key);
           if (wOpen) w.days.forEach(d => {
             const dayItems = items.filter(e => e.date === d);
-            if (filtering() && !dayItems.length) return;
+            if (hideEmpty && !dayItems.length) return;
             if (cycleOn() && lastMonthShown && d.slice(0, 7) !== lastMonthShown) html += separator(lastMonthShown, d.slice(0, 7));
             lastMonthShown = d.slice(0, 7);
             const dOpen = !collapsed.has('d:' + d);
