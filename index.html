@@ -124,6 +124,9 @@
     .sync-err button { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.5); color: #fff; border-radius: 6px; padding: 1px 8px; cursor: pointer; font-size: .75rem; }
     .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     .profile-modal { max-width: 420px; }
+    #pfEmail { background: var(--bg); color: var(--muted); cursor: not-allowed; user-select: all; }
+    #pfEmail:focus { outline: none; }
+    .pf-lock { font-weight: 400; color: var(--muted); font-size: .75rem; margin-left: 6px; }
     .pf-top { display: flex; align-items: center; gap: 16px; }
     .pf-preview { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; flex: 0 0 auto; display: grid; place-items: center;
       background: linear-gradient(135deg, #2563eb, #7c3aed); color: #fff; font-size: 2rem; font-weight: 700; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
@@ -301,7 +304,16 @@
     .edit-table .c-del { width: 40px; text-align: center; }
     /* "By" (who added it) – shared books only */
     .edit-table .c-by { display: none; width: 84px; }
+    .amt-view { display: none; flex-direction: column; align-items: flex-start; line-height: 1.15; padding: 2px 4px; }
+    .amt-view .av-amt { font-weight: 700; font-size: .92rem; }
+    .amt-view.out .av-amt { color: var(--sent-item); }
+    .amt-view.in .av-amt { color: var(--recv-item); }
+    .amt-view .av-time { font-size: .66rem; color: var(--muted); margin-top: 1px; }
+    .purpose-note { display: none; font-size: .68rem; color: var(--muted); padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     #mTable.with-by .c-by { display: table-cell; }
+    .by-chip.via-by { display: none; }
+    .via-by { background: none !important; padding: 0 2px !important; margin-top: 1px; font-size: .68rem !important; font-weight: 500 !important; color: var(--muted) !important; }
+    .via-by::before { content: 'by '; }
     .by-chip { display: inline-block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;
       font-size: .72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: #eef2ff; color: #4338ca; }
     html[data-theme=dark] .by-chip { background: #1e1b2e; color: #c4b5fd; }
@@ -431,7 +443,14 @@
     body.book-mode #monthly .bulk { max-height: 62vh; overflow: auto; }
     body.book-mode footer { display: none; }
     #monthly .edit-table thead th { position: sticky; top: 0; z-index: 3; }
-    #monthly .edit-table tfoot td { position: sticky; bottom: 0; z-index: 3; }
+    #monthly .edit-table tfoot { position: sticky; bottom: 0; z-index: 3; background: var(--card); box-shadow: 0 -1px 0 var(--border); }
+    /* ☑ selection total – sits right above the month total, in its own colour */
+    tr.sel-total td { background: #e0f2fe; color: #075985; font-weight: 700; padding: 6px 12px; border-top: none; border-bottom: none; box-shadow: inset 0 2px 0 var(--sel-line, #7dd3fc); font-size: .88rem; }
+    html[data-theme=dark] tr.sel-total td { --sel-line: #0e7490; }
+    tr.sel-total .sel-label { white-space: nowrap; }
+    .sel-x { border: none; background: #bae6fd; color: #075985; border-radius: 50%; width: 20px; height: 20px; font-size: .7rem; cursor: pointer; line-height: 1; vertical-align: middle; }
+    html[data-theme=dark] tr.sel-total td, html[data-theme=dark] .edit-table tfoot tr.sel-total { background: #0b2533 !important; color: #7dd3fc; border-top-color: #0e7490 !important; }
+    html[data-theme=dark] .sel-x { background: #164e63; color: #e0f2fe; }
 
     /* header on inner screens: ← Back + screen / book name */
     .screen-head { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; }
@@ -534,7 +553,7 @@
 
     /* view only (✏️ Edit off): no editing controls, fields read like plain text */
     #monthly.viewmode .day-add, #monthly.viewmode #clearBtn, #monthly.viewmode #bulkBtn, #monthly.viewmode .row-del,
-    #monthly.viewmode .date-pick, #monthly.viewmode .row-sel, #monthly.viewmode .grp-sel, #monthly.viewmode #selAll { display: none !important; }
+    #monthly.viewmode .date-pick { display: none !important; }
     #monthly.viewmode .star-btn:not(.on) { opacity: .35; }                 /* ☆ still tappable in view mode */
     #monthly.viewmode .edit-table :is(input, select, textarea):is(:disabled, [readonly]),
     #monthly.readonly .edit-table :is(input, select, textarea):is(:disabled, [readonly]) {
@@ -691,9 +710,15 @@
     tr.total td {
       background: #f8f1ff;
       font-weight: 700;
-      border-top: 2px solid #e1b5ff;
+      border-top: none; border-bottom: none;
+      box-shadow: inset 0 2px 0 var(--tot-line, #e1b5ff);
       padding: 10px 12px;
     }
+    tr.total.filtered td { --tot-line: #60a5fa; }
+    tr.total.filtered.cycle td { --tot-line: #c084fc; }
+    html[data-theme=dark] tr.total td { --tot-line: #573274; }
+    html[data-theme=dark] tr.total.filtered td { --tot-line: #555; }
+    html[data-theme=dark] tr.total.filtered.cycle td { --tot-line: #7e22ce; }
     /* sortable headers, dropdowns */
     .edit-table select {
       border: 1px solid transparent; border-radius: 6px; padding: 8px 4px;
@@ -802,7 +827,7 @@
     .bulk-rules code { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; font-size: .85em; }
     .bulk-help code { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: .85em; font-weight: 600; color: #6d28d9; white-space: nowrap; }
     html[data-theme=dark] .bulk-help code { color: #c4b5fd; }
-    .bulk textarea { font-family: ui-monospace, Consolas, monospace; font-size: .88rem; min-height: 130px; }
+    .bulk textarea { font-family: ui-monospace, Consolas, monospace; font-size: .88rem; min-height: 130px; max-height: 45vh; overflow-y: auto; resize: vertical; }
     #bulkPreview { margin-top: 10px; font-size: .88rem; }
     #bulkPreview .ok { color: var(--received); font-weight: 600; margin-bottom: 6px; }
     #bulkPreview .err { color: var(--sent); margin-top: 6px; }
@@ -924,7 +949,7 @@
       /* same 5 columns for the header line and every entry line:
          ☐ · amount (− sent / + received) · purpose · via · ✕ */
       html:not(.tbl-wide) #mTable thead tr, html:not(.tbl-wide) #tbody tr[data-id] {
-        display: grid; grid-template-columns: 18px 100px minmax(0, 1fr) 104px 46px;
+        display: grid; grid-template-columns: 16px 74px minmax(0, 1fr) 96px 22px;   /* ☐☆ · amount · purpose · pay via · 📝 */
         align-items: center; gap: 0 4px; padding: 1px 4px;
       }
       html:not(.tbl-wide) #tbody tr[data-id] { border-bottom: 1px solid var(--border); }
@@ -932,10 +957,19 @@
       html:not(.tbl-wide) #mTable thead .c-sent, html:not(.tbl-wide) #mTable thead .c-recv, html:not(.tbl-wide) #mTable thead .c-sv, html:not(.tbl-wide) #mTable thead .c-rv,
       html:not(.tbl-wide) #tbody tr[data-id] .c-sent, html:not(.tbl-wide) #tbody tr[data-id] .c-recv, html:not(.tbl-wide) #tbody tr[data-id] .c-sv, html:not(.tbl-wide) #tbody tr[data-id] .c-rv,
       html:not(.tbl-wide) #tbody tr[data-id] .star-btn, html:not(.tbl-wide) #tbody tr[data-id] .dup-tag { display: none !important; }
-      html:not(.tbl-wide) #mTable thead .c-by, html:not(.tbl-wide) #mTable:not(.with-by) .c-by { display: none !important; }
-      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] { grid-template-columns: 18px 100px minmax(0, 1fr) 104px 46px; grid-template-areas: none; }
-      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] .c-by { display: block !important; grid-column: 3; grid-row: 2; padding: 0 0 2px 4px; line-height: 1; }
-      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] .by-chip { font-size: .62rem; padding: 0 6px; }
+      html:not(.tbl-wide) #mTable .c-by { display: none !important; }
+      html:not(.tbl-wide) #tbody tr[data-id] .via-by { display: block; }
+      /* view mode: the payment method as plain text, "by …" right under it */
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .c-via select { height: auto; padding: 0 2px; line-height: 1.3; }
+      /* purpose wraps between words (not "misleniou-s") */
+      html:not(.tbl-wide) #tbody tr[data-id] textarea[data-f=purpose] { overflow-wrap: break-word; word-break: normal; }
+      /* view mode: the amount as plain coloured text ("+344" green, "788" red) with the time under it */
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .amt-wrap { display: none; }
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .amt-view { display: flex; }
+      /* ☐ on top, ☆ under it */
+      #tbody tr[data-id] .tools { flex-direction: column; justify-content: center; gap: 0; line-height: 1; }
+      html:not(.tbl-wide) #tbody tr[data-id] .tools .row-sel { width: 13px; height: 13px; margin: 0; }
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { font-size: .85rem !important; line-height: 1; padding: 1px 0 0 !important; }
       /* view mode: ☆/★ at the start of the line (where the checkbox is when editing) */
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { display: inline-block !important; font-size: .95rem; padding: 0; }
       html:not(.tbl-wide) #mTable thead .c-amt, html:not(.tbl-wide) #mTable thead .c-via, html:not(.tbl-wide) #tbody tr[data-id] .c-amt, html:not(.tbl-wide) #tbody tr[data-id] .c-via { display: block; }
@@ -952,7 +986,7 @@
       html:not(.tbl-wide) #tbody .row-del { padding: 2px; font-size: .95rem; }
       html:not(.tbl-wide) .tools input.row-sel, html:not(.tbl-wide) .tools input.grp-sel, html:not(.tbl-wide) #selAll { width: 14px; height: 14px; margin: 0 1px; }
       /* 📝 (only when there's a note) + 🗑 at the end of the line */
-      html:not(.tbl-wide) #tbody tr[data-id] .c-del { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-left: 6px; }
+      html:not(.tbl-wide) #tbody tr[data-id] .c-del { display: flex; align-items: center; justify-content: flex-end; gap: 4px; padding-left: 0; }
       html:not(.tbl-wide) #tbody tr[data-id] .note-btn { display: inline-block; }
       /* Amount header: ⇅ date · Amount · ⇅ amount */
       html:not(.tbl-wide) #mTable thead .c-amt { display: flex !important; align-items: center; justify-content: center; gap: 3px; }
@@ -984,6 +1018,8 @@
       html:not(.tbl-wide) .wl-long { display: inline !important; }
       html:not(.tbl-wide) .wl-short { display: none !important; }
       html:not(.tbl-wide) .edit-table tfoot tr.total { background: #f8f1ff; border-top: 2px solid #e1b5ff; }
+      html:not(.tbl-wide) .edit-table tfoot tr.sel-total { background: #e0f2fe; border-top: 2px solid #7dd3fc; color: #075985; }
+      html:not(.tbl-wide) #selLabel { flex: 1; }
       html:not(.tbl-wide) .edit-table tfoot tr.total.filtered { background: #dbeafe; border-top-color: #60a5fa; }
       html:not(.tbl-wide) .edit-table tfoot tr.total.filtered.cycle { background: #f3e8ff; border-top-color: #c084fc; }
       .cycle-bar { font-size: .76rem; padding: 3px 8px; }
@@ -1431,6 +1467,11 @@
           </thead>
           <tbody id="tbody"></tbody>
           <tfoot>
+            <tr class="sel-total" id="selTotal" hidden>
+              <td colspan="2" class="sel-label"><button type="button" class="sel-x" id="selClear" title="Clear the selection">✕</button> <span id="selLabel">☑ 0 selected</span></td>
+              <td class="c-time-cell"></td>
+              <td colspan="6" class="tot-sums" id="selSums"><div class="sums"><span class="sent" id="selSent">₹0.00</span><span class="received" id="selRecv">₹0.00</span><span class="sum-net">Net: <span id="selNet">₹0.00</span></span></div></td>
+            </tr>
             <tr class="total">
               <td colspan="2" id="mTotalLabel">Total</td>
               <td class="c-time-cell"></td>
@@ -1486,6 +1527,8 @@
       <label for="pfName">Your name</label>
       <input type="text" id="pfName" maxlength="30" placeholder="e.g. Subhodip">
       <p class="hint">Friends see this name on expenses you share and on entries you add.</p>
+      <label for="pfEmail">Email <small class="pf-lock">🔒 your login – can't be changed</small></label>
+      <input type="email" id="pfEmail" readonly tabindex="-1" aria-readonly="true">
       <div class="err" id="pfErr" hidden></div>
       <div class="modal-foot">
         <button type="button" class="btn btn-light" id="pfCancel">Cancel</button>
@@ -2490,7 +2533,7 @@
       return `<td class="c-amt"><div class="amt-wrap ${rec ? 'plus' : 'minus'}">
           <button type="button" class="sign-btn" title="Tap to switch: − sent / + received">${rec ? '+' : '−'}</button>
           <input type="text" inputmode="decimal" data-f="amount" placeholder="0" value="${val || ''}">
-        </div></td>`;
+        </div><div class="amt-view ${rec ? 'in' : 'out'}"><span class="av-amt">${val ? (rec ? '+' : '') + (+val).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '–'}</span>${e.time ? `<span class="av-time">${fmtTime(e.time)}</span>` : ''}</div></td>`;
     };
 
     // Editable cells for one expense row
@@ -2509,7 +2552,7 @@
         <td class="c-purpose"><textarea data-f="purpose" rows="1" placeholder="Purpose" title="${esc(e.purpose)}">${esc(e.purpose)}</textarea><span class="dup-tag" hidden>⚠ Duplicate</span></td>
         <td class="c-sv"><select data-f="sentVia" data-prev="${esc(e.sentVia)}">${modeOptions(e.sentVia)}</select></td>
         <td class="c-rv"><select data-f="receivedVia" data-prev="${esc(e.receivedVia)}">${modeOptions(e.receivedVia)}</select></td>
-        <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select></td>
+        <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select>${isShared(bookOf(e)) ? `<small class="by-chip via-by" title="Added by ${esc(e.by || e.byEmail || 'unknown')}">${esc(byName(e))}</small>` : ''}</td>
         <td class="c-by" title="Added by ${esc(e.by || e.byEmail || 'unknown')}"><span class="by-chip">${esc(byName(e))}</span></td>
         <td class="c-note"><input type="text" data-f="note" placeholder="Note" value="${esc(e.note)}" title="${esc(e.note)}"></td>
         <td class="c-del">${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
@@ -2520,7 +2563,8 @@
     function saveNotes() { persist(); }
 
     // month note: a one-line preview; click it to open the full note for editing
-    const growNote = () => { const t = $('monthNote'); t.style.height = 'auto'; t.style.height = Math.max(t.scrollHeight + 2, 72) + 'px'; };
+    // grows with the text up to ~40% of the screen, then scrolls
+    const growNote = () => { const t = $('monthNote'); t.style.height = 'auto'; t.style.height = Math.min(Math.max(t.scrollHeight + 2, 72), Math.round(innerHeight * 0.4)) + 'px'; };
     function renderNotePreview() {
       const text = (monthNotes[noteKey(curMonth)] || '').trim();
       const lines = text.split('\n').filter(l => l.trim());
@@ -2756,7 +2800,7 @@
       $('tbody').querySelectorAll('tr[data-id]').forEach(markRow);
       $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
       markDuplicates();
-      $('totSums').colSpan = showBy ? 7 : 6;
+      $('totSums').colSpan = $('selSums').colSpan = showBy ? 7 : 6;
       updateMonthTotals();
       updateSelection();
       updateFilterUI();
@@ -3062,6 +3106,15 @@
         tr.classList.toggle('selected', on);
         tr.querySelector('.row-sel').checked = on;
       });
+      // ☑ total of the ticked rows, just above the month total
+      const pick = visibleItems().filter(e => selected.has(e.id));
+      $('selTotal').hidden = !pick.length;
+      if (pick.length) {
+        const ss = pick.reduce((a, e) => a + (+e.sent || 0), 0), sr = pick.reduce((a, e) => a + (+e.received || 0), 0);
+        $('selLabel').textContent = `☑ ${pick.length} selected`;
+        $('selSent').textContent = money(ss); $('selRecv').textContent = money(sr);
+        $('selNet').textContent = money(sr - ss); $('selNet').className = sr - ss < 0 ? 'sent' : 'received';
+      }
       $('selAll').checked = inMonth.size > 0 && selected.size === inMonth.size;
       $('selAll').indeterminate = selected.size > 0 && selected.size < inMonth.size;
 
@@ -3122,6 +3175,7 @@
       (amt?.offsetParent ? amt : row?.querySelector('[data-f=sent]'))?.focus();   // merged amount box on upright phones
     }
 
+    $('selClear').addEventListener('click', () => { selected.clear(); updateSelection(); });
     $('selAll').addEventListener('change', ev => {
       selected.clear();
       if (ev.target.checked) visibleItems().forEach(e => selected.add(e.id));
@@ -3223,6 +3277,8 @@
         if (e?.note) showTip(nb, e.note, ev);
         return;
       }
+      const pn = ev.target.closest('.purpose-note');
+      if (pn) { const e = expenses.find(x => x.id === pn.closest('tr').dataset.id); if (e?.note) showTip(pn, e.note, ev); return; }
       // Purpose / Note that doesn't fit (read-only in view mode)
       const f = ev.target.closest('textarea[data-f=purpose][readonly], input[data-f=note][readonly]');
       if (f) {
@@ -3245,7 +3301,7 @@
       if (editMode) starOnly = false;                       // edit the whole month
       $('wideBtn').classList.toggle('on', editMode);
       document.documentElement.classList.toggle('tbl-wide', editMode || isRotated());      // turned page keeps the full grid
-      if (!editMode) { pruneBlank(); selected.clear(); }
+      if (!editMode) pruneBlank();
       renderMonthly();
     });
 
@@ -4385,6 +4441,7 @@
       if (!user) return;
       pfAvatar = user.avatar || '';
       $('pfName').value = user.name;
+      $('pfEmail').value = user.email || '';
       $('pfErr').hidden = true;
       $('pfHeroes').innerHTML = HEROES.map((svg, i) => `<button type="button" class="pf-hero" data-hero="${i}" title="Hero ${i + 1}">${svg}</button>`).join('');
       pfShow();
