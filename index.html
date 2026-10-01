@@ -499,6 +499,15 @@
     .book-actions { display: flex; gap: 4px; flex: 0 0 auto; }
     .book-actions .btn { padding: 6px 8px; }
     .mem { white-space: nowrap; }
+    /* expense cards (Your Expenses / Shared with you): icon + name on top, details in the middle, buttons along the bottom */
+    .book-tile { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px 12px; }
+    .book-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .book-tile .book-icon { font-size: 1.9rem; line-height: 1; }
+    .book-tile .book-name { flex: 1; min-width: 0; line-height: 1.3; overflow-wrap: anywhere; }
+    .book-tile .book-name .shared-tag, .book-tile .book-name .default-tag { white-space: nowrap; }
+    .book-tile .book-main { flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px; }
+    .book-tile .book-actions { margin-top: auto; justify-content: flex-end; align-items: center; gap: 6px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .book-tile .book-actions .fav-btn { margin-right: auto; }        /* ♥ on the left, share / rename / delete on the right */
     .add-book { border-style: dashed; color: var(--primary); justify-content: center; min-height: 92px; }
     #booksMsg { margin-top: 12px; }
 
@@ -653,8 +662,49 @@
     .filter-opt.on { border-color: #93c5fd; background: #eff6ff; }
     .filter-opt input { width: 18px; height: 18px; accent-color: var(--primary); flex: 0 0 auto; }
     .filter-opt .fo-name { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .filter-opt .fo-cycle { display: block; font-weight: 500; font-size: .72rem; color: #7e22ce; white-space: normal; }
+    html[data-theme=dark] .filter-opt .fo-cycle { color: #c4b5fd; }
     .filter-opt .fo-sum { flex: 0 0 auto; font-size: .8rem; text-align: right; line-height: 1.3; }
     .filter-opt .fo-sum small { color: var(--muted); display: block; }
+    /* 💳 billing cycle: a card payment is listed, faded, and not counted in the bill */
+    #tbody tr.bill-pay :is(textarea, input, select, .amt-view, .dt-view) { opacity: .5; }
+    .pay-tag { display: block; width: max-content; max-width: 100%; margin: 1px 4px 0; padding: 0 6px; border-radius: 4px; font-size: .66rem; font-weight: 600;
+      background: #e0f2fe; color: #075985; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    html[data-theme=dark] .pay-tag { background: #0b2533; color: #7dd3fc; }
+
+    /* breadcrumb: 📈 All years › 📆 2026 › 📅 September 2026 */
+    .crumbs { display: flex; align-items: center; gap: 2px 4px; flex-wrap: wrap; font-size: .84rem; margin: 0 0 8px; }
+    .crumb { border: none; background: none; font: inherit; padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+    button.crumb { color: #6d28d9; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+    button.crumb:hover { background: #f3e8ff; }
+    .crumb.cur { font-weight: 700; color: var(--text); }
+    .crumb-sep { color: var(--muted); }
+    html[data-theme=dark] button.crumb { color: #c4b5fd; }
+    html[data-theme=dark] button.crumb:hover { background: #2e1f4f; }
+    @media (max-height: 520px) and (orientation: landscape) { .crumbs { margin-bottom: 4px; font-size: .78rem; } }
+
+    /* 📊 display options */
+    .view-list { display: flex; flex-direction: column; gap: 4px; }
+    .view-opt .fo-name { white-space: normal; }
+    .view-opt small { display: block; font-weight: 400; color: var(--muted); font-size: .74rem; line-height: 1.3; }
+    .view-opt:has(input:disabled) { opacity: .45; cursor: default; }
+    #viewBtn.on { background: #ede9fe; color: #6d28d9; }
+    html[data-theme=dark] #viewBtn.on { background: #2e1f4f; color: #e9d5ff; }
+    /* full year: one line per month (styled like the week rows), no month note */
+    #monthly.yearmode .month-notes { display: none; }
+    tr.month-row .wk-label { font-weight: 700; }
+    tr.month-row.no-entries td { opacity: .55; }
+    tr.month-row .mr-range { color: var(--muted); font-weight: 400; font-size: .72rem; margin-left: 6px; }
+    /* full year / no date rows: the date column needs room for "Sept 2026" / "Tue, 01 Sept · 9:05 pm" */
+    #monthly.yearmode .edit-table .c-date-cell { width: 110px !important; }
+    #monthly:is(.viewmode, .readonly) #mTable.no-days .c-date-cell { width: 150px !important; }
+    @media (max-width: 980px) { #monthly:is(.viewmode, .readonly) #mTable.no-days .c-date-cell { width: 128px !important; } }
+    @media (max-height: 520px) and (orientation: landscape) { #monthly:is(.viewmode, .readonly) #mTable.no-days .c-date-cell { width: 88px !important; } }
+    /* no date rows: the entry's date is shown with its time */
+    .av-date { display: none; }
+    #mTable:is(.flat, .no-days) .av-date { display: inline; }
+    #mTable:is(.flat, .no-days) .av-date + .av-t::before { content: ' · '; }
+
     /* 💳 billing cycle bar */
     .cycle-bar {
       display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap;
@@ -1051,7 +1101,7 @@
       .month-pick { order: -2; flex: 1 1 calc(100% - 98px); }
       .month-bar > #filterBtn { order: -1; flex: 0 0 44px; }
       .month-bar > #ioBtn { order: 0; flex: 0 0 44px; }
-      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #starOnlyBtn { order: 4; } #wideBtn { order: 5; }
+      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #starOnlyBtn { order: 4; } #viewBtn { order: 4; } #wideBtn { order: 5; }
       #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
       html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
 
@@ -1221,6 +1271,10 @@
     }
     html[data-theme=dark] .btn-light:hover, html[data-theme=dark] .io-fmt:hover { background: #2a2340; border-color: #5b4b88; }
     html[data-theme=dark] .btn-light:disabled { opacity: .45; }
+    /* ♥ keeps its red (the dark button colours above must not grey it out) */
+    html[data-theme=dark] .fav-btn { border-color: transparent; }
+    html[data-theme=dark] .fav-btn.on { color: #f87171; }
+    html[data-theme=dark] .fav-btn.locked:disabled { opacity: 1; }
     html[data-theme=dark] .modal-x { color: #b9b0d0; }
     html[data-theme=dark] .menu button, html[data-theme=dark] .book-card { color: var(--text); }
     html[data-theme=dark] .avatar-sm { background: #3a3a3a; }
@@ -1393,9 +1447,11 @@
         <button type="button" class="btn btn-light icon-btn landscape-btn" id="landscapeBtn" title="Rotate – landscape view (works with auto-rotate off)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="17" rx="2.2"/><path d="M3.5 13.5a8.6 8.6 0 0 0 7 7.8M8.2 21.4l2.4-.2-.9-2.3"/></svg></button>
         <button type="button" class="btn btn-light wide-btn" id="wideBtn" title="Full table – scroll sideways">↔</button>
         <button type="button" class="btn btn-light star-only-btn" id="starOnlyBtn" title="Show starred entries only">⭐<span class="lbl"> Starred</span></button>
+        <button type="button" class="btn btn-light" id="viewBtn" title="Display – day / week totals, full year">📊<span class="lbl"> View</span></button>
         <button type="button" class="btn btn-light" id="filterBtn" title="Filter by payment method">🔍<span class="lbl"> Filter</span><span class="filter-count" id="filterCount" hidden></span></button>
         <button type="button" class="btn btn-light" id="cardsBtn" title="Payment management – cards, billing cycles, payment options">⚙️</button>
       </div>
+      <nav class="crumbs" id="crumbs" aria-label="Where you are" hidden></nav>
       <div class="filter-bar" id="filterBar" hidden>
         <span class="filter-text" id="filterText"></span>
         <button type="button" class="btn btn-light btn-sm" id="filterEdit">Change</button>
@@ -1490,7 +1546,7 @@
             <tr class="total">
               <td colspan="2" id="mTotalLabel">Total</td>
               <td class="c-time-cell"></td>
-              <td colspan="6" class="tot-sums" id="totSums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net">Net: <span id="mNet">₹0.00</span></span></div></td>
+              <td colspan="6" class="tot-sums" id="totSums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net"><span id="mNetLbl">Net:</span> <span id="mNet">₹0.00</span></span></div></td>
             </tr>
           </tfoot>
         </table>
@@ -1656,6 +1712,31 @@
   </div>
 
 
+  <!-- 📊 Display: all entries / day totals / week totals / full year, and which summary rows to show -->
+  <div class="overlay" id="viewDlg" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
+      <div class="modal-head">
+        <h3 id="viewTitle">📊 Display</h3>
+        <button type="button" class="modal-x" id="viewX" title="Close">✕</button>
+      </div>
+      <h4 class="pm-title">Show</h4>
+      <div class="view-list" id="viewLevels">
+        <label class="filter-opt view-opt"><input type="radio" name="viewLevel" value="entries"><span class="fo-name">📋 All entries<small>every entry, by date</small></span></label>
+        <label class="filter-opt view-opt"><input type="radio" name="viewLevel" value="day"><span class="fo-name">📅 Day totals only<small>one line per day with its total</small></span></label>
+        <label class="filter-opt view-opt"><input type="radio" name="viewLevel" value="week"><span class="fo-name">🗓 Week totals only<small>one line per week with its total</small></span></label>
+        <label class="filter-opt view-opt"><input type="radio" name="viewLevel" value="year"><span class="fo-name">📆 Full year – month totals<small>all 12 months at once · with a card filter, its 12 bills · tap a month to open it</small></span></label>
+        <label class="filter-opt view-opt"><input type="radio" name="viewLevel" value="years"><span class="fo-name">📈 All years – year totals<small>one line per year, from your first entry to your last · tap a year to see its months</small></span></label>
+      </div>
+      <p class="hint" id="viewEditHint" hidden>✏️ While editing, the table always shows every entry and every date.</p>
+      <h4 class="pm-title">Summary rows</h4>
+      <div class="view-list">
+        <label class="filter-opt view-opt"><input type="checkbox" id="optDayRows"><span class="fo-name">Date rows<small>the date and day total above its entries – off: just the entry rows</small></span></label>
+        <label class="filter-opt view-opt"><input type="checkbox" id="optWeekRows"><span class="fo-name">Week total rows<small>a subtotal after each week</small></span></label>
+      </div>
+      <div class="modal-foot"><button type="button" class="btn btn-primary" id="viewDone">Done</button></div>
+    </div>
+  </div>
+
   <footer>Made with <span class="heart">❤️</span> by Subho</footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -1768,7 +1849,7 @@
     }
 
     function openBook(id, push = true) {
-      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; }
+      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; }
       curBook = id;
       openScreen('book', push);
     }
@@ -1819,10 +1900,12 @@
         let s = 0, r = 0;
         items.filter(e => e.date.startsWith(m)).forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
         const last = items.reduce((a, e) => e.date > a ? e.date : a, '');
-        return `<div class="book-card" data-book="${b.id}" title="Open ${esc(b.name)}">
-          <div class="book-icon">${bookIcon(b.id)}</div>
-          <div class="book-main">
+        return `<div class="book-card book-tile" data-book="${b.id}" title="Open ${esc(b.name)}">
+          <div class="book-head">
+            <div class="book-icon">${bookIcon(b.id)}</div>
             <div class="book-name">${esc(b.name)}${b.id === 'monthly' ? ' <span class="default-tag">default</span>' : ''}</div>
+          </div>
+          <div class="book-main">
             <div class="book-meta">${items.length} entr${items.length === 1 ? 'y' : 'ies'} · last entry ${last ? fmtDate(last) : '—'}</div>
             <div class="book-meta">${monthLabel(m)}: <span class="sent">− ${money(s)}</span> · <span class="received">+ ${money(r)}</span></div>
           </div>
@@ -1896,10 +1979,12 @@
         : grouped ? `<span class="role-tag">${roleLabel(r.role)}</span>`
         : 'by ' + esc(r.ownerName || r.ownerEmail || 'someone') +
           (r.ownerEmail && r.ownerEmail !== r.ownerName ? ` <small>(${esc(r.ownerEmail)})</small>` : '') + ` · <span class="role-tag">${roleLabel(r.role)}</span>`;
-      return `<div class="book-card" data-shared="${esc(r.id)}" title="Open ${esc(r.name)}">
-        <div class="book-icon">${isMonthlyRef(r) ? '📅' : '👥'}</div>
-        <div class="book-main">
+      return `<div class="book-card book-tile" data-shared="${esc(r.id)}" title="Open ${esc(r.name)}">
+        <div class="book-head">
+          <div class="book-icon">${isMonthlyRef(r) ? '📅' : '👥'}</div>
           <div class="book-name">${esc(r.name)} <span class="shared-tag">${mine ? 'shared by you' : 'shared'}</span></div>
+        </div>
+        <div class="book-main">
           <div class="book-meta">${meta}</div>
         </div>
         <div class="book-actions">
@@ -2333,7 +2418,7 @@
       $('filterList').innerHTML = filterChoices().map(c => `
         <label class="filter-opt ${viaFilter.has(c.v) ? 'on' : ''}">
           <input type="checkbox" data-v="${esc(c.v)}"${viaFilter.has(c.v) ? ' checked' : ''}>
-          <span class="fo-name">${esc(viaName(c.v))}</span>
+          <span class="fo-name">${esc(viaName(c.v))}${isCard(c.v) ? `<small class="fo-cycle">💳 bill from the ${ordinal(cycleOf(c.v).start)} · due ${ordinal(cycleOf(c.v).due)}</small>` : ''}</span>
           <span class="fo-sum">${c.sent ? `<span class="sent">− ${money(c.sent)}</span>` : ''}${c.recv ? ` <span class="received">+ ${money(c.recv)}</span>` : ''}
             <small>${c.n ? `${c.n} entr${c.n === 1 ? 'y' : 'ies'}` : 'none this month'}</small></span>
         </label>`).join('');
@@ -2375,7 +2460,11 @@
       }
       const p = period();
       $('cycleInfo').innerHTML = `<b>${shortDate(p.from)} – ${shortDate(p.to)}</b> · statement ${shortDate(p.to)} · ` +
-        `bill due <b>${shortDate(p.due)}</b> ${dueText(p.due)}${p.adjusted ? ' <span class="adj-tag">✏️ adjusted</span>' : ''}`;
+        `bill due <b>${shortDate(p.due)}</b> ${dueText(p.due)}${p.adjusted ? ' <span class="adj-tag">✏️ adjusted</span>' : ''}` +
+        (['entries', 'day', 'week'].includes(level()) ? (() => {
+          const c = countedItems(), owe = c.reduce((a, e) => a + (+e.sent || 0) - (+e.received || 0), 0);
+          return ` · to pay <b class="sent">${money(Math.max(0, owe))}</b>`;
+        })() : '');
     }
 
     $('cycleToggle').addEventListener('change', ev => { cycleView = ev.target.checked; applyFilter(); });
@@ -2502,8 +2591,22 @@
     $('cardsDlg').addEventListener('click', ev => { if (ev.target === $('cardsDlg')) closeCardsDialog(); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('cardsDlg').hidden) closeCardsDialog(); });
 
+    // 💳 picking a card (one with a billing cycle) switches to its billing cycle by itself, on the bill running today;
+    // the "Billing cycle" switch can still turn it off until another card is picked
+    let autoCycleFor = null;
+    function autoCycle() {
+      const c = cycleCard(), key = c && isCard(c) ? c : null;
+      if (key === autoCycleFor) return;
+      autoCycleFor = key;
+      if (!key) return;
+      cycleView = true;
+      const t = today(), st = cycleOf(key).start;
+      if (curMonth === t.slice(0, 7) && st > 1 && +t.slice(8) >= st) curMonth = shiftMonth(t.slice(0, 7), 1);   // today is already on next month's bill
+    }
+
     function applyFilter() {
       pruneBlank();
+      autoCycle();
       selected.clear();                                     // selection only ever covers what you can see
       renderMonthly();
       updateFilterUI();
@@ -2541,6 +2644,8 @@
     const byMe = () => user ? { by: user.name, byEmail: myEmail() } : {};
     const byName = e => e.byEmail && e.byEmail === myEmail() ? 'You' : (e.by || (e.byEmail || '').split('@')[0] || '—');
 
+    // "Tue, 01" (the month is in the picker)
+    const shortDay = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' }) + ', ' + iso.slice(8);
     // Upright phones use ONE amount column (− sent / + received) and ONE "via" column
     const isReceived = e => +e.received > 0 && !(+e.sent > 0);
     const amountCell = e => {
@@ -2548,7 +2653,7 @@
       return `<td class="c-amt"><div class="amt-wrap ${rec ? 'plus' : 'minus'}">
           <button type="button" class="sign-btn" title="Tap to switch: − sent / + received">${rec ? '+' : '−'}</button>
           <input type="text" inputmode="decimal" data-f="amount" placeholder="0" value="${val || ''}">
-        </div><div class="amt-view ${rec ? 'in' : 'out'}"><span class="av-amt">${val ? (rec ? '+' : '') + (+val).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '–'}</span>${e.time ? `<span class="av-time">${fmtTime(e.time)}</span>` : ''}</div></td>`;
+        </div><div class="amt-view ${rec ? 'in' : 'out'}"><span class="av-amt">${val ? (rec ? '+' : '') + (+val).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '–'}</span><span class="av-time"><span class="av-date">${shortDay(e.date)}</span>${e.time ? `<span class="av-t">${fmtTime(e.time)}</span>` : ''}</span></div></td>`;
     };
 
     // Editable cells for one expense row
@@ -2638,8 +2743,72 @@
     let starOnly = false;
     const filtering = () => viaFilter.size > 0 || starOnly;
     const passesFilter = e => (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!starOnly || !!e.starred);
-    // what the table shows (and totals count) for the open month
-    function visibleItems() { return periodItems().filter(passesFilter); }
+    /* 📊 display: what the table shows (view mode – editing always shows every entry and every date)
+       level: 'entries' | 'day' (day totals only) | 'week' (week totals only) | 'year' (12 month totals)
+       viewOpts (remembered on this device): date rows with day totals (on), week total rows (off) */
+    const VIEW_KEY = 'viewOpts_v1';
+    let viewOpts = (() => { const d = { dayRows: true, weekRows: false }; try { return { ...d, ...JSON.parse(localStorage.getItem(VIEW_KEY)) }; } catch { return d; } })();
+    let viewLevel = 'entries';
+    const editing = () => editMode && canEdit(curBook);
+    const level = () => editing() ? 'entries' : viewLevel;
+    const saveViewOpts = () => { try { localStorage.setItem(VIEW_KEY, JSON.stringify(viewOpts)); } catch {} };
+    // the 12 months of the year being viewed ("YYYY-01" … "YYYY-12")
+    const yearMonths = () => Array.from({ length: 12 }, (_, i) => `${curMonth.slice(0, 4)}-${String(i + 1).padStart(2, '0')}`);
+    function yearItems() {
+      const seen = new Set();
+      return yearMonths().flatMap(k => periodItems(k)).filter(e => !seen.has(e.id) && seen.add(e.id));
+    }
+
+    /* breadcrumb when you drill down: 📈 All years › 📆 2026 › 📅 September 2026 – tap a step to go back to it.
+       crumbs = the levels you came from ('years', 'year'); Full year always offers 📈 All years above it */
+    let crumbs = [];
+    const crumbLabel = l => l === 'years' ? '📈 All years' : l === 'year' ? `📆 ${curMonth.slice(0, 4)}`
+      : cycleOn() ? `💳 ${monthLabel(curMonth)} bill` : `📅 ${monthLabel(curMonth)}`;
+    const crumbPath = () => editing() ? [] : level() === 'year' && !crumbs.length ? ['years'] : level() === 'years' ? [] : crumbs;
+    function renderCrumbs() {
+      const path = crumbPath(), lvl = level();
+      $('crumbs').hidden = !path.length || !['entries', 'year'].includes(lvl);
+      if ($('crumbs').hidden) return;
+      $('crumbs').innerHTML = path.map((l, i) => `<button type="button" class="crumb" data-i="${i}" title="Back to ${l === 'years' ? 'all years' : 'the whole year'}">${crumbLabel(l)}</button><span class="crumb-sep">›</span>`).join('') +
+        `<span class="crumb cur" aria-current="page">${crumbLabel(lvl)}</span>`;
+    }
+    $('crumbs').addEventListener('click', ev => {
+      const b = ev.target.closest('button.crumb');
+      if (!b) return;
+      const path = crumbPath(), i = +b.dataset.i;
+      viewLevel = path[i];
+      crumbs = path.slice(0, i);
+      selected.clear(); pruneBlank();
+      renderMonthly();
+    });
+
+    // 📈 all years: every year from the first entry to the last (that the filter lets through)
+    const bookItems = () => expenses.filter(e => bookOf(e) === curBook).sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
+    const yearSpan = y => ({ from: period(`${y}-01`).from, to: period(`${y}-12`).to });   // a year of bills with a billing cycle
+    function yearsShown() {
+      const ds = bookItems().filter(passesFilter).map(e => e.date);
+      if (!ds.length) return [+curMonth.slice(0, 4)];
+      let lo = +ds[0].slice(0, 4), hi = +ds[ds.length - 1].slice(0, 4);
+      if (ds[ds.length - 1] > yearSpan(hi).to) hi++;         // late-December spends on next year's first bill
+      if (ds[0] < yearSpan(lo).from) lo--;
+      return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
+    }
+
+    /* 💳 in a billing cycle, paying the card ("INFINITY PAYMENT RECEIVED", "BBPS Payment received", autodebit …)
+       settles the PREVIOUS bill – it is listed but not counted, so the total is what this bill asks you to pay.
+       Refunds / cashback still reduce the bill. */
+    const BILL_PAY_RE = /payment\s*rec|bbps|thank\s*you|auto\s*-?debit|bill\s*pa(id|yment)|card\s*payment|neft\s*payment|upi\s*payment|imps\s*payment/i;
+    const isBillPayment = e => +e.received > 0 && !(+e.sent > 0) && BILL_PAY_RE.test(e.purpose || '');
+    const countable = e => !(cycleOn() && isBillPayment(e));
+    const countedItems = () => visibleItems().filter(countable);
+    // year / month lines: "Net" – or, for a card's bills, what each bill asks you to pay
+    const netCell = (s, r) => cycleOn() ? `To pay: <span class="sent">${money(Math.max(0, s - r))}</span>` : `Net: <span class="${r - s < 0 ? 'sent' : 'received'}">${money(r - s)}</span>`;
+
+    // what the table shows (and totals count): the open month (or bill), the whole year, or every year
+    function visibleItems() {
+      const l = level();
+      return (l === 'years' ? bookItems() : l === 'year' ? yearItems() : periodItems()).filter(passesFilter);
+    }
 
     /* ---------- 💳 credit card billing cycle ----------
        cardCycles: { '<payment option>': { start: 16, due: 1 } }  (day of month, 1–28)
@@ -2671,20 +2840,20 @@
 
     // the date range the table shows: calendar month, or the card's billing cycle
     // (a cycle can be adjusted by hand: cardCycles[card].overrides['YYYY-MM'] = { from, to, due })
-    function period() {
-      const [y, m] = curMonth.split('-').map(Number);
+    function period(key = curMonth) {
+      const [y, m] = key.split('-').map(Number);
       let from = new Date(y, m - 1, 1), to = new Date(y, m, 0), due = null, adjusted = false;
       if (cycleOn()) {
-        const card = cycleCard(), ov = cycleOf(card).overrides?.[curMonth];
+        const card = cycleCard(), ov = cycleOf(card).overrides?.[key];
         if (ov) { from = dateOf(ov.from); to = dateOf(ov.to); due = dateOf(ov.due); adjusted = true; }
-        else ({ from, to, due } = usualCycle(card, curMonth));
+        else ({ from, to, due } = usualCycle(card, key));
       }
       const days = [];
       for (const d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) days.push(isoDate(d));
       return { from: isoDate(from), to: isoDate(to), days, due: due && isoDate(due), cycle: cycleOn(), adjusted };
     }
-    function periodItems() {
-      const { from, to } = period();
+    function periodItems(key = curMonth) {
+      const { from, to } = period(key);
       return expenses.filter(e => bookOf(e) === curBook && e.date >= from && e.date <= to)
         .sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
     }
@@ -2718,10 +2887,28 @@
       const label = k => w < 760
         ? new Date(+k.slice(0, 4), +k.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: w < 600 ? '2-digit' : 'numeric' })
         : '📅 ' + monthLabel(k);
-      $('monthSelect').innerHTML = [...keys].sort().reverse().map(k =>
+      const lvl = level(), yearMode = lvl === 'year', yearsMode = lvl === 'years';
+      if (level() !== 'entries' && sortCol !== 'date') { sortCol = 'date'; sortDir = 1; }   // summaries are by date
+      if (yearsMode) {
+        const ys = yearsShown();
+        $('monthSelect').innerHTML = `<option value="${curMonth}" selected>${w < 760 ? '' : '📈 '}${ys[0]}${ys.length > 1 ? ' – ' + ys[ys.length - 1] : ''} · all years</option>`;
+      } else if (yearMode) {
+        // full year: the picker lists years
+        const yc = {};
+        Object.entries(counts).forEach(([k, n]) => yc[k.slice(0, 4)] = (yc[k.slice(0, 4)] || 0) + n);
+        const years = new Set([...keys].map(k => k.slice(0, 4)));
+        $('monthSelect').innerHTML = [...years].sort().reverse().map(y =>
+          `<option value="${y}${curMonth.slice(4)}" ${y === curMonth.slice(0, 4) ? 'selected' : ''}>${w < 760 ? '' : '📆 '}${y}${yc[y] ? ` (${yc[y]})` : ''}</option>`).join('');
+      } else $('monthSelect').innerHTML = [...keys].sort().reverse().map(k =>
         `<option value="${k}" ${k === curMonth ? 'selected' : ''}>${label(k)}${counts[k] ? ` (${counts[k]})` : ''}</option>`
       ).join('');
-      $('thisMonth').hidden = curMonth === today().slice(0, 7);
+      $('thisMonth').hidden = yearsMode || (yearMode ? curMonth.slice(0, 4) === today().slice(0, 4) : curMonth === today().slice(0, 7));
+      $('monthly').classList.toggle('yearmode', yearMode || yearsMode);
+      renderCrumbs();
+      $('prevMonth').disabled = $('nextMonth').disabled = $('monthSelect').disabled = yearsMode;   // every year is on screen
+      $('viewBtn').classList.toggle('on', lvl !== 'entries' || !viewOpts.dayRows || viewOpts.weekRows);
+      $('prevMonth').title = yearMode ? 'Previous year' : 'Previous month';
+      $('nextMonth').title = yearMode ? 'Next year' : 'Next month';
 
       $('monthNote').value = monthNotes[noteKey(curMonth)] || '';
       renderNotePreview();
@@ -2740,6 +2927,11 @@
 
       const cols = (showTime ? 9 : 8) + (isShared(curBook) ? 1 : 0);   // tools, date, [time], sent, recv, purpose, via, [by], note, ✕
       $('mTable').classList.toggle('flat', sortCol !== 'date');     // flat list shows the full date box
+      // which summary rows (editing: every date, for ＋ Add)
+      const showEntries = lvl === 'entries';
+      const showDays = lvl === 'day' || (showEntries && (viewOpts.dayRows || editing()));
+      const showWeeks = lvl === 'week' || (lvl !== 'year' && viewOpts.weekRows);
+      $('mTable').classList.toggle('no-days', !showDays);
       const showBy = isShared(curBook);
       $('mTable').classList.toggle('with-by', showBy);
       const span = showBy ? 5 : 4;                                  // purpose … note area of date / week rows
@@ -2747,7 +2939,38 @@
       const row = (e, cls = '') => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
       let html = '';
 
-      if (sortCol !== 'date') {
+      if (yearsMode) {
+        // 📈 all years: one line per year (a year of bills with a billing cycle); tap to see its months
+        const ys = yearsShown();
+        if (sortDir === -1) ys.reverse();
+        html = ys.map(y => {
+          const p = yearSpan(y), list = items.filter(e => e.date >= p.from && e.date <= p.to && countable(e));
+          const s = list.reduce((a, e) => a + (+e.sent || 0), 0), r = list.reduce((a, e) => a + (+e.received || 0), 0);
+          const months = new Set(list.map(e => e.date.slice(0, 7))).size;
+          return `<tr class="week-total month-row year-row${list.length ? '' : ' no-entries'}" data-year="${y}" title="Open ${y} – month by month">
+            <td class="c-tools"><div class="tools"><span class="caret">›</span></div></td>
+            <td class="c-date-cell wk-label-cell"><span class="wk-label">${cycleOn() ? '💳 ' : ''}${y}</span></td><td class="c-time-cell"></td>
+            <td class="c-sent num wk-sent"><span class="sent">${money(s)}</span></td><td class="c-recv num wk-recv"><span class="received">${money(r)}</span></td>
+            <td colspan="${span}" class="wk-net">${netCell(s, r)}
+              <span class="day-count">· ${list.length} entr${list.length === 1 ? 'y' : 'ies'}${list.length ? ` in ${months} month${months === 1 ? '' : 's'}` : ''}</span></td></tr>`;
+        }).join('');
+      } else if (yearMode) {
+        // 📆 full year: one line per month (or per bill with a card's billing cycle); tap to open it
+        const months = yearMonths();
+        if (sortDir === -1) months.reverse();
+        html = months.map(k => {
+          const p = period(k), list = items.filter(e => e.date >= p.from && e.date <= p.to && countable(e));
+          const s = list.reduce((a, e) => a + (+e.sent || 0), 0), r = list.reduce((a, e) => a + (+e.received || 0), 0);
+          const mName = new Date(+k.slice(0, 4), +k.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+          const range = p.cycle ? `<span class="mr-range">${shortDate(p.from)} – ${shortDate(p.to)} · due ${shortDate(p.due)}</span>` : '';
+          return `<tr class="week-total month-row${list.length ? '' : ' no-entries'}" data-month="${k}" title="Open ${monthLabel(k)}">
+            <td class="c-tools"><div class="tools"><span class="caret">›</span></div></td>
+            <td class="c-date-cell wk-label-cell"><span class="wk-label">${p.cycle ? '💳 ' : ''}${mName}</span></td><td class="c-time-cell"></td>
+            <td class="c-sent num wk-sent"><span class="sent">${money(s)}</span></td><td class="c-recv num wk-recv"><span class="received">${money(r)}</span></td>
+            <td colspan="${span}" class="wk-net">${netCell(s, r)}
+              <span class="day-count">· ${list.length} entr${list.length === 1 ? 'y' : 'ies'}</span>${range}</td></tr>`;
+        }).join('');
+      } else if (sortCol !== 'date') {
         // sorted by another column: plain list
         html = items.map(e => row(e)).join('');
       } else {
@@ -2766,7 +2989,7 @@
         // billing cycle spanning two months: a separator between the previous month's part and this month's
         let lastMonthShown = null;
         const monthPart = key => {
-          const part = items.filter(e => e.date.startsWith(key));
+          const part = items.filter(e => e.date.startsWith(key) && countable(e));   // card payments aren't part of the bill
           const ps = part.reduce((a, e) => a + (+e.sent || 0), 0), pr = part.reduce((a, e) => a + (+e.received || 0), 0);
           const lbl = new Date(+key.slice(0, 4), +key.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
           return `<span class="ms-part"><b>${lbl}</b> part: <span class="sent">− ${money(ps)}</span>${pr ? ` · <span class="received">+ ${money(pr)}</span>` : ''}</span>`;
@@ -2778,8 +3001,8 @@
         const hideEmpty = filtering() || !editMode || !canEdit(curBook);
         weeks.forEach(w => {
           if (hideEmpty && !items.some(e => weekStart(e.date) === w.key)) return;
-          const wOpen = !collapsed.has('w:' + w.key);
-          if (wOpen) w.days.forEach(d => {
+          const wOpen = !showWeeks || !collapsed.has('w:' + w.key);
+          if (wOpen && (showDays || showEntries)) w.days.forEach(d => {
             const dayItems = items.filter(e => e.date === d);
             if (hideEmpty && !dayItems.length) return;
             if (cycleOn() && lastMonthShown && d.slice(0, 7) !== lastMonthShown) html += separator(lastMonthShown, d.slice(0, 7));
@@ -2787,10 +3010,10 @@
             const dOpen = !collapsed.has('d:' + d);
             const dt = new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8));
             const wd = dt.getDay();
-            html += `<tr class="day-head${wd === 0 || wd === 6 ? ' weekend' : ''}${d === todayStr ? ' is-today' : ''}${dayItems.length ? '' : ' no-entries'}" data-date="${d}" title="Click to ${dOpen ? 'collapse' : 'expand'}">
+            if (showDays) html += `<tr class="day-head${wd === 0 || wd === 6 ? ' weekend' : ''}${d === todayStr ? ' is-today' : ''}${dayItems.length ? '' : ' no-entries'}" data-date="${d}" title="Click to ${dOpen ? 'collapse' : 'expand'}">
               <td class="c-tools"><div class="tools">
                 <input type="checkbox" class="grp-sel" data-grp="d:${d}" title="Select this day"${dayItems.length ? '' : ' disabled'}>
-                <span class="caret">${dayItems.length ? (dOpen ? '▾' : '▸') : ''}</span>
+                <span class="caret">${dayItems.length && showEntries ? (dOpen ? '▾' : '▸') : ''}</span>
               </div></td>
               <td class="c-date-cell day-label"><span class="dl-long">${dt.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}</span><span class="dl-short">${dt.toLocaleDateString('en-IN', { weekday: 'short' })}, ${d.slice(8)}</span></td>
               <td class="c-time-cell"></td>
@@ -2800,12 +3023,12 @@
                 ${d === todayStr ? '<span class="today-tag">Today</span>' : ''}<span class="day-count">${dayItems.length ? `${dayItems.length} entr${dayItems.length > 1 ? 'ies' : 'y'}` : 'no entries'}</span>
                 <button type="button" class="day-add" data-date="${d}" title="Add an entry for this date">＋ Add</button>
               </div></td></tr>`;
-            if (dOpen) html += dayItems.map(e => row(e, 'day-entry')).join('');
+            if (showEntries && (dOpen || !showDays)) html += dayItems.map(e => row(e, showDays ? 'day-entry' : '')).join('');
           });
-          html += `<tr class="week-total${wOpen ? '' : ' closed'}" data-week="${w.key}" title="Click to ${wOpen ? 'collapse' : 'expand'} this week">
+          if (showWeeks) html += `<tr class="week-total${wOpen ? '' : ' closed'}" data-week="${w.key}" title="Click to ${wOpen ? 'collapse' : 'expand'} this week">
             <td class="c-tools"><div class="tools">
               <input type="checkbox" class="grp-sel" data-grp="w:${w.key}" title="Select this week">
-              <span class="caret">${wOpen ? '▾' : '▸'}</span>
+              <span class="caret">${lvl === 'week' ? '' : wOpen ? '▾' : '▸'}</span>
             </div></td>
             <td class="c-date-cell wk-label-cell"><span class="wk-label"></span></td><td class="c-time-cell"></td>
             <td class="c-sent num wk-sent"></td><td class="c-recv num wk-recv"></td>
@@ -2818,6 +3041,13 @@
       $('tbody').querySelectorAll('tr[data-id]').forEach(markRow);
       $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
       markDuplicates();
+      // 💳 card payments in a billing cycle: listed, but not part of this bill
+      if (cycleOn()) $('tbody').querySelectorAll('tr[data-id]').forEach(tr => {
+        const e = expenses.find(x => x.id === tr.dataset.id);
+        if (!e || !isBillPayment(e)) return;
+        tr.classList.add('bill-pay');
+        tr.querySelector('.c-purpose').insertAdjacentHTML('beforeend', '<span class="pay-tag" title="Paying the card settles the previous bill – it is not counted in this bill">💸 bill payment · not counted</span>');
+      });
       $('totSums').colSpan = $('selSums').colSpan = showBy ? 7 : 6;
       updateMonthTotals();
       updateSelection();
@@ -2926,6 +3156,8 @@
       const th = ev.target.closest('[data-sort]');
       if (!th) return;
       const col = th.dataset.sort;
+      if (level() !== 'entries') viewLevel = 'entries';      // sorting = back to the entries
+      crumbs = [];
       if (th.classList.contains('amt-title')) {
         // "Amount" title (upright phones) cycles: amount ▲ → amount ▼ → date ▲ → date ▼ → amount ▲ …
         amtStep = (amtStep + 1) % 4;
@@ -2941,28 +3173,34 @@
 
     function updateMonthTotals() {
       let s = 0, r = 0;
-      visibleItems().forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
+      countedItems().forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
       const net = r - s;
       const [ty, tm] = curMonth.split('-').map(Number);
-      $('mTotalLabel').textContent = cycleOn() ? '💳 Bill total' : viaFilter.size ? '🔍 Filtered total' : starOnly ? '⭐ Starred total'
-        : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`;
-      $('mTotalLabel').title = `Total for ${monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
+      const yr = level() === 'year' || level() === 'years', ysh = level() === 'years' && yearsShown();
+      const yLbl = ysh ? (ysh.length > 1 ? `${ysh[0]}–${String(ysh[ysh.length - 1]).slice(2)}` : `${ysh[0]}`) : ty;
+      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size ? '🔍 Filtered total' : starOnly ? '⭐ Starred total'
+        : ysh ? 'All years' : yr ? 'Year total' : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`);
+      $('mTotalLabel').title = `Total for ${ysh ? 'all years' : yr ? ty : monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
       $('mTotalLabel').parentElement.classList.toggle('filtered', filtering());
       $('mSent').textContent = money(s);
       $('mRecv').textContent = money(r);
-      $('mNet').textContent = money(net);
-      $('mNet').className = net < 0 ? 'sent' : 'received';
+      // 💳 billing cycle: "To pay" = this bill's spends minus refunds (card payments not counted)
+      const bill = cycleOn();
+      $('mNetLbl').textContent = bill ? 'To pay:' : 'Net:';
+      $('mNet').textContent = money(bill ? Math.max(0, -net) : net);
+      $('mNet').className = bill || net < 0 ? 'sent' : 'received';
+      $('mNet').title = bill ? (net > 0 ? `Credit of ${money(net)} – nothing to pay` : 'Spends minus refunds in this billing cycle (card payments not counted)') : '';
 
       $('tbody').querySelectorAll('tr.day-head').forEach(tr => {
         let ds = 0, dr = 0;
-        visibleItems().filter(e => e.date === tr.dataset.date).forEach(e => { ds += +e.sent || 0; dr += +e.received || 0; });
+        countedItems().filter(e => e.date === tr.dataset.date).forEach(e => { ds += +e.sent || 0; dr += +e.received || 0; });
         tr.querySelector('.day-sent').innerHTML = ds ? `<span class="day-pill out">${money(ds)}</span>` : '';
         tr.querySelector('.day-recv').innerHTML = dr ? `<span class="day-pill in">${money(dr)}</span>` : '';
       });
 
-      $('tbody').querySelectorAll('tr.week-total').forEach(tr => {
+      $('tbody').querySelectorAll('tr.week-total:not(.month-row)').forEach(tr => {
         let ws = 0, wr = 0;
-        visibleItems().filter(e => weekStart(e.date) === tr.dataset.week)
+        countedItems().filter(e => weekStart(e.date) === tr.dataset.week)
           .forEach(e => { ws += +e.sent || 0; wr += +e.received || 0; });
         const wn = wr - ws;
         const [wa, wb] = weekSpan(tr.dataset.week);
@@ -3013,8 +3251,37 @@
       mFlash.t = setTimeout(() => $('mMsg').hidden = true, undo ? 10000 : 3000);
     }
 
-    $('prevMonth').addEventListener('click', () => goMonth(shiftMonth(curMonth, -1)));
-    $('nextMonth').addEventListener('click', () => goMonth(shiftMonth(curMonth, 1)));
+    // ◀ ▶: a month at a time, a year at a time in 📆 full year
+    $('prevMonth').addEventListener('click', () => goMonth(shiftMonth(curMonth, level() === 'year' ? -12 : -1)));
+    $('nextMonth').addEventListener('click', () => goMonth(shiftMonth(curMonth, level() === 'year' ? 12 : 1)));
+
+    /* 📊 Display popup */
+    function renderViewDlg() {
+      const lvl = level(), ed = editing();
+      document.querySelectorAll('input[name=viewLevel]').forEach(r => { r.checked = r.value === lvl; r.disabled = ed; });
+      $('viewEditHint').hidden = !ed;
+      $('optDayRows').checked = viewOpts.dayRows || ed;
+      $('optDayRows').disabled = ed || lvl !== 'entries';
+      $('optWeekRows').checked = viewOpts.weekRows || lvl === 'week';
+      $('optWeekRows').disabled = ['week', 'year', 'years'].includes(lvl);
+      document.querySelectorAll('#viewDlg .view-opt').forEach(l => l.classList.toggle('on', l.querySelector('input').checked));
+    }
+    const closeViewDlg = () => { $('viewDlg').hidden = true; };
+    $('viewBtn').addEventListener('click', () => { renderViewDlg(); $('viewDlg').hidden = false; });
+    $('viewDlg').addEventListener('change', ev => {
+      const t = ev.target;
+      if (t.name === 'viewLevel') { viewLevel = t.value; crumbs = []; selected.clear(); pruneBlank(); }
+      else if (t.id === 'optDayRows') viewOpts.dayRows = t.checked;
+      else if (t.id === 'optWeekRows') viewOpts.weekRows = t.checked;
+      else return;
+      saveViewOpts();
+      renderViewDlg();
+      renderMonthly();
+    });
+    $('viewX').addEventListener('click', closeViewDlg);
+    $('viewDone').addEventListener('click', closeViewDlg);
+    $('viewDlg').addEventListener('click', ev => { if (ev.target === $('viewDlg')) closeViewDlg(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('viewDlg').hidden) closeViewDlg(); });
     // 📍 in billing-cycle view jumps to the cycle that contains today (after the statement day that's next month's)
     $('thisMonth').addEventListener('click', () => {
       const t = today();
@@ -3174,6 +3441,9 @@
     $('tbody').addEventListener('click', ev => {
       const head = ev.target.closest('tr.day-head, tr.week-total');
       if (!head || ev.target.closest('input, button, select')) return;
+      if (head.classList.contains('year-row')) { crumbs = ['years']; viewLevel = 'year'; goMonth(head.dataset.year + curMonth.slice(4)); return; }   // all years: that year's months
+      if (head.classList.contains('month-row')) { crumbs = ['years', 'year']; viewLevel = 'entries'; goMonth(head.dataset.month); return; }   // full year: open that month
+      if (level() !== 'entries') return;                     // day / week totals only: nothing to fold
       if (head.classList.contains('no-entries')) return;
       const key = head.classList.contains('day-head') ? 'd:' + head.dataset.date : 'w:' + head.dataset.week;
       if (collapsed.has(key)) collapsed.delete(key); else collapsed.add(key);
@@ -3617,16 +3887,23 @@
 
     // what to export: the month on screen (as shown – filter / billing cycle included) or every month of this book
     function exportData(scope) {
-      const all = scope === 'all';
+      const all = scope === 'all' || level() === 'years';     // 📈 all years on screen = every month
       const items = (all ? expenses.filter(e => bookOf(e) === curBook) : visibleItems()).slice().sort(byDate);
-      const label = all ? 'All months' : cycleOn() ? `${cycleCard()} bill ${shortDate(period().from)} – ${shortDate(period().to)}` : monthLabel(curMonth);
+      const yr = !all && level() === 'year';                // 📆 full year on screen: that year, month by month
+      const label = all ? 'All months' : yr ? `Year ${curMonth.slice(0, 4)}${cycleOn() ? ` – ${cycleCard()} bills` : ''}`
+        : cycleOn() ? `${cycleCard()} bill ${shortDate(period().from)} – ${shortDate(period().to)}` : monthLabel(curMonth);
       const withBy = isShared(curBook);
       const recs = items.map(e => ({ date: e.date, time: e.time || '', sent: +e.sent || 0, received: +e.received || 0,
         purpose: e.purpose || '', via: viaOf(e), note: e.note || '', by: withBy ? (e.by || (e.byEmail || '').split('@')[0]) : '' }));
       const sum = f => recs.reduce((a, r) => a + r[f], 0);
       // groups for the PDF: the period on screen, or one per calendar month
       let groups;
-      if (!all) groups = [{ label, from: period().from, to: period().to, recs }];
+      if (yr) groups = yearMonths().map(k => {
+        const p = period(k);
+        return { label: p.cycle ? `${monthLabel(k)} bill (${shortDate(p.from)} – ${shortDate(p.to)})` : monthLabel(k), from: p.from, to: p.to,
+          recs: recs.filter(r => r.date >= p.from && r.date <= p.to) };
+      }).filter(g => g.recs.length);
+      else if (!all) groups = [{ label, from: period().from, to: period().to, recs }];
       else groups = [...new Set(recs.map(r => r.date.slice(0, 7)))].map(m => {
         const [y, mo] = m.split('-').map(Number);
         return { label: monthLabel(m), from: m + '-01', to: isoDate(new Date(y, mo, 0)), recs: recs.filter(r => r.date.startsWith(m)) };
@@ -3746,7 +4023,7 @@
 
     function openIO() {
       $('ioBook').textContent = '· ' + bookTitle(curBook);
-      $('ioMonthLbl').textContent = cycleOn() ? 'This bill (as shown)' : viaFilter.size ? `${monthLabel(curMonth)} (filtered, as shown)` : monthLabel(curMonth);
+      $('ioMonthLbl').textContent = level() === 'years' ? 'All years (as shown)' : level() === 'year' ? `Year ${curMonth.slice(0, 4)} (as shown)` : cycleOn() ? 'This bill (as shown)' : viaFilter.size ? `${monthLabel(curMonth)} (filtered, as shown)` : monthLabel(curMonth);
       $('ioImport').hidden = !canEdit(curBook);          // view-only shared expense: export only
       $('ioExpMsg').hidden = true;
       resetImport();
@@ -4231,7 +4508,7 @@
     async function openShared(id, push = true) {
       if (!user) { alert('Log in to open shared expenses.'); return; }
       const bid = SH + id;
-      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); }
+      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; }
       curBook = bid;
       openScreen('book', push);
       $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
