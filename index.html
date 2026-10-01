@@ -549,7 +549,7 @@
 
     /* a shared book you can only view */
     #monthly.readonly .day-add, #monthly.readonly #clearBtn, #monthly.readonly #bulkBtn,
-    #monthly.readonly .row-del, #monthly.readonly .date-pick { display: none !important; }
+    #monthly.readonly .row-del, #monthly.readonly .date-pick, #monthly.readonly .star-btn, #monthly.readonly #starOnlyBtn { display: none !important; }
 
     /* view only (✏️ Edit off): no editing controls, fields read like plain text */
     #monthly.viewmode .day-add, #monthly.viewmode #clearBtn, #monthly.viewmode #bulkBtn, #monthly.viewmode .row-del,
@@ -593,7 +593,8 @@
     #monthly.viewmode .edit-table input[type=time][value=""]:disabled,
     #monthly.readonly .edit-table input[type=time][value=""]:disabled { color: transparent; -webkit-text-fill-color: transparent; }
     .edit-btn.on { background: #dcfce7; color: #166534; }
-    #monthly.readonly .note-preview { cursor: default; }
+    #monthly.readonly .note-preview.is-empty { cursor: default; }
+    #monthNote[readonly] { cursor: default; }
     .view-only-tag { font-size: .7rem; font-weight: 600; background: rgba(255,255,255,.25); border-radius: 4px; padding: 1px 6px; vertical-align: middle; }
 
     /* ⚙ settings popup */
@@ -949,7 +950,7 @@
       /* same 5 columns for the header line and every entry line:
          ☐ · amount (− sent / + received) · purpose · via · ✕ */
       html:not(.tbl-wide) #mTable thead tr, html:not(.tbl-wide) #tbody tr[data-id] {
-        display: grid; grid-template-columns: 16px 74px minmax(0, 1fr) 96px 22px;   /* ☐☆ · amount · purpose · pay via · 📝 */
+        display: grid; grid-template-columns: 16px 80px minmax(0, 1fr) 96px 22px;   /* ☐☆ · amount · purpose · pay via · 📝 */
         align-items: center; gap: 0 4px; padding: 1px 4px;
       }
       html:not(.tbl-wide) #tbody tr[data-id] { border-bottom: 1px solid var(--border); }
@@ -966,12 +967,15 @@
       /* view mode: the amount as plain coloured text ("+344" green, "788" red) with the time under it */
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .amt-wrap { display: none; }
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .amt-view { display: flex; }
+      html:not(.tbl-wide) #tbody tr[data-id] .c-amt { padding-left: 8px !important; }
+      html:not(.tbl-wide) #mTable thead .c-amt { padding-left: 8px; }
       /* ☐ on top, ☆ under it */
       #tbody tr[data-id] .tools { flex-direction: column; justify-content: center; gap: 0; line-height: 1; }
       html:not(.tbl-wide) #tbody tr[data-id] .tools .row-sel { width: 13px; height: 13px; margin: 0; }
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { font-size: .85rem !important; line-height: 1; padding: 1px 0 0 !important; }
       /* view mode: ☆/★ at the start of the line (where the checkbox is when editing) */
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { display: inline-block !important; font-size: .95rem; padding: 0; }
+      html:not(.tbl-wide) #monthly.readonly #tbody tr[data-id] .tools .star-btn { display: none !important; }
       html:not(.tbl-wide) #mTable thead .c-amt, html:not(.tbl-wide) #mTable thead .c-via, html:not(.tbl-wide) #tbody tr[data-id] .c-amt, html:not(.tbl-wide) #tbody tr[data-id] .c-via { display: block; }
       html:not(.tbl-wide) #mTable thead .c-amt { text-align: center; }
       html:not(.tbl-wide) #mTable thead th { display: block; width: auto; padding: 6px 2px; font-size: .7rem; border: none; background: none; }
@@ -1193,7 +1197,7 @@
       --primary: #d4d4d4; --primary-dark: #fff;
       --sent: #f87171; --received: #4ade80;
       --sent-item: #fca5a5; --recv-item: #86efac;
-      --bg: #000000; --card: #111111; --text: #e6e6e6; --muted: #9a9a9a; --border: #2e2e2e;
+      --bg: #000000; --card: #111111; --text: #dcd6ea; --muted: #9b93b0; --border: #2e2a3a;
     }
     html[data-theme=dark] header { background: linear-gradient(180deg, #4f46e5 0%, #6d3be8 55%, #7c3aed 100%); }   /* same header as the light theme */
     /* phone held sideways: left → right, starting from the status-bar colour */
@@ -1208,6 +1212,14 @@
     html[data-theme=dark] .table-wrap { background: #000000; border-color: #262626; }   /* entry rows: black */
     html[data-theme=dark] th.sortable:hover { background: #2a2a2a; }
     html[data-theme=dark] .btn-primary { color: #111; }
+    /* light buttons were black-on-black: give them their own purple-grey surface */
+    html[data-theme=dark] .btn-light, html[data-theme=dark] .io-fmt, html[data-theme=dark] .owner-count {
+      background: #1d1929; color: #ddd5f0; border: 1px solid #332c47;
+    }
+    html[data-theme=dark] .btn-light:hover, html[data-theme=dark] .io-fmt:hover { background: #2a2340; border-color: #5b4b88; }
+    html[data-theme=dark] .btn-light:disabled { opacity: .45; }
+    html[data-theme=dark] .modal-x { color: #b9b0d0; }
+    html[data-theme=dark] .menu button, html[data-theme=dark] .book-card { color: var(--text); }
     html[data-theme=dark] .avatar-sm { background: #3a3a3a; }
     html[data-theme=dark] tr.week-total td, html[data-theme=dark] tr.week-total .wk-label { color: #d8b4fe; }
     html[data-theme=dark] tr.week-total:hover td { background: #211529 !important; }
@@ -2572,10 +2584,12 @@
       p.classList.toggle('is-empty', !text);
       p.innerHTML = text
         ? esc(lines[0]) + (lines.length > 1 ? `<span class="more">+${lines.length - 1} more line${lines.length > 2 ? 's' : ''}</span>` : '')
-        : `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…`;
+        : canEdit(curBook) ? `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…` : `No notes for ${esc(monthLabel(curMonth))}`;
     }
     $('notePreview').addEventListener('click', () => {
-      if (!canEdit(curBook)) return;                        // view-only shared expense
+      const ro = !canEdit(curBook);                         // view-only shared expense: read the note, no editing
+      if (ro && !(monthNotes[noteKey(curMonth)] || '').trim()) return;
+      $('monthNote').readOnly = ro;
       $('notePreview').hidden = true;
       $('monthNote').hidden = false;
       $('monthNote').focus();
