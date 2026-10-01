@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Expense Manager</title>
   <meta name="description" content="Track, share and manage your expenses – encrypted, on any device. Share expense books with friends.">
 
   <!-- Installable app (PWA) -->
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#4f46e5">   <!-- phone status bar: the middle of the header's blue → purple -->
   <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -65,6 +65,9 @@
 
     /* ---------- Header ---------- */
     header {
+      /* the gradient also fills the notch / status-bar strip of an installed iPhone app (viewport-fit=cover) */
+      border-top: env(safe-area-inset-top, 0px) solid transparent; background-origin: border-box;
+      padding-left: max(16px, env(safe-area-inset-left, 0px)) !important; padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
       background: linear-gradient(135deg, var(--primary), #7c3aed);
       color: #fff;
       padding: 16px;
@@ -130,6 +133,33 @@
     .pf-hero { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; padding: 0; cursor: pointer; border: 3px solid transparent; background: none; transition: transform .15s; }
     .pf-hero:hover { transform: translateY(-2px); }
     .pf-hero.on { border-color: var(--primary); box-shadow: 0 0 0 2px var(--card), 0 0 0 4px #7c3aed; }
+    /* 📤 import / export popup */
+    .io-modal { max-width: 560px; }
+    .io-body { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+    .io-sec { border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .io-sec h4 { font-size: .95rem; }
+    .io-book { font-weight: 400; color: var(--muted); font-size: .85rem; }
+    .io-scope { display: flex; gap: 14px; flex-wrap: wrap; font-size: .88rem; }
+    .io-scope label { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer; }
+    .io-scope input { width: auto; accent-color: #7c3aed; }
+    .io-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .io-fmt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; cursor: pointer; font: inherit; font-weight: 600; font-size: .85rem;
+      background: var(--bg); color: var(--text); border: 2px solid var(--border); border-radius: 10px; transition: border-color .15s, transform .15s; }
+    .io-fmt span { font-size: 1.5rem; line-height: 1.2; }
+    .io-fmt small { color: var(--muted); font-weight: 400; font-size: .7rem; }
+    .io-fmt:hover { border-color: #7c3aed; transform: translateY(-1px); }
+    .io-fmt:disabled { opacity: .5; cursor: progress; }
+    .io-pick { align-self: flex-start; cursor: pointer; }
+    .io-file { font-size: .8rem; color: var(--muted); }
+    #ioPreview { max-height: 36vh; overflow: auto; font-size: .85rem; }
+    #ioPreview .ok { color: var(--received); font-weight: 600; margin-bottom: 6px; }
+    #ioPreview .err { color: var(--sent); margin-top: 6px; }
+    #ioPreview .warn { color: #c2410c; margin-top: 6px; }
+    #ioPreview table { min-width: 460px; }
+    #ioPreview td, #ioPreview th { padding: 4px 8px; font-size: .8rem; }
+    .io-actions { display: flex; justify-content: flex-end; }
+    #ioExpMsg { margin: 0; }
+    @media (max-width: 600px) { .io-grid { grid-template-columns: repeat(2, 1fr); } }
     .logout {
       background: rgba(255,255,255,.18); color: #fff;
       border: 1px solid rgba(255,255,255,.4); border-radius: 8px;
@@ -138,6 +168,7 @@
     .logout:hover { background: rgba(255,255,255,.3); }
 
     main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    body { padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px); }
 
     /* ---------- Info line ---------- */
     .info {
@@ -244,7 +275,7 @@
     .edit-table .c-amt, .dl-short { display: none; }
     /* one "Via" column for sent and received (separate Send/Recv Via columns are not shown) */
     .edit-table .c-sv, .edit-table .c-rv { display: none; }
-    .edit-table .c-via { width: 124px; }
+    .edit-table .c-via { width: 140px; }
     .amt-wrap { display: flex; align-items: center; gap: 2px; }
     .amt-wrap input { min-width: 0; text-align: right; font-weight: 600; }
     .sign-btn {
@@ -262,7 +293,7 @@
     #mTable.flat .c-date-cell { width: 196px !important; }                      /* flat list, edit: date (text) + time box */
     #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 150px !important; }   /* flat list, view: "Tue, 22 Sept · 9:05 pm" */
     .edit-table .c-time-cell { width: 88px; }
-    .edit-table .c-sent, .edit-table .c-recv { width: 82px; }
+    .edit-table .c-sent, .edit-table .c-recv { width: 92px; }
     .edit-table .c-sv, .edit-table .c-rv { width: 118px; }
     .edit-table .c-note { width: 16%; }
     .edit-table:not(.hide-time) .c-note { width: 12%; }
@@ -396,7 +427,7 @@
     body.book-mode #monthly { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 12px 16px; }
     body.book-mode #monthly > * { flex-shrink: 0; }
     body.book-mode #monthly .table-wrap { flex: 1 1 auto; min-height: 60px; overflow: auto; overscroll-behavior: contain; }
-    body.book-mode #monthly .bulk { max-height: 45vh; overflow: auto; }
+    body.book-mode #monthly .bulk { max-height: 62vh; overflow: auto; }
     body.book-mode footer { display: none; }
     #monthly .edit-table thead th { position: sticky; top: 0; z-index: 3; }
     #monthly .edit-table tfoot td { position: sticky; bottom: 0; z-index: 3; }
@@ -568,7 +599,11 @@
     .modal .err { color: var(--sent); font-weight: 600; font-size: .88rem; }
     .modal-foot { display: flex; justify-content: flex-end; gap: 8px; }
     .btn-danger-solid { background: var(--sent); color: #fff; }
-    .login-modal { max-width: 400px; }
+    .login-modal { max-width: 420px; }
+    .login-steps { background: #f8f1ff; border: 1px solid #e1b5ff; border-radius: 10px; padding: 10px 12px; font-size: .84rem; line-height: 1.45; color: var(--text); }
+    .login-steps ol { margin: 4px 0 6px 18px; display: flex; flex-direction: column; gap: 3px; }
+    .login-steps small { color: var(--muted); }
+    html[data-theme=dark] .login-steps { background: #191021; border-color: #573274; }
     .login-or { text-align: center; color: var(--muted); font-size: .8rem; }
     .g-login { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--border); }
     .g-login svg { width: 18px; height: 18px; }
@@ -626,6 +661,14 @@
 
     /* ⚙️ card management */
     .modal-wide { max-width: 640px; }
+    .pm-body { overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+    .pm-body > * { flex-shrink: 0; }                          /* sections keep their size – the window scrolls */
+    .pm-title { font-size: .95rem; }
+    .pm-line { border: none; border-top: 1px solid var(--border); margin: 6px 0 2px; }
+    .card-set { font-size: .8rem; color: #15803d; }
+    html[data-theme=dark] .card-set { color: #86efac; }
+    #cardsDlg .modes-list { overflow: visible; }
+    #cardsDlg .cards-list { overflow: visible; }
     .cards-list { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; min-height: 0; }
     .card-row { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
     .card-main { flex: 1 1 220px; min-width: 0; }
@@ -742,6 +785,22 @@
     /* bulk paste */
     .bulk { margin-top: 16px; padding: 16px; border: 2px dashed #c7d2fe; border-radius: 10px; background: #f8faff; }
     .bulk label { display: block; font-weight: 600; margin-bottom: 4px; }
+    .bulk-help { margin-bottom: 8px; font-size: .85rem; color: var(--muted); }
+    .bulk-help summary { cursor: pointer; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+    .bulk-format { margin: 0 0 8px; padding: 8px 12px; border-radius: 8px; background: var(--card); border: 1px solid var(--border);
+      font: .8rem/1.5 ui-monospace, Consolas, monospace; white-space: pre-wrap; overflow-x: auto; }
+    .bulk-format .br { color: var(--muted); font-weight: 700; }
+    .bulk-format .fm { background: #f3e8ff; color: #6d28d9; font-weight: 600; border-radius: 4px; padding: 0 4px; }
+    html[data-theme=dark] .bulk-format .fm { background: #2e1f4f; color: #d8b4fe; }
+    .bulk-rules { margin: 0 0 4px 18px; display: flex; flex-direction: column; gap: 2px; }
+    @media (min-width: 761px) {
+      .bulk-help-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 0 16px; align-items: start; }
+      .bulk-format { margin: 0; }
+      .bulk-rules { margin-top: 4px; }
+    }
+    .bulk-rules code { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; font-size: .85em; }
+    .bulk-help code { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; font-size: .85em; font-weight: 600; color: #6d28d9; white-space: nowrap; }
+    html[data-theme=dark] .bulk-help code { color: #c4b5fd; }
     .bulk textarea { font-family: ui-monospace, Consolas, monospace; font-size: .88rem; min-height: 130px; }
     #bulkPreview { margin-top: 10px; font-size: .88rem; }
     #bulkPreview .ok { color: var(--received); font-weight: 600; margin-bottom: 6px; }
@@ -798,9 +857,10 @@
       .wl-long { display: none; }
       .wl-short { display: inline; }
       .edit-table .c-time-cell { width: 74px; }
-      .edit-table .c-sent, .edit-table .c-recv { width: 64px; }
-      .edit-table .c-via { width: 96px; }
-      .edit-table .c-del { width: 28px; }
+      .edit-table .c-sent, .edit-table .c-recv { width: 74px; }
+      .edit-table .c-via { width: 112px; }
+      .edit-table .c-del { width: 38px; }
+      #tbody td.c-del { padding-left: 8px; }
       .edit-table .c-note { width: 12%; }
       .edit-table .c-by { width: 70px; }
       .star-btn { font-size: 1rem; }
@@ -814,9 +874,12 @@
     }
     /* phone held sideways: slimmer header so the grid gets the height */
     @media (max-height: 520px) and (orientation: landscape) {
-      /* date column: "Tue,01 - 9:05P" */
+      /* date column: "Tue,01 - 9:05P" in sorted lists; under a date row only the time ("9:05 am") */
       .dt-view .dv-date, .dt-view .dv-sep, .dt-view .dv-time { display: none !important; }
       .dt-view .dv-compact { display: inline !important; }
+      #tbody tr.day-entry .dt-view .dv-compact { display: none !important; }
+      #tbody tr.day-entry .dt-view .dv-time { display: inline !important; }
+      #monthly.viewmode #mTable:not(.flat) .c-date-cell, #monthly.readonly #mTable:not(.flat) .c-date-cell { width: 62px; }
       #monthly.viewmode .edit-table .c-date-cell, #monthly.readonly .edit-table .c-date-cell { width: 88px; }
       #monthly.viewmode #mTable.flat .c-date-cell, #monthly.readonly #mTable.flat .c-date-cell { width: 88px !important; }
       /* thin header + thin toolbar so the grid gets most of the height */
@@ -860,7 +923,7 @@
       /* same 5 columns for the header line and every entry line:
          ☐ · amount (− sent / + received) · purpose · via · ✕ */
       html:not(.tbl-wide) #mTable thead tr, html:not(.tbl-wide) #tbody tr[data-id] {
-        display: grid; grid-template-columns: 18px 90px minmax(0, 1fr) 84px 46px;
+        display: grid; grid-template-columns: 18px 100px minmax(0, 1fr) 104px 46px;
         align-items: center; gap: 0 4px; padding: 1px 4px;
       }
       html:not(.tbl-wide) #tbody tr[data-id] { border-bottom: 1px solid var(--border); }
@@ -869,7 +932,7 @@
       html:not(.tbl-wide) #tbody tr[data-id] .c-sent, html:not(.tbl-wide) #tbody tr[data-id] .c-recv, html:not(.tbl-wide) #tbody tr[data-id] .c-sv, html:not(.tbl-wide) #tbody tr[data-id] .c-rv,
       html:not(.tbl-wide) #tbody tr[data-id] .star-btn, html:not(.tbl-wide) #tbody tr[data-id] .dup-tag { display: none !important; }
       html:not(.tbl-wide) #mTable thead .c-by, html:not(.tbl-wide) #mTable:not(.with-by) .c-by { display: none !important; }
-      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] { grid-template-columns: 18px 90px minmax(0, 1fr) 84px 46px; grid-template-areas: none; }
+      html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] { grid-template-columns: 18px 100px minmax(0, 1fr) 104px 46px; grid-template-areas: none; }
       html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] .c-by { display: block !important; grid-column: 3; grid-row: 2; padding: 0 0 2px 4px; line-height: 1; }
       html:not(.tbl-wide) #mTable.with-by #tbody tr[data-id] .by-chip { font-size: .62rem; padding: 0 6px; }
       /* view mode: ☆/★ at the start of the line (where the checkbox is when editing) */
@@ -883,12 +946,12 @@
       html:not(.tbl-wide) #tbody tr[data-id] textarea[data-f=purpose] { padding: 6px 4px; font-size: .8rem; line-height: 1.25; }
       html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap { gap: 0; }
       html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap .sign-btn { border-radius: 6px 0 0 6px; height: 30px; }
-      html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap input { padding: 5px 4px 5px 3px; font-size: .85rem; text-align: left; border-radius: 0 6px 6px 0; }
-      html:not(.tbl-wide) #tbody tr[data-id] select { padding: 3px 1px; font-size: .74rem; }
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-wrap input { padding: 5px 4px 5px 4px; font-size: .9rem; text-align: left; border-radius: 0 6px 6px 0; }
+      html:not(.tbl-wide) #tbody tr[data-id] select { padding: 3px 2px; font-size: .78rem; }
       html:not(.tbl-wide) #tbody .row-del { padding: 2px; font-size: .95rem; }
       html:not(.tbl-wide) .tools input.row-sel, html:not(.tbl-wide) .tools input.grp-sel, html:not(.tbl-wide) #selAll { width: 14px; height: 14px; margin: 0 1px; }
       /* 📝 (only when there's a note) + 🗑 at the end of the line */
-      html:not(.tbl-wide) #tbody tr[data-id] .c-del { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+      html:not(.tbl-wide) #tbody tr[data-id] .c-del { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding-left: 6px; }
       html:not(.tbl-wide) #tbody tr[data-id] .note-btn { display: inline-block; }
       /* Amount header: ⇅ date · Amount · ⇅ amount */
       html:not(.tbl-wide) #mTable thead .c-amt { display: flex !important; align-items: center; justify-content: center; gap: 3px; }
@@ -933,13 +996,19 @@
       html.tbl-wide #mTable { min-width: 780px; }
       html.tbl-wide .month-bar .time-toggle { display: inline-block; }
 
-      /* toolbar: narrow month picker so every button stays on one line; time column isn't shown upright */
-      .month-bar { gap: 4px; }
-      .month-pick { gap: 4px; }
-      .month-pick select { min-width: 0; max-width: none; padding: 6px 4px; font-size: .85rem; }
-      .month-bar .btn { padding: 6px 8px; }
+      /* toolbar on two lines: ◀ month ▶ 📍 on top, the action buttons in a row underneath */
+      .month-bar { flex-wrap: wrap; gap: 6px 4px; overflow: visible; }
+      .month-pick { flex: 1 1 100%; gap: 6px; }
+      .month-pick select { flex: 1; min-width: 0; max-width: none; padding: 6px 8px; font-size: .9rem; }
+      .month-pick .btn { flex: 0 0 auto; padding: 6px 12px; }
+      .month-bar > .btn { flex: 1 1 0; min-width: 0; padding: 6px 0; display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; overflow: hidden; }
+      .month-bar #selCount { font-size: .72rem; }
+      /* line 1: ◀ month ▶ 📍 + 📤 · line 2: ✏️ ⭐ ↔ ⛶ rotate 🔍 ⚙️ (editing: ✔ 🗑 🧾 first) */
+      .month-pick { flex: 1 1 calc(100% - 50px); }
+      .month-bar > #ioBtn { order: 0; flex: 0 0 44px; }
+      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #starOnlyBtn { order: 4; } #wideBtn { order: 5; }
+      #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
       html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
-      .month-bar .btn { padding: 6px 7px; }
 
       /* month note: one thin line */
       .month-notes { margin-bottom: 6px; gap: 6px; }
@@ -955,7 +1024,7 @@
     .wide-btn.on { background: #dbeafe; color: #1e40af; }
     #monthly:is(.viewmode, .readonly) .edit-table select:disabled { pointer-events: none; }   /* tap reaches the cell -> tooltip */
     @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
-      .wide-btn { display: inline-block !important; }
+      .wide-btn { display: inline-flex !important; }
     }
     .wide-btn.lock { display: none !important; }         /* editing: the full table stays open */
     .row-del { font-size: .95rem; }
@@ -1006,14 +1075,27 @@
     }
     /* sideways: every pixel of height counts */
     @media (max-height: 520px) and (orientation: landscape) {
-      #cardsDlg .hint, #modesDlg .hint { display: none; }
+      #cardsDlg .hint { display: none; }
       .modal-head h3 { font-size: .92rem; }
     }
 
+    /* toolbar icon buttons (full screen, rotate) */
+    .icon-btn, .wide-btn { align-items: center; justify-content: center; }
+    .icon-btn svg { width: 18px; height: 18px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .icon-btn.on, .star-only-btn.on { background: #fef3c7; color: #92400e; }
+    .icon-btn.on { background: #ede9fe; color: #6d28d9; }
+    html[data-theme=dark] .star-only-btn.on { background: #3a2a05; color: #fde68a; }
+    html[data-theme=dark] .icon-btn.on { background: #2e1f4f; color: #e9d5ff; }
+    .fs-btn .fs-out, .fs-btn.on .fs-in { display: none; }
+    .fs-btn.on .fs-out { display: inline; }
+    .fs-btn { display: none !important; }
+    @media (max-width: 760px), (max-height: 520px) and (orientation: landscape) {
+      html.can-fs .fs-btn { display: inline-flex !important; }
+    }
     /* the landscape button only makes sense on phones held upright */
     .landscape-btn { display: none !important; }
     @media (max-width: 600px) and (orientation: portrait) {
-      .landscape-btn { display: inline-block !important; }
+      .landscape-btn { display: inline-flex !important; }
     }
     /* ⤢ turned on: the whole page is drawn sideways (90°), so you can read it landscape
        even with the phone's auto-rotate switched off */
@@ -1023,7 +1105,7 @@
       width: var(--app-h, 100vh); height: var(--app-w, 100vw);
       transform-origin: top left; transform: rotate(90deg);
     }
-    html.rot90 .landscape-btn { display: inline-block !important; background: #dbeafe; color: #1e40af; }
+    html.rot90 .landscape-btn { display: inline-flex !important; }
     html.rot90 .wide-btn { display: none !important; }
     /* phones: the one-line note hides while you scroll the entries */
     @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
@@ -1248,11 +1330,14 @@
         </div>
         <button type="button" class="btn btn-light edit-btn" id="editBtn" title="Edit the table">✏️<span class="lbl"> Edit</span></button>
         <button type="button" class="btn btn-danger" id="clearBtn" title="Remove the ticked rows" disabled>🗑<span class="lbl"> Remove</span> <span id="selCount">(0)</span></button>
-        <button type="button" class="btn btn-light" id="bulkBtn" title="Paste many entries">📋<span class="lbl"> Bulk add</span></button>
-        <button type="button" class="btn btn-light landscape-btn" id="landscapeBtn" title="Landscape view – see every column">⤢</button>
+        <button type="button" class="btn btn-light" id="bulkBtn" title="Bulk add – type or paste many entries">🧾<span class="lbl"> Bulk add</span></button>
+        <button type="button" class="btn btn-light" id="ioBtn" title="Import / Export – Excel, CSV, text, PDF">📤<span class="lbl"> Import/Export</span></button>
+        <button type="button" class="btn btn-light icon-btn fs-btn" id="fsBtn" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-in" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-out" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+        <button type="button" class="btn btn-light icon-btn landscape-btn" id="landscapeBtn" title="Rotate – landscape view (works with auto-rotate off)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="17" rx="2.2"/><path d="M3.5 13.5a8.6 8.6 0 0 0 7 7.8M8.2 21.4l2.4-.2-.9-2.3"/></svg></button>
         <button type="button" class="btn btn-light wide-btn" id="wideBtn" title="Full table – scroll sideways">↔</button>
+        <button type="button" class="btn btn-light star-only-btn" id="starOnlyBtn" title="Show starred entries only">⭐<span class="lbl"> Starred</span></button>
         <button type="button" class="btn btn-light" id="filterBtn" title="Filter by payment method">🔍<span class="lbl"> Filter</span><span class="filter-count" id="filterCount" hidden></span></button>
-        <button type="button" class="btn btn-light" id="cardsBtn" title="Card management – billing cycles">⚙️</button>
+        <button type="button" class="btn btn-light" id="cardsBtn" title="Payment management – cards, billing cycles, payment options">⚙️</button>
       </div>
       <div class="filter-bar" id="filterBar" hidden>
         <span class="filter-text" id="filterText"></span>
@@ -1280,13 +1365,31 @@
       <div class="msg" id="mMsg" hidden></div>
 
       <div class="bulk" id="bulkPanel" hidden>
-        <label for="bulkText">📋 Paste or type many entries</label>
-        <p class="hint">
-          Write a <b>date line</b> (<b>1st</b>, <b>4</b>, <b>01/09/2026</b>, <b>3 Sep</b>…), then one entry per line: <b>amount purpose - payment method</b>.
-          Payment method and purpose are optional (no purpose = “Unknown”). Optional <b>2026</b> / <b>September</b> lines switch year/month – otherwise the month you are viewing is used.
-          <b>400</b> or <b>-400</b> = sent &middot; <b>+1700</b> = received. The old one-line format <b>20/09/2026, 400, petrol, kiwi upi</b> works too.
-        </p>
-        <textarea id="bulkText" rows="12" placeholder="September&#10;1st&#10;200 fish - upi&#10;56 medicine - kiwi upi&#10;52 evening snacks&#10;270 chal, Ada, pencil battery&#10;&#10;3rd&#10;176 Swiggy breakfast order&#10;15 tea office&#10;+1700 from alex - phonepe upi"></textarea>
+        <label for="bulkText">🧾 Bulk add</label>
+        <details class="bulk-help" open>
+          <summary>Text entry format</summary>
+          <div class="bulk-help-body">
+          <pre class="bulk-format"><span class="br">[</span>
+<span class="fm">Month</span>
+
+<span class="fm">Date</span>
+<span class="fm">Time - Amount - Purpose - PayVia - Notes</span>
+<span class="fm">Time - +Amount - Purpose - PayVia - Notes</span>
+
+<span class="fm">Date</span>
+<span class="fm">Time - Amount - Purpose - PayVia - Notes</span>
+<span class="fm">Time - +Amount - Purpose - PayVia - Notes</span>
+<span class="br">]</span></pre>
+          <ul class="bulk-rules">
+            <li><b>Month</b> name is optional</li>
+            <li><b>Date</b> can be any of these: <code>1</code>, <code>1st</code>, <code>1/10</code></li>
+            <li><b>Time</b>: without AM/PM or A/P it is taken as 24-hour</li>
+            <li><b>Amount</b>: <code>+amount</code> for received, only the amount for an expense</li>
+            <li>Only <b>Date</b> and <b>Amount</b> are mandatory, but the other fields are good to have for details</li>
+          </ul>
+          </div>
+        </details>
+        <textarea id="bulkText" rows="13" placeholder="Oct&#10;&#10;2nd&#10;8:54 - +677 - food ordered - Cash - evening snacks party&#10;&#10;3&#10;3:14P - 144 - Ola to Office - PhonePe UPI&#10;40 - Office snacks&#10;30 - Auto to home - Cash&#10;&#10;3&#10;8:30 - 70 - Milk and bread - PhonePe UPI"></textarea>
         <div id="bulkPreview"></div>
         <div class="actions">
           <button type="button" class="btn btn-primary" id="bulkAdd" disabled>Add entries</button>
@@ -1314,7 +1417,7 @@
               <th class="c-purpose sortable" data-sort="purpose">Purpose</th>
               <th class="c-sv sortable" data-sort="sentVia">Send Via</th>
               <th class="c-rv sortable" data-sort="receivedVia">Recv Via</th>
-              <th class="c-via sortable" data-sort="via">Via</th>
+              <th class="c-via sortable" data-sort="via">Pay via</th>
               <th class="c-by sortable" data-sort="by" title="Who added the entry">By</th>
               <th class="c-note sortable" data-sort="note">Note</th>
               <th class="c-del"></th>
@@ -1340,6 +1443,15 @@
         <button type="button" class="modal-x" id="loginX" title="Close">✕</button>
       </div>
       <p class="hint">No password needed – we email you a sign-in link. New here? The same link creates your account.</p>
+      <div class="login-steps">
+        <b>How it works</b>
+        <ol>
+          <li>Enter your email and tap <b>Email me a sign-in link</b>.</li>
+          <li>You'll get an email from <b>Supabase Auth</b> <small>(noreply@mail.app.supabase.io)</small> called <b>“Your sign-in link”</b>.</li>
+          <li>Open it and tap <b>Sign in</b> – you come straight back here, logged in.</li>
+        </ol>
+        <small>Not there in a minute? Look in <b>Spam</b> / <b>Promotions</b>. The link works once and expires soon.</small>
+      </div>
       <input type="email" id="loginEmail" placeholder="you@gmail.com" autocomplete="email" required>
       <button type="submit" class="btn btn-primary" id="loginSend">📧 Email me a sign-in link</button>
       <div class="login-or" id="loginOr">or</div>
@@ -1376,6 +1488,41 @@
     </form>
   </div>
 
+  <!-- 📤 Import / Export -->
+  <div class="overlay" id="ioDlg" hidden>
+    <div class="modal io-modal" role="dialog" aria-modal="true" aria-labelledby="ioTitle">
+      <div class="modal-head">
+        <h3 id="ioTitle">📤 Import / Export</h3>
+        <button type="button" class="modal-x" id="ioX" title="Close">✕</button>
+      </div>
+      <div class="io-body">
+        <section class="io-sec">
+          <h4>⬇️ Export <span class="io-book" id="ioBook"></span></h4>
+          <div class="io-scope">
+            <label><input type="radio" name="ioScope" value="month" checked> <span id="ioMonthLbl">This month</span></label>
+            <label><input type="radio" name="ioScope" value="all"> All months</label>
+          </div>
+          <div class="io-grid">
+            <button type="button" class="io-fmt" data-exp="xlsx"><span>📗</span>Excel<small>.xlsx</small></button>
+            <button type="button" class="io-fmt" data-exp="csv"><span>📄</span>CSV<small>.csv</small></button>
+            <button type="button" class="io-fmt" data-exp="txt"><span>📝</span>Plain text<small>.txt</small></button>
+            <button type="button" class="io-fmt" data-exp="pdf"><span>📕</span>PDF<small>.pdf</small></button>
+          </div>
+          <div class="msg" id="ioExpMsg" hidden></div>
+        </section>
+        <section class="io-sec" id="ioImport">
+          <h4>⬆️ Import into this expense</h4>
+          <p class="hint">A <b>CSV</b> or <b>Excel</b> file with columns like <b>Date</b>, <b>Sent</b> / <b>Received</b> (or <b>Amount</b>, or bank-style <b>Debit</b> / <b>Credit</b>), <b>Purpose</b>, <b>Via</b>, <b>Note</b> – or a <b>plain text</b> file written like Bulk add. Files exported here import back as they are.</p>
+          <label class="btn btn-light io-pick">📂 Choose file…<input type="file" id="ioFile" accept=".csv,.xlsx,.xls,.txt,text/csv,text/plain" class="visually-hidden"></label>
+          <span class="io-file" id="ioFileName"></span>
+          <div id="ioPreview"></div>
+          <div class="io-actions"><button type="button" class="btn btn-primary" id="ioAdd" hidden>Import</button></div>
+        </section>
+      </div>
+      <div class="modal-foot"><button type="button" class="btn btn-light" id="ioDone">Close</button></div>
+    </div>
+  </div>
+
   <!-- Confirmation popup (delete / remove) -->
   <div class="overlay" id="confirmDlg" hidden>
     <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle">
@@ -1396,9 +1543,11 @@
   <div class="overlay" id="cardsDlg" hidden>
     <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="cardsTitle">
       <div class="modal-head">
-        <h3 id="cardsTitle">💳 Card management</h3>
+        <h3 id="cardsTitle">💳 Payment management</h3>
         <button type="button" class="modal-x" id="cardsClose" title="Close">✕</button>
       </div>
+      <div class="pm-body">
+      <h4 class="pm-title">💳 Credit cards &amp; billing cycles</h4>
       <p class="hint">Set each credit card's billing cycle yourself: the cycle <b>starts</b> on the start day and ends the day before it next month; the bill is <b>due</b> on the due day after the statement.</p>
       <div class="cards-list" id="cardsList"></div>
       <form class="card-add" id="cardAdd" autocomplete="off">
@@ -1409,8 +1558,17 @@
         <button type="submit" class="btn btn-primary">➕ Add card</button>
       </form>
       <div class="err" id="cardsErr" hidden></div>
+      <hr class="pm-line">
+      <h4 class="pm-title">➕ Add other payment option</h4>
+      <p class="hint">e.g. <b>PhonePe UPI</b>, <b>Paytm UPI</b>, <b>Google Pay</b>, <b>money transfer</b>, <b>bank transfer</b>, <b>cash</b>, a wallet… They appear in the <b>Pay via</b> column. Rename one and every entry using it follows; delete one and existing entries keep their value.</p>
+      <form class="modes-add" id="modesAdd" autocomplete="off">
+        <input type="text" id="modesNew" maxlength="40" placeholder="e.g. PhonePe UPI">
+        <button type="submit" class="btn btn-primary">➕ Add</button>
+      </form>
+      <div class="err" id="modesErr" hidden></div>
+      <div class="modes-list" id="modesList"></div>
+      </div>
       <div class="modal-foot">
-        <button type="button" class="btn btn-light" id="cardsModes">Payment options…</button>
         <button type="button" class="btn btn-primary" id="cardsDone">Done</button>
       </div>
     </div>
@@ -1433,23 +1591,6 @@
     </div>
   </div>
 
-  <!-- ⚙ Settings popup: payment options for the Via column -->
-  <div class="overlay" id="modesDlg" hidden>
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modesTitle">
-      <div class="modal-head">
-        <h3 id="modesTitle">⚙️ Payment options</h3>
-        <button type="button" class="modal-x" id="modesClose" title="Close">✕</button>
-      </div>
-      <p class="hint">These appear in the <b>Via</b> column. Rename one and every entry using it follows; delete one and existing entries keep their value.</p>
-      <div class="modes-list" id="modesList"></div>
-      <form class="modes-add" id="modesAdd" autocomplete="off">
-        <input type="text" id="modesNew" maxlength="40" placeholder="New option, e.g. PhonePe UPI">
-        <button type="submit" class="btn btn-primary">➕ Add</button>
-      </form>
-      <div class="err" id="modesErr" hidden></div>
-      <div class="modal-foot"><button type="button" class="btn btn-light" id="modesDone">Done</button></div>
-    </div>
-  </div>
 
   <footer>Made with <span class="heart">❤️</span> by Subho</footer>
 
@@ -1563,7 +1704,7 @@
     }
 
     function openBook(id, push = true) {
-      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); }
+      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; }
       curBook = id;
       openScreen('book', push);
     }
@@ -2018,17 +2159,12 @@
     /* ⚙ popup: add / rename / delete payment options */
     const modeUse = name => expenses.filter(e => e.sentVia === name || e.receivedVia === name).length;
 
+    // "⚙ Payment options…" (dropdown) opens the same Payment management window, at "Add other payment option"
     function openModesDialog() {
-      $('modesErr').hidden = true;
-      $('modesNew').value = '';
-      renderModes();
-      $('modesDlg').hidden = false;
-      setTimeout(() => $('modesNew').focus(), 0);
+      openCardsDialog();
+      setTimeout(() => { $('modesNew').scrollIntoView({ block: 'center' }); $('modesNew').focus(); }, 0);
     }
-    function closeModesDialog() {
-      $('modesDlg').hidden = true;
-      refreshModeSelects();
-    }
+    function closeModesDialog() { closeCardsDialog(); }
     function renderModes() {
       $('modesList').innerHTML = payModes.length ? payModes.map((m, i) => {
         const n = modeUse(m);
@@ -2037,7 +2173,8 @@
           <span class="mode-used">${n ? `${n} entr${n === 1 ? 'y' : 'ies'}` : 'unused'}</span>
           <button type="button" class="btn btn-danger btn-sm mode-del" title="Delete option">🗑</button>
         </div>`;
-      }).join('') : '<div class="empty-card">No options yet – add one below.</div>';
+      }).join('') : '<div class="empty-card">No options yet – add one above.</div>';
+      if (!$('cardsDlg').hidden) renderCards();               // card list / name suggestions follow
     }
     const modesError = msg => { $('modesErr').textContent = msg; $('modesErr').hidden = !msg; };
 
@@ -2190,10 +2327,14 @@
     });
 
     /* ⚙️ Card management popup */
+    const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
     const dayOpts = sel => Array.from({ length: 28 }, (_, i) => i + 1).map(d => `<option value="${d}"${d === sel ? ' selected' : ''}>${d}</option>`).join('');
 
     function openCardsDialog(prefill) {
       $('cardsErr').hidden = true;
+      $('modesErr').hidden = true;
+      $('modesNew').value = '';
+      renderModes();
       $('cardName').value = prefill && !isCard(prefill) ? prefill : '';
       $('cardStart').innerHTML = dayOpts(1);
       $('cardDue').innerHTML = dayOpts(1);
@@ -2201,7 +2342,7 @@
       $('cardsDlg').hidden = false;
       if (prefill && !isCard(prefill)) setTimeout(() => $('cardStart').focus(), 0);
     }
-    const closeCardsDialog = () => { $('cardsDlg').hidden = true; if (screen === 'book') applyFilter(); };
+    const closeCardsDialog = () => { $('cardsDlg').hidden = true; refreshModeSelects(); if (screen === 'book') applyFilter(); };
 
     function renderCards() {
       const cards = Object.keys(cardCycles);
@@ -2213,6 +2354,7 @@
         return `<div class="card-row" data-card="${esc(card)}">
           <div class="card-main">
             <div class="card-name">💳 ${esc(card)}</div>
+            <div class="card-set">✅ Billing cycle set · starts on the <b>${ordinal(c.start)}</b> · bill due on the <b>${ordinal(c.due)}</b></div>
             <div class="card-meta">Now: ${shortDate(isoDate(u.from))} – ${shortDate(isoDate(u.to))} · last bill due <b>${shortDate(isoDate(prev.due))}</b> ${dueText(isoDate(prev.due))}${nAdj ? ` · ✏️ ${nAdj} adjusted` : ''}</div>
           </div>
           <label>starts <select class="card-start">${dayOpts(c.start)}</select></label>
@@ -2272,7 +2414,6 @@
     $('cardsBtn').addEventListener('click', () => openCardsDialog());
     $('cardsClose').addEventListener('click', closeCardsDialog);
     $('cardsDone').addEventListener('click', closeCardsDialog);
-    $('cardsModes').addEventListener('click', () => { $('cardsDlg').hidden = true; openModesDialog(); });
     $('cardsDlg').addEventListener('click', ev => { if (ev.target === $('cardsDlg')) closeCardsDialog(); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('cardsDlg').hidden) closeCardsDialog(); });
 
@@ -2302,10 +2443,6 @@
     $('filterDlg').addEventListener('click', ev => { if (ev.target === $('filterDlg')) closeFilter(); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('filterDlg').hidden) closeFilter(); });
 
-    $('modesClose').addEventListener('click', closeModesDialog);
-    $('modesDone').addEventListener('click', closeModesDialog);
-    $('modesDlg').addEventListener('click', ev => { if (ev.target === $('modesDlg')) closeModesDialog(); });
-    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('modesDlg').hidden) closeModesDialog(); });
 
     /* ---------- Duplicates (kept, only highlighted) ---------- */
     const dupKey = e => [bookOf(e), e.date, e.time || '', +e.sent || 0, +e.received || 0, (e.purpose || '').trim().toLowerCase()].join('|');
@@ -2409,7 +2546,10 @@
 
     // 🔍 payment filter: empty = show everything; '' stands for "no payment method"
     const viaFilter = new Set();
-    const passesFilter = e => !viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '');
+    // ⭐ starred only (view mode): totals follow, like the payment filter
+    let starOnly = false;
+    const filtering = () => viaFilter.size > 0 || starOnly;
+    const passesFilter = e => (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!starOnly || !!e.starred);
     // what the table shows (and totals count) for the open month
     function visibleItems() { return periodItems().filter(passesFilter); }
 
@@ -2548,11 +2688,11 @@
 
         weeks.forEach(w => {
           // with a filter on, weeks / days without matching entries are hidden
-          if (viaFilter.size && !items.some(e => weekStart(e.date) === w.key)) return;
+          if (filtering() && !items.some(e => weekStart(e.date) === w.key)) return;
           const wOpen = !collapsed.has('w:' + w.key);
           if (wOpen) w.days.forEach(d => {
             const dayItems = items.filter(e => e.date === d);
-            if (viaFilter.size && !dayItems.length) return;
+            if (filtering() && !dayItems.length) return;
             if (cycleOn() && lastMonthShown && d.slice(0, 7) !== lastMonthShown) html += separator(lastMonthShown, d.slice(0, 7));
             lastMonthShown = d.slice(0, 7);
             const dOpen = !collapsed.has('d:' + d);
@@ -2585,7 +2725,7 @@
       }
 
       $('tbody').innerHTML = html ||
-        `<tr><td colspan="${cols}" class="empty">No entries for ${monthLabel(curMonth)} yet. Click <b>➕ Add Row</b> or <b>📋 Bulk add</b>.</td></tr>`;
+        `<tr><td colspan="${cols}" class="empty">${starOnly ? `No starred entries in ${monthLabel(curMonth)} – tap ☆ on an entry to star it.` : `No entries for ${monthLabel(curMonth)} yet. Tap <b>✏️ Edit</b>, then <b>＋ Add</b> on a date, or use <b>🧾 Bulk add</b>.`}</td></tr>`;
       $('tbody').querySelectorAll('tr[data-id]').forEach(markRow);
       $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
       markDuplicates();
@@ -2599,6 +2739,10 @@
       $('monthly').classList.toggle('readonly', ro);
       $('monthly').classList.toggle('viewmode', !ro && !editMode);
       $('editBtn').hidden = ro;
+      // editing: no ⭐-only view (📤 import / export stays)
+      $('starOnlyBtn').hidden = editMode && !ro;
+      $('starOnlyBtn').classList.toggle('on', starOnly);
+      $('starOnlyBtn').title = starOnly ? 'Show all entries' : 'Show starred entries only';
       if (editMode && !ro) document.documentElement.classList.add('tbl-wide');   // editing = full table
       $('wideBtn').classList.toggle('lock', editMode && !ro);
       $('editBtn').classList.toggle('on', editMode && !ro);
@@ -2703,10 +2847,10 @@
       visibleItems().forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
       const net = r - s;
       const [ty, tm] = curMonth.split('-').map(Number);
-      $('mTotalLabel').textContent = cycleOn() ? '💳 Bill total' : viaFilter.size ? '🔍 Filtered total'
+      $('mTotalLabel').textContent = cycleOn() ? '💳 Bill total' : viaFilter.size ? '🔍 Filtered total' : starOnly ? '⭐ Starred total'
         : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`;
       $('mTotalLabel').title = `Total for ${monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
-      $('mTotalLabel').parentElement.classList.toggle('filtered', viaFilter.size > 0);
+      $('mTotalLabel').parentElement.classList.toggle('filtered', filtering());
       $('mSent').textContent = money(s);
       $('mRecv').textContent = money(r);
       $('mNet').textContent = money(net);
@@ -3068,8 +3212,10 @@
     $('mTable').parentElement.addEventListener('scroll', hideTip, { passive: true });
 
     // ✏️ Edit / ✔ Done – on an upright phone, editing always uses the full table (↔ can't collapse it)
+    $('starOnlyBtn').addEventListener('click', () => { starOnly = !starOnly; selected.clear(); renderMonthly(); });
     $('editBtn').addEventListener('click', () => {
       editMode = !editMode;
+      if (editMode) starOnly = false;                       // edit the whole month
       $('wideBtn').classList.toggle('on', editMode);
       document.documentElement.classList.toggle('tbl-wide', editMode || isRotated());      // turned page keeps the full grid
       if (!editMode) { pruneBlank(); selected.clear(); }
@@ -3124,12 +3270,28 @@
       return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     };
 
+    // a time written any common way: 9:45pm · 9.45 PM · 09:45p · 9pm · 20:30  ->  "21:45"
+    function parseTime(s) {
+      s = (s || '').trim().toLowerCase();
+      let m = s.match(/^(\d{1,2})(?:[:.](\d{2}))?\s*([ap])\.?\s*m?\.?$/);
+      if (m) {
+        let h = +m[1]; const mi = +(m[2] || 0);
+        if (h < 1 || h > 12 || mi > 59) return null;
+        if (m[3] === 'p' && h < 12) h += 12;
+        if (m[3] === 'a' && h === 12) h = 0;
+        return `${String(h).padStart(2, '0')}:${String(mi).padStart(2, '0')}`;
+      }
+      m = s.match(/^(\d{1,2})[:.](\d{2})$/);
+      if (m && +m[1] < 24 && +m[2] < 60) return `${m[1].padStart(2, '0')}:${m[2]}`;
+      return null;
+    }
+
     // "400" / "-400" = sent, "+1700" = received; optional ₹ / Rs; commas in the amount are ignored
-    function makeEntry(date, sign, amount, purpose, via, note = '') {
+    function makeEntry(date, sign, amount, purpose, via, note = '', time = '') {
       const received = sign === '+';
       via = via ? (findMode(via) || via) : '';
       return {
-        date, purpose: purpose || 'Unknown',
+        date, ...(time ? { time } : {}), purpose: purpose || 'Unknown',
         sent: received ? 0 : amount, received: received ? amount : 0,
         sentVia: received ? '' : via, receivedVia: received ? via : '', note
       };
@@ -3151,7 +3313,7 @@
 
       text.split(/\r?\n/).forEach((raw, i) => {
         const line = raw.trim();
-        if (!line || /^[.\-_=*~·…•\s]+$/.test(line)) return;            // blank or "......" separator
+        if (!line || line.startsWith('#') || /^[.\-_=*~·…•\s]+$/.test(line)) return;   // blank, "# comment" or "......" separator
         const fail = msg => { errors.push(`Line ${i + 1}: ${msg}`); badLines.push({ line: raw, date }); };
         let m;
 
@@ -3180,6 +3342,12 @@
           [year, month] = date.split('-').map(Number);
           return;
         }
+        if ((m = line.match(/^(\d{1,2})[/.-](\d{1,2}):?$/))) {                                           // 1/10 = 1 October
+          date = ymd(year, +m[2], +m[1]);
+          if (!date) return fail(`can't read date "${line}"`);
+          month = +m[2];
+          return;
+        }
         if ((m = line.match(/^(\d{1,2})(?:st|nd|rd|th)?\.?:?$/i)) && (/\D/.test(line) || +m[1] <= 31)) {   // 1st / 4  (a bare 40 is an amount)
           date = ymd(year, month, +m[1]);
           if (!date) fail(`${m[1]} is not a valid day in ${monthLabel(`${year}-${String(month).padStart(2, '0')}`)}`);
@@ -3198,7 +3366,27 @@
           return;
         }
 
-        // --- entry line: amount purpose [- payment method]
+        // --- entry line, new style:  [Time -] Amount [- Purpose [- Pay via [- Note]]]
+        {
+          const segs = line.split(/\s+-(?=\s|$)/).map(s => s.trim());          // "- -" gives an empty field ("10 - - Cash")
+          let time = '';
+          const tt = parseTime(segs[0]);
+          if (tt && segs.length > 1) { time = tt; segs.shift(); }
+          const am = segs[0].match(/^([+-]?)\s*(?:₹|rs\.?)?\s*(\d[\d,]*(?:\.\d+)?)$/i);
+          if (am && (segs.length > 1 || time)) {
+            if (!date) return fail('add a date line (like "1st" or "01/09/2026") above this entry');
+            const amount = +am[2].replace(/,/g, '');
+            if (!amount) return fail('amount is 0');
+            const val = s => s && !/^[-–—]$/.test(s) ? s : '';
+            let purpose = val(segs[1]), via = val(segs[2]);
+            // "56 - Kiwi UPI": a lone 2nd field that is one of your payment options is the payment method
+            if (segs.length === 2 && (findMode(purpose) || /\b(upi|cash|card|cc|wallet|bank|neft|imps|rtgs|transfer|cheque|paytm|phonepe|gpay)\b/i.test(purpose))) { via = purpose; purpose = ''; }
+            rows.push(makeEntry(date, am[1], amount, purpose, via, segs.slice(3).map(val).filter(Boolean).join(' - '), time));
+            return;
+          }
+        }
+
+        // --- entry line, older style: amount purpose [- payment method]
         if ((m = line.match(/^([+-]?)\s*(?:₹|rs\.?)?\s*(\d[\d,]*(?:\.\d+)?)\b\s*(.*)$/i))) {
           if (!date) return fail('add a date line (like "1st" or "01/09/2026") above this entry');
           const amount = +m[2].replace(/,/g, '');
@@ -3218,6 +3406,13 @@
 
     function renderBulkPreview() {
       const { rows, errors } = parseBulk($('bulkText').value);
+      $('bulkPreview').innerHTML = entriesPreview(rows, errors);
+      $('bulkAdd').disabled = !rows.length;
+      $('bulkAdd').textContent = rows.length ? `➕ Add ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'}` : 'Add entries';
+    }
+
+    // preview table of entries about to be added (duplicates flagged), plus any problems found
+    function entriesPreview(rows, errors) {
       const existing = new Set(expenses.map(dupKey));
       const seen = new Set();
       let dups = 0;
@@ -3227,7 +3422,7 @@
         seen.add(k);
         if (dup) dups++;
         return `<tr class="${dup ? 'dup' : ''}">
-          <td>${fmtDate(r.date)}</td>
+          <td>${fmtDate(r.date)}${r.time ? ` · ${fmtTime(r.time)}` : ''}</td>
           <td class="num ${r.received ? 'received' : 'sent'}">${r.received ? '+ ' + money(r.received) : '− ' + money(r.sent)}</td>
           <td>${esc(r.purpose)}${dup ? ' <span class="dup-tag">⚠ Duplicate</span>' : ''}</td>
           <td>${esc(r.sentVia || r.receivedVia) || '-'}</td>
@@ -3237,14 +3432,29 @@
 
       let html = '';
       if (rows.length) html += `<div class="ok">✅ ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'} ready (sorted by date)</div>
-        <div class="table-wrap"><table><thead><tr><th>Date</th><th class="num">Amount</th><th>Purpose</th><th>Via</th><th>Note</th></tr></thead>
+        <div class="table-wrap"><table><thead><tr><th>Date</th><th class="num">Amount</th><th>Purpose</th><th>Pay via</th><th>Note</th></tr></thead>
         <tbody>${lines}</tbody></table></div>`;
       if (dups) html += `<div class="warn">⚠ ${dups} possible duplicate(s) – they will still be added and highlighted, so you can review them.</div>`;
-      if (errors.length) html += `<div class="err">${errors.map(esc).join('<br>')}</div>`;
-      $('bulkPreview').innerHTML = html;
-      $('bulkAdd').disabled = !rows.length;
-      $('bulkAdd').textContent = rows.length ? `➕ Add ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'}` : 'Add entries';
+      if (errors.length) html += `<div class="err">${errors.slice(0, 20).map(esc).join('<br>')}${errors.length > 20 ? `<br>… and ${errors.length - 20} more` : ''}</div>`;
+      return html;
     }
+
+    // add parsed entries to the open book; returns the months they landed in
+    function addEntries(rows) {
+      const base = Date.now();
+      rows.forEach((r, i) => expenses.push({
+        id: base.toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 6),
+        created: base + i, ...r, book: curBook, ...byMe()
+      }));
+      rows.forEach(r => { if (r.sentVia || r.receivedVia) addMode(r.sentVia || r.receivedVia); });
+      save();
+      const months = [...new Set(rows.map(r => r.date.slice(0, 7)))].sort();
+      if (!months.includes(curMonth)) curMonth = months[months.length - 1];
+      renderMonthly();
+      return months;
+    }
+    const addedText = (n, months) => `✅ Added ${n} entr${n > 1 ? 'ies' : 'y'}` +
+      (months.length > 1 ? ` across ${months.length} months (${months.map(monthLabel).join(', ')})` : ` to ${monthLabel(months[0])}`);
 
     $('bulkBtn').addEventListener('click', () => {
       $('bulkPanel').hidden = !$('bulkPanel').hidden;
@@ -3256,16 +3466,7 @@
     $('bulkAdd').addEventListener('click', () => {
       const { rows, badLines } = parseBulk($('bulkText').value);
       if (!rows.length) return;
-      const base = Date.now();
-      rows.forEach((r, i) => expenses.push({
-        id: base.toString(36) + i.toString(36) + Math.random().toString(36).slice(2, 6),
-        created: base + i, ...r, book: curBook, ...byMe()
-      }));
-      rows.forEach(r => { if (r.sentVia || r.receivedVia) addMode(r.sentVia || r.receivedVia); });
-      save();
-
-      const months = [...new Set(rows.map(r => r.date.slice(0, 7)))].sort();
-      if (!months.includes(curMonth)) curMonth = months[months.length - 1];
+      const months = addEntries(rows);
       // keep only lines that need fixing, each under its date so it still makes sense
       let lastDate = null;
       $('bulkText').value = badLines.map(({ line, date }) => {
@@ -3273,12 +3474,315 @@
         lastDate = date;
         return head + line;
       }).join('\n');
-      renderMonthly();
       renderBulkPreview();
       if (!badLines.length) $('bulkPanel').hidden = true;
-      mFlash(`✅ Added ${rows.length} entr${rows.length > 1 ? 'ies' : 'y'}` +
-        (months.length > 1 ? ` across ${months.length} months (${months.map(monthLabel).join(', ')})` : ` to ${monthLabel(months[0])}`) +
-        (badLines.length ? ` · ${badLines.length} line(s) left to fix` : ''));
+      mFlash(addedText(rows.length, months) + (badLines.length ? ` · ${badLines.length} line(s) left to fix` : ''));
+    });
+
+    /* ---------- 📤 Import / Export ---------- */
+    // Excel and PDF need a library each – loaded from cdnjs only when first used
+    const LIBS = {
+      xlsx: ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'],
+      pdf: ['https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js']
+    };
+    const scriptLoads = {};
+    const loadScript = src => scriptLoads[src] ||= new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = src; s.onload = resolve;
+      s.onerror = () => { delete scriptLoads[src]; reject(new Error('Could not load ' + src.split('/').slice(-3, -1).join(' ') + ' – check your internet connection.')); };
+      document.head.appendChild(s);
+    });
+    const loadLib = async name => { for (const src of LIBS[name]) await loadScript(src); };
+
+    // save a file on the device
+    let lastDownload = null;                          // (tests look at this)
+    function downloadBlob(blob, name) {
+      lastDownload = { blob, name };
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    }
+    const safeName = s => s.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
+
+    // what to export: the month on screen (as shown – filter / billing cycle included) or every month of this book
+    function exportData(scope) {
+      const all = scope === 'all';
+      const items = (all ? expenses.filter(e => bookOf(e) === curBook) : visibleItems()).slice().sort(byDate);
+      const label = all ? 'All months' : cycleOn() ? `${cycleCard()} bill ${shortDate(period().from)} – ${shortDate(period().to)}` : monthLabel(curMonth);
+      const withBy = isShared(curBook);
+      const recs = items.map(e => ({ date: e.date, time: e.time || '', sent: +e.sent || 0, received: +e.received || 0,
+        purpose: e.purpose || '', via: viaOf(e), note: e.note || '', by: withBy ? (e.by || (e.byEmail || '').split('@')[0]) : '' }));
+      const sum = f => recs.reduce((a, r) => a + r[f], 0);
+      // groups for the PDF: the period on screen, or one per calendar month
+      let groups;
+      if (!all) groups = [{ label, from: period().from, to: period().to, recs }];
+      else groups = [...new Set(recs.map(r => r.date.slice(0, 7)))].map(m => {
+        const [y, mo] = m.split('-').map(Number);
+        return { label: monthLabel(m), from: m + '-01', to: isoDate(new Date(y, mo, 0)), recs: recs.filter(r => r.date.startsWith(m)) };
+      });
+      return { title: bookTitle(curBook), label, recs, groups, withBy, sent: sum('sent'), received: sum('received'),
+        file: safeName(`${bookTitle(curBook)} - ${all ? 'all months' : label}`) };
+    }
+    const HEAD = ['Date', 'Time', 'Sent', 'Received', 'Purpose', 'Pay via', 'Note'];
+    const recRow = (r, withBy) => [r.date, r.time, r.sent || '', r.received || '', r.purpose, r.via, r.note, ...(withBy ? [r.by] : [])];
+    const num2 = n => (Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const exporters = {
+      csv(d) {
+        const cell = v => { v = String(v ?? ''); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+        const lines = [[...HEAD, ...(d.withBy ? ['By'] : [])], ...d.recs.map(r => recRow(r, d.withBy))].map(r => r.map(cell).join(','));
+        downloadBlob(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), d.file + '.csv');
+      },
+      // same format as Bulk add, so it can be pasted / imported back
+      txt(d) {
+        const out = [`# ${d.title} – ${d.label}`, `# Sent ${money(d.sent)} · Received ${money(d.received)} · Net ${money(d.received - d.sent)}`,
+          '# Each line: Time - Amount - Purpose - Pay via - Note   (+amount = received)', ''];
+        let lastDate = '';
+        d.recs.forEach(r => {
+          if (r.date !== lastDate) { if (lastDate) out.push(''); out.push(r.date.split('-').reverse().join('/')); lastDate = r.date; }
+          const amt = r.received && !r.sent ? '+' + r.received : String(r.sent);
+          const clean = s => (s || '').replace(/\s+-\s+/g, ' – ').trim();
+          // Time - Amount - Purpose - Pay via - Note (empty middle fields as "—", nothing trailing)
+          const f = [clean(r.purpose) || 'Unknown', clean(r.via), clean(r.note)];
+          while (f.length && !f[f.length - 1]) f.pop();
+          out.push([r.time ? fmtTime(r.time).replace(' ', '') : '', amt, ...f.map(x => x || '—')].filter((x, i) => i || x).join(' - '));
+        });
+        downloadBlob(new Blob([out.join('\r\n') + '\r\n'], { type: 'text/plain;charset=utf-8' }), d.file + '.txt');
+      },
+      async xlsx(d) {
+        await loadLib('xlsx');
+        const head = [...HEAD, ...(d.withBy ? ['By'] : [])];
+        const aoa = [head, ...d.recs.map(r => recRow(r, d.withBy)), [], ['Total', '', d.sent, d.received, 'Net ' + num2(d.received - d.sent)]];
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!cols'] = [{ wch: 11 }, { wch: 7 }, { wch: 11 }, { wch: 11 }, { wch: 34 }, { wch: 16 }, { wch: 24 }, { wch: 12 }];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, safeName(d.label).slice(0, 31) || 'Expenses');
+        const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        downloadBlob(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), d.file + '.xlsx');
+      },
+      async pdf(d) {
+        await loadLib('pdf');
+        const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' });
+        doc.setFontSize(16); doc.text(d.title, 40, 46);
+        doc.setFontSize(10); doc.setTextColor(110); doc.text(`${d.label}  |  ${d.recs.length} entr${d.recs.length === 1 ? 'y' : 'ies'}  |  Sent Rs ${num2(d.sent)}  |  Received Rs ${num2(d.received)}  |  Net Rs ${num2(d.received - d.sent)}`.replace(/[–—]/g, '-'), 40, 64);
+        const rs = n => n ? num2(n) : '';                // ₹ isn't in the PDF's built-in font – amounts are in Rs
+        const W = d.withBy ? 8 : 7;                       // columns
+        const tot = list => [list.reduce((a, r) => a + r.sent, 0), list.reduce((a, r) => a + r.received, 0)];
+        const dayText = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+        // "Week 1 - 6" (the week clipped to the month / bill period), "Week 29 Aug - 4 Sep" across two months
+        const weekText = (key, g) => {
+          const [y, m, dd] = key.split('-').map(Number), f = dateOf(g.from), l = dateOf(g.to);
+          let a = new Date(y, m - 1, dd), b = new Date(y, m - 1, dd + 6);
+          if (a < f) a = f; if (b > l) b = l;
+          const mon = x => x.toLocaleDateString('en-IN', { month: 'short' });
+          return a.getMonth() !== b.getMonth() ? `Week ${a.getDate()} ${mon(a)} - ${b.getDate()} ${mon(b)}`
+            : a.getDate() === b.getDate() ? `Week ${a.getDate()}` : `Week ${a.getDate()} - ${b.getDate()}`;
+        };
+        // a summary line: label · sent · received · net (kind decides the colours)
+        const sumRow = (label, list, kind) => {
+          const [s, r] = tot(list);
+          return [{ content: label, colSpan: 2, kind }, { content: num2(s), kind }, { content: num2(r), kind },
+            { content: `Net ${num2(r - s)}`, colSpan: W - 4, kind, net: r - s }];
+        };
+        const body = [];
+        d.groups.forEach(g => {
+          let weekKey = null, weekRecs = [];
+          const endWeek = () => { if (weekRecs.length) body.push(sumRow(weekText(weekKey, g), weekRecs, 'week')); weekRecs = []; };
+          [...new Set(g.recs.map(r => r.date))].forEach(day => {
+            if (weekStart(day) !== weekKey) { endWeek(); weekKey = weekStart(day); }
+            const list = g.recs.filter(r => r.date === day), [s, r] = tot(list);
+            // the date once, with the day's totals …
+            body.push([{ content: dayText(day), colSpan: 2, kind: 'day' }, { content: rs(s), kind: 'day' }, { content: rs(r), kind: 'day' },
+              { content: `${list.length} entr${list.length === 1 ? 'y' : 'ies'}`, colSpan: W - 4, kind: 'day' }]);
+            // … then its entries with just the time
+            list.forEach(x => body.push(['', x.time ? fmtTime(x.time) : '', rs(x.sent), rs(x.received), x.purpose, x.via, x.note, ...(d.withBy ? [x.by] : [])]));
+            weekRecs.push(...list);
+          });
+          endWeek();
+          body.push(sumRow(`Total - ${g.label}`, g.recs, 'total'));
+        });
+        if (d.groups.length > 1) body.push(sumRow('Grand total', d.recs, 'grand'));
+
+        const LOOK = {
+          day:   { fill: [238, 242, 255], text: [55, 48, 163], sent: [190, 18, 60], recv: [4, 120, 87] },
+          week:  { fill: [248, 241, 255], text: [107, 33, 168], sent: [220, 38, 38], recv: [22, 163, 74] },
+          total: { fill: [237, 224, 255], text: [59, 7, 100], sent: [200, 30, 30], recv: [21, 128, 61] },
+          grand: { fill: [221, 196, 255], text: [46, 16, 101], sent: [185, 28, 28], recv: [21, 128, 61] }
+        };
+        doc.autoTable({
+          startY: 78,
+          head: [['Date', 'Time', 'Sent (Rs)', 'Recv (Rs)', 'Purpose', 'Pay via', 'Note', ...(d.withBy ? ['By'] : [])]],
+          body,
+          styles: { fontSize: 8.5, cellPadding: 4, lineColor: [229, 231, 235], lineWidth: { bottom: 0.5 } },
+          headStyles: { fillColor: [79, 70, 229] },
+          columnStyles: { 0: { cellWidth: 92 }, 1: { cellWidth: 46 }, 2: { halign: 'right', textColor: [240, 106, 106], cellWidth: 62 }, 3: { halign: 'right', textColor: [47, 191, 108], cellWidth: 62 } },
+          didParseCell: data => {
+            const k = data.section === 'body' && data.cell.raw && data.cell.raw.kind;
+            if (!k) return;
+            const L = LOOK[k], st = data.cell.styles, i = data.column.index;
+            st.fillColor = L.fill; st.textColor = L.text; st.fontStyle = 'bold';
+            if (k !== 'day') st.fontSize = k === 'week' ? 8.5 : 9.5;
+            if (i === 2) st.textColor = L.sent;
+            if (i === 3) st.textColor = L.recv;
+            if (data.cell.raw.net !== undefined) st.textColor = data.cell.raw.net < 0 ? L.sent : L.recv;
+            if (k === 'day') st.fontSize = 8.5;
+            if (k === 'day' && i >= 4) { st.fontStyle = 'normal'; st.textColor = [100, 116, 139]; }
+          }
+        });
+        downloadBlob(doc.output('blob'), d.file + '.pdf');
+      }
+    };
+
+    function openIO() {
+      $('ioBook').textContent = '· ' + bookTitle(curBook);
+      $('ioMonthLbl').textContent = cycleOn() ? 'This bill (as shown)' : viaFilter.size ? `${monthLabel(curMonth)} (filtered, as shown)` : monthLabel(curMonth);
+      $('ioImport').hidden = !canEdit(curBook);          // view-only shared expense: export only
+      $('ioExpMsg').hidden = true;
+      resetImport();
+      $('ioDlg').hidden = false;
+    }
+    const closeIO = () => { $('ioDlg').hidden = true; };
+    $('ioBtn').addEventListener('click', openIO);
+    $('ioX').addEventListener('click', closeIO);
+    $('ioDone').addEventListener('click', closeIO);
+    $('ioDlg').addEventListener('click', ev => { if (ev.target === $('ioDlg')) closeIO(); });
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('ioDlg').hidden) closeIO(); });
+
+    $('ioDlg').querySelector('.io-grid').addEventListener('click', async ev => {
+      const b = ev.target.closest('[data-exp]');
+      if (!b) return;
+      const d = exportData(document.querySelector('input[name=ioScope]:checked').value);
+      const msg = (text, bad) => { $('ioExpMsg').textContent = text; $('ioExpMsg').style.background = bad ? '#fee2e2' : ''; $('ioExpMsg').style.color = bad ? '#991b1b' : ''; $('ioExpMsg').hidden = false; };
+      if (!d.recs.length) return msg('Nothing to export – there are no entries here yet.', true);
+      document.querySelectorAll('.io-fmt').forEach(x => x.disabled = true);
+      msg('⏳ Preparing…');
+      try { await exporters[b.dataset.exp](d); msg(`✅ Saved ${d.recs.length} entr${d.recs.length === 1 ? 'y' : 'ies'} as "${lastDownload.name}".`); }
+      catch (e) { console.error(e); msg('Could not export: ' + e.message, true); }
+      finally { document.querySelectorAll('.io-fmt').forEach(x => x.disabled = false); }
+    });
+
+    /* --- reading files --- */
+    // dates as written in spreadsheets / bank statements: 2026-09-20, 20/09/2026, 20-Sep-2026, 20 Sep 26, Sep 20, 2026
+    function parseAnyDate(v) {
+      if (v instanceof Date && !isNaN(v)) return isoDate(v);
+      const s = String(v ?? '').trim().replace(/\s+\d{1,2}:\d{2}(:\d{2})?\s*(am|pm)?$/i, '');
+      let d = parseDate(s), m;
+      if (d) return d;
+      if ((m = s.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s\-/.]+([a-z]{3,})\.?[\s\-/.,]+(\d{2}|\d{4})$/i)) && monthNum(m[2]))
+        return ymd(+(m[3].length === 2 ? '20' + m[3] : m[3]), monthNum(m[2]), +m[1]);
+      if ((m = s.match(/^([a-z]{3,})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})$/i)) && monthNum(m[1])) return ymd(+m[3], monthNum(m[1]), +m[2]);
+      if (/^\d{5}(\.\d+)?$/.test(s)) { const dt = new Date(Math.round((+s - 25569) * 864e5)); return isoDate(new Date(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate())); }   // Excel day number
+      return null;
+    }
+    // "1,234.50", "₹ 250", "Rs.99", "(120)", "-40", "250 Dr" -> { n, neg, cr }
+    function parseAmt(v) {
+      let s = String(v ?? '').trim();
+      if (!s) return null;
+      const cr = /\bcr\.?$/i.test(s), dr = /\bdr\.?$/i.test(s);
+      const neg = /^\(.*\)$/.test(s) || /^[-−]/.test(s) || dr, plus = /^\+/.test(s);
+      s = s.replace(/\b(cr|dr)\.?$/i, '').replace(/[()₹,\s+\-−]|rs\.?|inr/gi, '');
+      const n = parseFloat(s);
+      return isNaN(n) || !n ? null : { n: Math.abs(n), neg, plus: plus || cr };
+    }
+    // a tiny CSV reader (quotes, commas / semicolons / tabs)
+    function parseCSV(text) {
+      text = text.replace(/^\ufeff/, '');
+      const first = text.split(/\r?\n/)[0] || '';
+      const sep = [',', ';', '\t'].map(c => [c, first.split(c).length]).sort((a, b) => b[1] - a[1])[0][0];
+      const rows = []; let row = [], cell = '', q = false;
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+        else if (c === '"') q = true;
+        else if (c === sep) { row.push(cell); cell = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+        else cell += c;
+      }
+      if (cell || row.length) { row.push(cell); rows.push(row); }
+      return rows.filter(r => r.some(c => String(c).trim()));
+    }
+    // spreadsheet rows (first row with a "Date" column = headings) -> entries
+    function tableToEntries(rows) {
+      const hi = rows.slice(0, 15).findIndex(r => r.some(c => /date/i.test(String(c))));
+      if (hi < 0) return null;                            // no headings – not a table
+      const head = rows[hi].map(c => String(c).trim().toLowerCase());
+      const col = (re, not) => head.findIndex(h => re.test(h) && !(not && not.test(h)));
+      const C = {
+        date: col(/date/),
+        time: col(/^time$/),
+        sent: col(/^(sent|debit|withdrawal|withdrawn|paid|spent|expense|out|dr)\b|debit|withdrawal/),
+        recv: col(/^(received|recv|credit|deposit|income|in|cr)\b|credit|deposit/),
+        amount: col(/amount|amt|value/, /balance/),
+        type: col(/^(type|dr\s*\/\s*cr|cr\s*\/\s*dr)$/),
+        purpose: col(/purpose|description|narration|details|particulars|item|merchant|name|title/),
+        via: col(/via|mode|method|payment|account|bank|card|wallet/),
+        note: col(/note|comment|remark|memo/),
+      };
+      if (C.purpose < 0) C.purpose = col(/remark/);
+      const errors = [], out = [];
+      rows.slice(hi + 1).forEach((r, i) => {
+        const at = k => C[k] >= 0 ? String(r[C[k]] ?? '').trim() : '';
+        if (/^(total|net|balance|opening|closing)/i.test(String(r[0] ?? '').trim())) return;
+        const line = hi + i + 2;
+        const date = parseAnyDate(C.date >= 0 ? r[C.date] : '');
+        const s = parseAmt(at('sent')), rc = parseAmt(at('recv')), a = parseAmt(at('amount'));
+        if (!s && !rc && !a) { if (r.some(c => String(c).trim())) errors.push(`Row ${line}: no amount`); return; }
+        if (!date) { errors.push(`Row ${line}: can't read the date "${C.date >= 0 ? r[C.date] : ''}"`); return; }
+        const time = /^\d{1,2}:\d{2}/.test(at('time')) ? at('time').slice(0, 5).padStart(5, '0') : '';
+        const mk = (sign, n) => ({ ...makeEntry(date, sign, n, at('purpose'), at('via'), at('note')), ...(time ? { time } : {}) });
+        if (s) out.push(mk('', s.n));
+        if (rc) out.push(mk('+', rc.n));
+        if (!s && !rc && a) {                             // one Amount column: "+" / Cr / Credit / Received = in, else out
+          const t = at('type').toLowerCase();
+          const inward = /^(cr|credit|in|received|recv|income|deposit|\+)/.test(t) || (!t && a.plus);
+          out.push(mk(inward ? '+' : '', a.n));
+        }
+      });
+      return { rows: out, errors };
+    }
+
+    let importRows = [];
+    function resetImport() {
+      importRows = [];
+      $('ioFile').value = ''; $('ioFileName').textContent = '';
+      $('ioPreview').innerHTML = ''; $('ioAdd').hidden = true;
+    }
+    async function readImportFile(file) {
+      const ext = (file.name.split('.').pop() || '').toLowerCase();
+      if (ext === 'xlsx' || ext === 'xls') {
+        await loadLib('xlsx');
+        const wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: '' });
+        return tableToEntries(rows) || { rows: [], errors: ['No "Date" column found in the first sheet.'] };
+      }
+      const text = await file.text();
+      if (ext === 'csv' || (ext !== 'txt' && /,|;|\t/.test(text.split(/\r?\n/)[0]))) {
+        const res = tableToEntries(parseCSV(text));
+        if (res) return res;
+      }
+      return parseBulk(text);                              // plain text: the Bulk add format
+    }
+    $('ioFile').addEventListener('change', async () => {
+      const f = $('ioFile').files[0];
+      if (!f) return;
+      $('ioFileName').textContent = `📎 ${f.name}`;
+      $('ioPreview').innerHTML = '<p class="hint">⏳ Reading…</p>';
+      try {
+        const { rows, errors } = await readImportFile(f);
+        importRows = rows;
+        $('ioPreview').innerHTML = entriesPreview(rows, errors) || '<div class="err">No entries found in this file.</div>';
+        $('ioAdd').hidden = !rows.length;
+        $('ioAdd').textContent = `⬆️ Import ${rows.length} entr${rows.length === 1 ? 'y' : 'ies'} into "${bookTitle(curBook)}"`;
+      } catch (e) { console.error(e); $('ioPreview').innerHTML = `<div class="err">Could not read the file: ${esc(e.message)}</div>`; }
+    });
+    $('ioAdd').addEventListener('click', () => {
+      if (!importRows.length) return;
+      const n = importRows.length, months = addEntries(importRows);
+      resetImport();
+      closeIO();
+      mFlash(addedText(n, months) + ' from the file.');
     });
 
     /* =====================================================================
@@ -3743,7 +4247,7 @@
       try {
         const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: appUrl() } });
         if (error) throw error;
-        $('loginMsg').innerHTML = `📬 Check <b>${esc(email)}</b> and tap the sign-in link. You can close this.`;
+        $('loginMsg').innerHTML = `📬 Email sent to <b>${esc(email)}</b>.<br>Open the mail from <b>Supabase Auth</b> (“Your sign-in link”) and tap <b>Sign in</b>. Check Spam / Promotions if you don't see it. You can close this window.`;
         $('loginMsg').hidden = false;
       } catch (e) {
         err(/rate|seconds/i.test(e.message) ? 'Please wait a minute before asking for another link.' : 'Could not send the link: ' + e.message);
@@ -3932,12 +4436,24 @@
       const h = document.documentElement;
       h.classList.toggle('rot90', on);
       h.classList.toggle('tbl-wide', on || editMode || $('wideBtn').classList.contains('on'));
-      $('landscapeBtn').textContent = on ? '⤡' : '⤢';
-      $('landscapeBtn').title = on ? 'Back to upright view' : 'Landscape view – turn your phone sideways (works with auto-rotate off)';
+      $('landscapeBtn').classList.toggle('on', on);
+      $('landscapeBtn').title = on ? 'Rotate back – upright view' : 'Rotate – landscape view (works with auto-rotate off)';
       hideTip();
       if (screen === 'book') renderMonthly();
     }
     $('landscapeBtn').addEventListener('click', () => setRotated(!isRotated()));
+    // ⛶ full screen (no browser bars) – a separate button; works together with rotate
+    const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+    if (document.fullscreenEnabled || document.webkitFullscreenEnabled) document.documentElement.classList.add('can-fs');
+    $('fsBtn').addEventListener('click', async () => {
+      try {
+        if (fsEl()) await (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+        else { const el = document.documentElement; await (el.requestFullscreen || el.webkitRequestFullscreen).call(el, { navigationUI: 'hide' }); }
+      } catch { mFlash('Full screen is not available in this browser.'); }
+    });
+    const syncFs = () => { $('fsBtn').classList.toggle('on', !!fsEl()); $('fsBtn').title = fsEl() ? 'Exit full screen' : 'Full screen'; };
+    document.addEventListener('fullscreenchange', syncFs);
+    document.addEventListener('webkitfullscreenchange', syncFs);
     // phone really turned sideways (auto-rotate on) -> no need to draw it turned
     window.matchMedia('(orientation: landscape)').addEventListener('change', q => { if (q.matches && isRotated()) setRotated(false); });
 
