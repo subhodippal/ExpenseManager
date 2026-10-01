@@ -1023,6 +1023,9 @@
       html:not(.tbl-wide) .wl-short { display: none !important; }
       html:not(.tbl-wide) .edit-table tfoot tr.total { background: #f8f1ff; border-top: 2px solid #e1b5ff; }
       html:not(.tbl-wide) .edit-table tfoot tr.sel-total { background: #e0f2fe; border-top: 2px solid #7dd3fc; color: #075985; }
+      /* one line across the whole bar (the row's border) – not a broken strip on top of each cell */
+      html:not(.tbl-wide) .edit-table tfoot td { box-shadow: none !important; }
+      html:not(.tbl-wide) #monthly .edit-table tfoot { box-shadow: none; }
       html:not(.tbl-wide) #selLabel { flex: 1; }
       html:not(.tbl-wide) .edit-table tfoot tr.total.filtered { background: #dbeafe; border-top-color: #60a5fa; }
       html:not(.tbl-wide) .edit-table tfoot tr.total.filtered.cycle { background: #f3e8ff; border-top-color: #c084fc; }
@@ -2891,6 +2894,7 @@
 
     /* ---------- Sorting: date by default, click a column name to change ---------- */
     let sortCol = 'date', sortDir = 1;
+    let amtStep = -1;                                      // where the "Amount" title's 4-step cycle is (-1 = not started)
     // date, then time (entries without a time after timed ones), then manual/insert order
     const cmp = (x, y) => x < y ? -1 : x > y ? 1 : 0;      // plain order ('~' sorts after digits)
     const byDate = (a, b) => cmp(a.date, b.date) || cmp(a.time || '~', b.time || '~') || a.created - b.created;
@@ -2921,8 +2925,15 @@
       const th = ev.target.closest('[data-sort]');
       if (!th) return;
       const col = th.dataset.sort;
-      if (col === sortCol) sortDir = -sortDir;
-      else { sortCol = col; sortDir = (col === 'sent' || col === 'received') ? -1 : 1; }   // sent/recv: biggest first; amount: smallest first
+      if (th.classList.contains('amt-title')) {
+        // "Amount" title (upright phones) cycles: amount ▲ → amount ▼ → date ▲ → date ▼ → amount ▲ …
+        amtStep = (amtStep + 1) % 4;
+        [sortCol, sortDir] = [['amount', 1], ['amount', -1], ['date', 1], ['date', -1]][amtStep];
+      } else {
+        amtStep = -1;
+        if (col === sortCol) sortDir = -sortDir;
+        else { sortCol = col; sortDir = (col === 'sent' || col === 'received') ? -1 : 1; }   // sent/recv: biggest first; amount: smallest first
+      }
       pruneBlank();
       renderMonthly();
     });
