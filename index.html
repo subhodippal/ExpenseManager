@@ -146,6 +146,12 @@
     .io-scope { display: flex; gap: 14px; flex-wrap: wrap; font-size: .88rem; }
     .io-scope label { display: inline-flex; align-items: center; gap: 6px; font-weight: 500; cursor: pointer; }
     .io-scope input { width: auto; accent-color: #7c3aed; }
+    .io-cols { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: .84rem; }
+    .io-cols-lbl { font-weight: 700; }
+    .io-cols label { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; cursor: pointer; }
+    .io-cols input { width: auto; accent-color: #7c3aed; }
+    .io-tip { margin: 0; font-size: .76rem; }
+    .io-scope label:has(input:disabled) { opacity: .45; cursor: default; }
     .io-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .io-fmt { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 4px; cursor: pointer; font: inherit; font-weight: 600; font-size: .85rem;
       background: var(--bg); color: var(--text); border: 2px solid var(--border); border-radius: 10px; transition: border-color .15s, transform .15s; }
@@ -499,6 +505,29 @@
     .book-actions { display: flex; gap: 4px; flex: 0 0 auto; }
     .book-actions .btn { padding: 6px 8px; }
     .mem { white-space: nowrap; }
+    /* 💰 opening balance line + balance in the total row */
+    tr.bal-row td { background: #ecfdf5; border-bottom: 2px solid #a7f3d0; padding: 6px 10px; }
+    .bal-line { display: flex; align-items: center; gap: 6px 10px; flex-wrap: wrap; font-size: .86rem; color: #065f46; }
+    .bal-lbl { font-weight: 700; }
+    #balIn { width: 130px; padding: 4px 8px; font-weight: 700; text-align: right; }
+    .sum-bal { font-weight: 700; }
+    html[data-theme=dark] tr.bal-row td { background: #052e22; border-bottom-color: #065f46; }
+    html[data-theme=dark] .bal-line { color: #6ee7b7; }
+    /* 👥 who paid (group expenses) */
+    .c-by input[data-f=payer] { width: 100%; }
+
+    /* expense types: a pick-one list of cards */
+    .type-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; }
+    .type-opt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 2px solid var(--border); border-radius: 10px; cursor: pointer; font-weight: 400; }
+    .type-opt:has(input:checked) { border-color: #7c3aed; background: #f8f1ff; }
+    html[data-theme=dark] .type-opt:has(input:checked) { background: #191021; border-color: #573274; }
+    .type-opt input { width: 16px; height: 16px; flex: 0 0 auto; accent-color: #7c3aed; }
+    .type-ico { font-size: 1.4rem; line-height: 1; }
+    .type-txt { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; }
+    .type-txt small { color: var(--muted); font-size: .74rem; }
+    .book-modal { max-width: 560px; overflow-y: auto; }
+    .type-line { font-weight: 600; }
+
     /* expense cards (Your Expenses / Shared with you): icon + name on top, details in the middle, buttons along the bottom */
     .book-tile { flex-direction: column; align-items: stretch; gap: 10px; padding: 14px 16px 12px; }
     .book-head { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -653,6 +682,14 @@
     .filter-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .filter-bar .btn { padding: 3px 10px; flex: 0 0 auto; }
     .filter-quick { display: flex; gap: 8px; }
+    .filter-flow { display: flex; gap: 6px; flex-wrap: wrap; }
+    .filter-flow label { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 8px; border: 2px solid var(--border);
+      border-radius: 8px; cursor: pointer; font-weight: 700; font-size: .86rem; white-space: nowrap; }
+    .filter-flow label.out { color: var(--sent); }
+    .filter-flow label.in { color: var(--received); }
+    .filter-flow label:has(input:checked) { border-color: #7c3aed; background: #f8f1ff; }
+    html[data-theme=dark] .filter-flow label:has(input:checked) { background: #191021; border-color: #573274; }
+    .filter-flow input { width: 15px; height: 15px; accent-color: #7c3aed; }
     .filter-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; min-height: 0; }
     .filter-opt {
       display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer;
@@ -666,11 +703,73 @@
     html[data-theme=dark] .filter-opt .fo-cycle { color: #c4b5fd; }
     .filter-opt .fo-sum { flex: 0 0 auto; font-size: .8rem; text-align: right; line-height: 1.3; }
     .filter-opt .fo-sum small { color: var(--muted); display: block; }
+    /* 🎉 event expenses: no months, a numbered list, named groups in their own colour */
+    #monthly.eventmode :is(#prevMonth, #nextMonth, #monthSelect, #thisMonth, #viewBtn) { display: none !important; }
+    .ev-lbl { font-weight: 700; padding: 6px 4px; white-space: nowrap; }
+    .seq-sort { display: none; }
+    #mTable.is-event .seq-sort { display: inline; font-weight: 700; margin-left: 2px; }
+    .seq-no { min-width: 16px; text-align: right; font-size: .72rem; font-weight: 700; color: var(--muted); }
+    .mv-btn { border: none; background: none; cursor: pointer; font-size: .7rem; color: var(--muted); padding: 2px 3px; line-height: 1; }
+    .mv-btn:hover { color: var(--primary); }
+    #monthly:is(.viewmode, .readonly) .mv-btn, #mTable:not(.seqmode) .mv-btn { display: none; }
+    .date-in { display: none; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.is-event .date-in { display: inline-block; width: 128px; padding: 4px; font-size: .78rem; flex: 0 0 auto; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.is-event .dt-view { display: none !important; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.is-event .c-date-cell { width: 230px !important; }
+    tr.grp-head td { background: var(--gh); border-top: 2px solid var(--gb); cursor: pointer; padding: 6px 8px; }
+    tr.grp-head .grp-name { color: var(--gt); }
+    tr.grp-head .grp-line { gap: 4px 12px; }
+    .grp-acts { margin-left: auto; display: inline-flex; gap: 2px; }
+    .grp-acts button { border: none; background: rgba(255,255,255,.6); border-radius: 6px; cursor: pointer; padding: 2px 6px; font-size: .78rem; }
+    #tbody tr.in-grp td { background: var(--gl); }
+    #tbody tr.in-grp td:first-child { box-shadow: inset 4px 0 0 var(--gb); }
+    tr.add-row td { padding: 8px; text-align: center; }
+    tr.add-row .day-add { float: none; }
+    .g0 { --gh: #fef3c7; --gl: #fffbeb; --gb: #f59e0b; --gt: #92400e; }
+    .g1 { --gh: #dcfce7; --gl: #f0fdf4; --gb: #22c55e; --gt: #166534; }
+    .g2 { --gh: #e0f2fe; --gl: #f0f9ff; --gb: #0ea5e9; --gt: #075985; }
+    .g3 { --gh: #fce7f3; --gl: #fdf2f8; --gb: #ec4899; --gt: #9d174d; }
+    .g4 { --gh: #ede9fe; --gl: #f5f3ff; --gb: #8b5cf6; --gt: #5b21b6; }
+    .g5 { --gh: #ffedd5; --gl: #fff7ed; --gb: #f97316; --gt: #9a3412; }
+    html[data-theme=dark] .g0 { --gh: #3a2a05; --gl: #1c1404; --gt: #fde68a; }
+    html[data-theme=dark] .g1 { --gh: #052e16; --gl: #03170b; --gt: #86efac; }
+    html[data-theme=dark] .g2 { --gh: #0b2533; --gl: #06141c; --gt: #7dd3fc; }
+    html[data-theme=dark] .g3 { --gh: #3b0a24; --gl: #1f0613; --gt: #f9a8d4; }
+    html[data-theme=dark] .g4 { --gh: #2e1f4f; --gl: #171027; --gt: #c4b5fd; }
+    html[data-theme=dark] .g5 { --gh: #3b1a06; --gl: #1f0e04; --gt: #fdba74; }
+    html[data-theme=dark] .grp-acts button { background: rgba(0,0,0,.35); }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) #tbody tr.grp-head { display: flex !important; align-items: center; gap: 6px; padding: 5px 6px; background: var(--gh); border-top: 2px solid var(--gb); }
+      html:not(.tbl-wide) #tbody tr.grp-head td { display: block !important; padding: 0 !important; border: none !important; background: transparent !important; }
+      html:not(.tbl-wide) #tbody tr.grp-head .grp-cell { flex: 1; min-width: 0; }
+      html:not(.tbl-wide) #tbody tr.in-grp { background: var(--gl); box-shadow: inset 3px 0 0 var(--gb); }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.is-event #tbody tr[data-id] .time-in { display: none; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.is-event #tbody tr[data-id] .date-in { width: 100%; }
+      html:not(.tbl-wide) #mTable.is-event #tbody tr[data-id] .c-del { flex-wrap: wrap; }
+    }
+
+    /* 💸 bill paid / ↩ refund chip on money received (credit-card expenses) */
+    .kind-btn { display: block; width: max-content; max-width: 100%; margin: 2px 4px 0; padding: 0 7px; border-radius: 999px; border: 1px solid transparent;
+      font: inherit; font-size: .68rem; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kind-btn.bill { background: #e0f2fe; color: #075985; border-color: #bae6fd; }
+    .kind-btn.refund { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+    .kind-btn:disabled { cursor: default; opacity: 1; }
+    #monthly:not(.viewmode):not(.readonly) .kind-btn:hover { border-color: currentColor; }
+    html[data-theme=dark] .kind-btn.bill { background: #0b2533; color: #7dd3fc; border-color: #164e63; }
+    html[data-theme=dark] .kind-btn.refund { background: #052e16; color: #86efac; border-color: #14532d; }
+    #tbody tr.bill-pay .kind-btn { opacity: 1; }
     /* 💳 billing cycle: a card payment is listed, faded, and not counted in the bill */
     #tbody tr.bill-pay :is(textarea, input, select, .amt-view, .dt-view) { opacity: .5; }
     .pay-tag { display: block; width: max-content; max-width: 100%; margin: 1px 4px 0; padding: 0 6px; border-radius: 4px; font-size: .66rem; font-weight: 600;
       background: #e0f2fe; color: #075985; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     html[data-theme=dark] .pay-tag { background: #0b2533; color: #7dd3fc; }
+
+    /* ⚠ duplicates bar */
+    .dup-bar { display: flex; align-items: center; gap: 6px 8px; flex-wrap: wrap; background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px;
+      padding: 4px 8px; margin-bottom: 8px; font-size: .84rem; color: #9a3412; }
+    .dup-text { flex: 1 1 220px; min-width: 0; }
+    .dup-bar .btn { padding: 3px 10px; }
+    html[data-theme=dark] .dup-bar { background: #2a1606; border-color: #9a3412; color: #fdba74; }
 
     /* breadcrumb: 📈 All years › 📆 2026 › 📅 September 2026 */
     .crumbs { display: flex; align-items: center; gap: 2px 4px; flex-wrap: wrap; font-size: .84rem; margin: 0 0 8px; }
@@ -1045,6 +1144,35 @@
       /* Amount header: ⇅ date · Amount · ⇅ amount */
       html:not(.tbl-wide) #mTable thead .c-amt { display: flex !important; align-items: center; justify-content: center; gap: 3px; }
 
+      /* ✏️ editing on an upright phone – right in the compact list, two lines per entry:
+         ☐ · [− amount] · purpose ………… · 🗑
+             · time       · pay via · note       */
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] {
+        grid-template-columns: 16px 92px minmax(0, 1fr) minmax(0, 1fr) 24px;
+        grid-template-areas: "sel amt pur pur del" "sel time via note note";
+        gap: 3px 4px; padding: 5px 4px; align-items: center;
+      }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable thead tr {
+        grid-template-columns: 16px 92px minmax(0, 1fr) minmax(0, 1fr) 24px; grid-template-areas: "sel amt pur via del";
+      }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable :is(thead, #tbody) .c-tools { grid-area: sel; align-self: start; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable :is(thead, #tbody) .c-amt { grid-area: amt; padding-left: 0 !important; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable :is(thead, #tbody) .c-purpose { grid-area: pur; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable :is(thead, #tbody) .c-via { grid-area: via; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable :is(thead, #tbody) .c-del { grid-area: del; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .c-date-cell { grid-area: time; display: block !important; width: auto; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .c-note { grid-area: note; display: block !important; width: auto; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .dt-view { display: none !important; }   /* the date is on the date row */
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .dt-cell { display: block; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .time-in { width: 100%; padding: 4px 2px; font-size: .74rem; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .note-btn { display: none !important; }   /* the note is a box now */
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .c-del { align-self: start; justify-content: center; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] .via-by { display: none; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #tbody tr[data-id] textarea[data-f=purpose] { min-height: 30px; }
+      /* 👥 group expense: a third line for "who paid" */
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.with-payer #tbody tr[data-id] { grid-template-areas: "sel amt pur pur del" "sel time via note note" "sel payer payer payer payer"; }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.with-payer #tbody tr[data-id] .c-by { grid-area: payer; display: block !important; }
+
       /* row colours move to the line */
       html:not(.tbl-wide) #tbody tr.starred { background: #f5f3ff; box-shadow: inset 3px 0 0 #8b5cf6; }
       html:not(.tbl-wide) #tbody tr.dup { background: #fff7ed; }
@@ -1101,7 +1229,7 @@
       .month-pick { order: -2; flex: 1 1 calc(100% - 98px); }
       .month-bar > #filterBtn { order: -1; flex: 0 0 44px; }
       .month-bar > #ioBtn { order: 0; flex: 0 0 44px; }
-      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #starOnlyBtn { order: 4; } #viewBtn { order: 4; } #wideBtn { order: 5; }
+      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #starOnlyBtn { order: 4; } #viewBtn { order: 4; } #wideBtn { order: 5; }
       #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
       html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
 
@@ -1202,9 +1330,11 @@
     }
     html.rot90 .landscape-btn { display: inline-flex !important; }
     html.rot90 .wide-btn { display: none !important; }
-    /* phones: the one-line note hides while you scroll the entries */
-    @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
-      #monthly.list-scrolled .month-notes { display: none; }
+    /* the one-line note stays put – the entries scroll under it. Only a phone held sideways (no room to spare)
+       slides it out of the way while you scroll the entries (never while you're typing in it) */
+    .month-notes { transition: max-height .25s ease, opacity .2s ease, margin-bottom .25s ease; max-height: 60vh; }
+    @media (max-height: 520px) and (orientation: landscape) {
+      #monthly.list-scrolled .month-notes:not(:focus-within) { max-height: 0; opacity: 0; margin-bottom: 0; overflow: hidden; pointer-events: none; }
     }
     /* ---------- Responsive ---------- */
     @media (max-width: 760px) {
@@ -1422,7 +1552,9 @@
       <form class="new-book" id="newBookForm" autocomplete="off">
         <label for="bookName">Expense name</label>
         <input type="text" id="bookName" maxlength="60" placeholder="e.g. Party expenses, Fuel expenses, Bank savings">
-        <p class="hint">It gets the same month-wise table as My Monthly Expenses. You can rename it later from <b>View Your Expenses</b>.</p>
+        <label>What is it for?</label>
+        <div class="type-list" id="newBookTypes"></div>
+        <p class="hint">You can change the name and type later with ✏️ in <b>View Your Expenses</b>.</p>
         <div class="err" id="newBookErr" hidden></div>
         <div class="actions">
           <button type="submit" class="btn btn-primary">➕ Create &amp; open</button>
@@ -1434,6 +1566,7 @@
     <section id="monthly" class="panel" hidden>
       <div class="month-bar" id="monthBar">
         <div class="month-pick">
+          <span class="ev-lbl" id="evLbl" hidden>🎉 Whole event</span>
           <button type="button" class="btn btn-light" id="prevMonth" title="Previous month">◀</button>
           <select id="monthSelect" aria-label="Choose month"></select>
           <button type="button" class="btn btn-light" id="nextMonth" title="Next month">▶</button>
@@ -1446,12 +1579,19 @@
         <button type="button" class="btn btn-light icon-btn fs-btn" id="fsBtn" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-in" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-out" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
         <button type="button" class="btn btn-light icon-btn landscape-btn" id="landscapeBtn" title="Rotate – landscape view (works with auto-rotate off)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="17" rx="2.2"/><path d="M3.5 13.5a8.6 8.6 0 0 0 7 7.8M8.2 21.4l2.4-.2-.9-2.3"/></svg></button>
         <button type="button" class="btn btn-light wide-btn" id="wideBtn" title="Full table – scroll sideways">↔</button>
+        <button type="button" class="btn btn-light" id="groupBtn" title="Put the ticked entries in a named group" hidden>🗂<span class="lbl"> Group</span> <span id="groupCount">(0)</span></button>
         <button type="button" class="btn btn-light star-only-btn" id="starOnlyBtn" title="Show starred entries only">⭐<span class="lbl"> Starred</span></button>
         <button type="button" class="btn btn-light" id="viewBtn" title="Display – day / week totals, full year">📊<span class="lbl"> View</span></button>
         <button type="button" class="btn btn-light" id="filterBtn" title="Filter by payment method">🔍<span class="lbl"> Filter</span><span class="filter-count" id="filterCount" hidden></span></button>
         <button type="button" class="btn btn-light" id="cardsBtn" title="Payment management – cards, billing cycles, payment options">⚙️</button>
       </div>
       <nav class="crumbs" id="crumbs" aria-label="Where you are" hidden></nav>
+      <div class="dup-bar" id="dupBar" hidden>
+        <span class="dup-text" id="dupText"></span>
+        <button type="button" class="btn btn-light btn-sm" id="dupReview">👁 Review</button>
+        <button type="button" class="btn btn-danger btn-sm" id="dupDelSel" hidden>🗑 Delete ticked (0)</button>
+        <button type="button" class="btn btn-danger btn-sm" id="dupDelExtra">🗑 Delete extra copies</button>
+      </div>
       <div class="filter-bar" id="filterBar" hidden>
         <span class="filter-text" id="filterText"></span>
         <button type="button" class="btn btn-light btn-sm" id="filterEdit">Change</button>
@@ -1459,8 +1599,8 @@
       </div>
       <!-- 💳 billing cycle (shown when exactly one payment option is filtered) -->
       <div class="cycle-bar" id="cycleBar" hidden>
-        <label class="cycle-switch" title="Show this card's billing cycle instead of the calendar month">
-          <input type="checkbox" id="cycleToggle"> 💳 <span>Billing cycle</span>
+        <label class="cycle-switch" title="Show the card's billing cycle instead of the calendar month">
+          <input type="checkbox" id="cycleToggle"> 💳 <span id="cycleLbl">Billing cycle</span>
         </label>
         <span class="cycle-info" id="cycleInfo"></span>
         <button type="button" class="btn btn-light btn-sm" id="cycleAdjust" title="Set this statement's exact dates">✏️ Adjust dates</button>
@@ -1518,10 +1658,11 @@
       </div>
 
       <div class="table-wrap">
+        <datalist id="payerNames"></datalist>
         <table class="edit-table hide-time" id="mTable">
           <thead id="mHead">
             <tr>
-              <th class="c-tools"><input type="checkbox" id="selAll" title="Select all in this month"></th>
+              <th class="c-tools"><input type="checkbox" id="selAll" title="Select all in this month"><span class="sort-ico seq-sort" data-sort="seq" id="seqSort" title="Your order (1, 2, 3…)">#</span></th>
               <th class="c-date-cell sortable" data-sort="date">Date</th>
               
               <th class="c-sent sortable num" data-sort="sent">Sent ₹</th>
@@ -1546,7 +1687,7 @@
             <tr class="total">
               <td colspan="2" id="mTotalLabel">Total</td>
               <td class="c-time-cell"></td>
-              <td colspan="6" class="tot-sums" id="totSums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net"><span id="mNetLbl">Net:</span> <span id="mNet">₹0.00</span></span></div></td>
+              <td colspan="6" class="tot-sums" id="totSums"><div class="sums"><span class="sent" id="mSent">₹0.00</span><span class="received" id="mRecv">₹0.00</span><span class="sum-net"><span id="mNetLbl">Net:</span> <span id="mNet">₹0.00</span></span><span class="sum-bal" id="mBalWrap" hidden>Balance: <span id="mBal">₹0.00</span></span></div></td>
             </tr>
           </tfoot>
         </table>
@@ -1622,6 +1763,12 @@
             <label><input type="radio" name="ioScope" value="month" checked> <span id="ioMonthLbl">This month</span></label>
             <label><input type="radio" name="ioScope" value="all"> All months</label>
           </div>
+          <div class="io-scope" id="ioRowsBox">
+            <label><input type="radio" name="ioRows" value="all" checked> All rows</label>
+            <label><input type="radio" name="ioRows" value="ticked" id="ioTicked"> <span id="ioTickedLbl">Only the ticked rows</span></label>
+          </div>
+          <div class="io-cols"><span class="io-cols-lbl">Columns:</span> <span id="ioCols"></span></div>
+          <p class="hint io-tip">Date and amounts always go out. Tick rows in the table (☐) to export just those.</p>
           <div class="io-grid">
             <button type="button" class="io-fmt" data-exp="xlsx"><span>📗</span>Excel<small>.xlsx</small></button>
             <button type="button" class="io-fmt" data-exp="csv"><span>📄</span>CSV<small>.csv</small></button>
@@ -1641,6 +1788,25 @@
       </div>
       <div class="modal-foot"><button type="button" class="btn btn-light" id="ioDone">Close</button></div>
     </div>
+  </div>
+
+  <!-- ✏️ Edit an expense: name + type -->
+  <div class="overlay" id="bookDlg" hidden>
+    <form class="modal book-modal" id="bookForm" autocomplete="off">
+      <div class="modal-head">
+        <h3>✏️ Edit expense</h3>
+        <button type="button" class="modal-x" id="bookX" title="Close">✕</button>
+      </div>
+      <label for="bkName">Name</label>
+      <input type="text" id="bkName" maxlength="60">
+      <label>Type</label>
+      <div class="type-list" id="bkTypes"></div>
+      <div class="err" id="bkErr" hidden></div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-light" id="bkCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+      </div>
+    </form>
   </div>
 
   <!-- Confirmation popup (delete / remove) -->
@@ -1698,8 +1864,13 @@
   <div class="overlay" id="filterDlg" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="filterTitle">
       <div class="modal-head">
-        <h3 id="filterTitle">🔍 Filter by payment method</h3>
+        <h3 id="filterTitle">🔍 Filter</h3>
         <button type="button" class="modal-x" id="filterClose" title="Close">✕</button>
+      </div>
+      <div class="filter-flow" id="filterFlow" role="radiogroup" aria-label="Money sent or received">
+        <label><input type="radio" name="flow" value="" checked> All</label>
+        <label class="out"><input type="radio" name="flow" value="sent"> − Sent only</label>
+        <label class="in"><input type="radio" name="flow" value="received"> + Received only</label>
       </div>
       <p class="hint" id="filterHint"></p>
       <div class="filter-quick">
@@ -1788,13 +1959,45 @@
     const refOf = id => sharedRefs.find(r => SH + r.id === id);
     const bookName = id => isShared(id) ? (refOf(id)?.name || 'Shared expense') : (books.find(b => b.id === id)?.name || 'Expenses');
     const isMonthlyRef = r => !!r && (r.id === monthlyShared || (r.role !== 'owner' && [DEFAULT_BOOK.name, OLD_DEFAULT_NAME].includes(r.name)));
-    const bookIcon = id => id === 'monthly' || isMonthlyRef(isShared(id) && refOf(id)) ? '📅' : isShared(id) ? '👥' : '📒';
+    const bookIcon = id => {
+      if (id === 'monthly' || isMonthlyRef(isShared(id) && refOf(id))) return '📅';
+      const typed = isShared(id) ? refOf(id)?.type : books.find(b => b.id === id)?.type;
+      return typed ? BOOK_TYPES[bookType(id)].icon : bookType(id) === 'card' ? '💳' : isShared(id) ? '👥' : '📒';
+    };
     // someone else's book: "subhodip's Monthly Expenses"
     const bookTitle = id => { const r = isShared(id) && refOf(id); return r && r.role !== 'owner' ? `${r.ownerName || r.ownerEmail}'s ${r.name.replace(/^My /, '')}` : bookName(id); };
     // the book behind the home "Monthly Expenses" button (the shared copy once I've shared it)
     const monthlyBook = () => monthlyShared && refOf(SH + monthlyShared) ? SH + monthlyShared : 'monthly';
     const canEdit = id => !isShared(id) || ['owner', 'writer'].includes(refOf(id)?.role);
     const bookExists = id => isShared(id) ? !!refOf(id) : books.some(b => b.id === id);
+
+    /* Expense types – picked when creating an expense, changeable with ✏️:
+       monthly  – everyday spending, month by month, with an opening balance
+       card     – credit card: billing cycles, "bill paid" vs "refund" on money received
+       savings  – bank / FD savings, with an opening balance
+       account  – any account you manage, with an opening balance
+       group    – shared by several people (flatmates, a trip…): who paid (By) on every entry
+       event    – one event (wedding, party): a numbered list you can put into named groups */
+    const BOOK_TYPES = {
+      monthly: { icon: '📅', label: 'Monthly expenses', hint: 'day-to-day spending, month by month' },
+      card:    { icon: '💳', label: 'Credit card expenses', hint: 'billing cycles, bill paid vs refund' },
+      savings: { icon: '🏦', label: 'Bank / FD savings', hint: 'deposits & withdrawals with a balance' },
+      account: { icon: '📒', label: 'Manage an account', hint: 'money in & out with a balance' },
+      group:   { icon: '👥', label: 'Shared by several people', hint: 'flatmates, trips – who paid each entry' },
+      event:   { icon: '🎉', label: 'Event / party', hint: 'a wedding, a party – numbered list, named groups' },
+    };
+    // the type of a book (older books: a name like "Credit Card Expenses" counts as a credit-card expense)
+    function bookType(id) {
+      const t = isShared(id) ? refOf(id)?.type : books.find(b => b.id === id)?.type;
+      if (BOOK_TYPES[t]) return t;
+      return /credit\s*card|\bcc\b/i.test(bookName(id)) ? 'card' : 'monthly';
+    }
+    const hasBalance = id => ['monthly', 'savings', 'account'].includes(bookType(id));
+    // "By" (who paid / who added) only where several people are involved: a shared expense, or a "shared by several people" one
+    const showByCol = id => isShared(id) || bookType(id) === 'group';
+    const isGroupType = id => bookType(id) === 'group';
+    // who paid: typed in a group expense, else whoever added the entry
+    const payerOf = e => (e.payer || '').trim() || byName(e);
 
     // ⚡ Quick access: any book (mine: its id, shared: 'sh_' + id) starred with ☆ – shown on the home screen
     const QUICK_KEY = 'quick_v1';
@@ -1842,14 +2045,21 @@
       if (name === 'book' && prev !== 'book') showRotateTip();
       if (name === 'newBook') {
         $('bookName').value = '';
+        $('newBookTypes').innerHTML = typeListHtml('newType', 'monthly');
         $('newBookErr').hidden = true;
         setTimeout(() => $('bookName').focus(), 0);
       }
       window.scrollTo(0, 0);
     }
 
+    // 🎉 an event opens in its numbered order; other expenses by date
+    function sortForType(id) {
+      if (bookType(id) === 'event') { sortCol = 'seq'; sortDir = 1; }
+      else if (sortCol === 'seq') { sortCol = 'date'; sortDir = 1; }
+    }
+
     function openBook(id, push = true) {
-      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; }
+      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; sortForType(id); }
       curBook = id;
       openScreen('book', push);
     }
@@ -1906,13 +2116,14 @@
             <div class="book-name">${esc(b.name)}${b.id === 'monthly' ? ' <span class="default-tag">default</span>' : ''}</div>
           </div>
           <div class="book-main">
+            <div class="book-meta type-line">${BOOK_TYPES[bookType(b.id)].icon} ${BOOK_TYPES[bookType(b.id)].label}</div>
             <div class="book-meta">${items.length} entr${items.length === 1 ? 'y' : 'ies'} · last entry ${last ? fmtDate(last) : '—'}</div>
             <div class="book-meta">${monthLabel(m)}: <span class="sent">− ${money(s)}</span> · <span class="received">+ ${money(r)}</span></div>
           </div>
           <div class="book-actions">
             ${quickBtn(b.id)}
             <button type="button" class="btn btn-light btn-sm" data-act="share" title="Share with someone">🔗</button>
-            <button type="button" class="btn btn-light btn-sm" data-act="rename" title="Rename">✏️</button>
+            <button type="button" class="btn btn-light btn-sm" data-act="rename" title="Edit name and type">✏️</button>
             ${b.id !== 'monthly' ? `<button type="button" class="btn btn-danger btn-sm" data-act="delete" title="Delete this expense book">🗑</button>` : ''}
           </div>
         </div>`;
@@ -1932,15 +2143,7 @@
       if (act.dataset.act === 'share') { openShareScreen(id); return; }
       if (act.dataset.act === 'quick') { toggleQuick(id); renderBooks(); return; }
 
-      if (act.dataset.act === 'rename') {
-        const name = (prompt('Rename expense', bookName(id)) || '').trim();
-        if (!name || name === bookName(id)) return;
-        if (books.some(b => b.id !== id && b.name.toLowerCase() === name.toLowerCase())) { booksFlash(`"${name}" already exists.`); return; }
-        books.find(b => b.id === id).name = name;
-        save();
-        renderBooks();
-        return;
-      }
+      if (act.dataset.act === 'rename') { openBookDlg(id); return; }
       // delete: needs a second click
       const n = expenses.filter(e => bookOf(e) === id).length;
       if (!act.classList.contains('armed')) {
@@ -2198,7 +2401,7 @@
       if (!toMonthly) {
         pid = 'b' + newId();
         const taken = n => books.some(x => x.name.toLowerCase() === n.toLowerCase());
-        books.push({ id: pid, name: taken(r.name) ? r.name + ' (private)' : r.name, created: Date.now() });
+        books.push({ id: pid, name: taken(r.name) ? r.name + ' (private)' : r.name, type: r.type, created: Date.now() });
       }
       expenses.forEach(e => { if (bookOf(e) === bid) { if (toMonthly) delete e.book; else e.book = pid; } });
       Object.keys(monthNotes).forEach(k => {
@@ -2254,11 +2457,44 @@
       const err = msg => { $('newBookErr').textContent = msg; $('newBookErr').hidden = false; $('bookName').focus(); };
       if (!name) return err('Please enter a name for this expense.');
       if (books.some(b => b.name.toLowerCase() === name.toLowerCase())) return err(`"${name}" already exists – pick another name.`);
-      const b = { id: 'b' + newId(), name, created: Date.now() };
+      const type = document.querySelector('input[name=newType]:checked')?.value || 'monthly';
+      const b = { id: 'b' + newId(), name, type, created: Date.now() };
       books.push(b);
       save();
       openBook(b.id, false);          // Back from the new book goes to where "Create" was opened from
     });
+
+    // the expense types as a pick-one list
+    const typeListHtml = (name, sel) => Object.entries(BOOK_TYPES).map(([k, t]) =>
+      `<label class="type-opt"><input type="radio" name="${name}" value="${k}"${k === sel ? ' checked' : ''}><span class="type-ico">${t.icon}</span><span class="type-txt"><b>${t.label}</b><small>${t.hint}</small></span></label>`).join('');
+
+    /* ✏️ edit an expense: its name and type */
+    let bookDlgFor = null;
+    function openBookDlg(id) {
+      bookDlgFor = id;
+      $('bkName').value = bookName(id);
+      $('bkTypes').innerHTML = typeListHtml('bkType', bookType(id));
+      $('bkErr').hidden = true;
+      $('bookDlg').hidden = false;
+      setTimeout(() => $('bkName').focus(), 0);
+    }
+    const closeBookDlg = () => { $('bookDlg').hidden = true; };
+    $('bookForm').addEventListener('submit', ev => {
+      ev.preventDefault();
+      const id = bookDlgFor, b = books.find(x => x.id === id), name = $('bkName').value.trim();
+      const err = m => { $('bkErr').textContent = m; $('bkErr').hidden = false; };
+      if (!b) return closeBookDlg();
+      if (!name) return err('Please enter a name.');
+      if (books.some(x => x.id !== id && x.name.toLowerCase() === name.toLowerCase())) return err(`"${name}" already exists – pick another name.`);
+      b.name = name;
+      b.type = document.querySelector('input[name=bkType]:checked')?.value || bookType(id);
+      save();
+      closeBookDlg();
+      renderBooks(); renderQuick();
+    });
+    $('bookX').addEventListener('click', closeBookDlg);
+    $('bkCancel').addEventListener('click', closeBookDlg);
+    $('bookDlg').addEventListener('click', ev => { if (ev.target === $('bookDlg')) closeBookDlg(); });
 
     const today = () => new Date().toISOString().slice(0, 10);
 
@@ -2424,13 +2660,15 @@
         </label>`).join('');
     }
 
+    const FLOW_TXT = { sent: '− money sent', received: '+ money received' };
     function updateFilterUI() {
-      const on = viaFilter.size > 0;
+      const on = viaFilter.size > 0 || !!flowFilter;
       $('filterBtn').classList.toggle('on', on);
       $('filterCount').hidden = !on;
-      $('filterCount').textContent = viaFilter.size;
+      $('filterCount').textContent = viaFilter.size + (flowFilter ? 1 : 0);
       $('filterBar').hidden = !on;
-      $('filterText').innerHTML = on ? '🔍 Showing only: ' + [...viaFilter].map(v => `<b>${esc(viaName(v))}</b>`).join(', ') : '';
+      $('filterText').innerHTML = on ? '🔍 Showing only: ' + [...(flowFilter ? [`<b>${FLOW_TXT[flowFilter]}</b>`] : []), ...[...viaFilter].map(v => `<b>${esc(viaName(v))}</b>`)].join(', ') : '';
+      document.querySelectorAll('input[name=flow]').forEach(r => { r.checked = r.value === flowFilter; });
       updateCycleUI();
     }
 
@@ -2441,34 +2679,29 @@
       return `<span class="${left >= 0 && left <= 5 ? 'due-soon' : ''}">(${when})</span>`;
     };
 
+    // 💳 billing-cycle bar: "☐ 💳 16th – 15th billing cycle" (several cards: each one's days); when on, the dates on screen
     function updateCycleUI() {
-      const card = cycleCard();
-      $('cycleBar').hidden = !card;
+      const cards = cycleCards(), sole = soleFilter(), needSetup = !cards.length && !!sole && !isCard(sole);
+      $('cycleBar').hidden = !cards.length && !needSetup;
       $('mTotalLabel').parentElement.classList.toggle('cycle', cycleOn());
       $('cycleEdit').hidden = true;
-      if (!card) return;
-      const setUp = isCard(card);
-      $('cycleToggle').disabled = !setUp;
-      $('cycleToggle').checked = cycleView && setUp;
-      $('cycleSetup').hidden = setUp;
-      $('cycleAdjust').hidden = !cycleOn() || !canEdit(curBook);
-      if (!setUp) { $('cycleInfo').innerHTML = `<b>${esc(card)}</b> has no billing cycle yet – set it up to see bills.`; return; }
-      if (!cycleView) {
-        const c = cycleOf(card);
-        $('cycleInfo').innerHTML = `Cycle starts day <b>${c.start}</b> · due day <b>${c.due}</b> – turn on to see this card by statement.`;
-        return;
+      if ($('cycleBar').hidden) return;
+      $('cycleToggle').disabled = !cards.length;
+      $('cycleToggle').checked = cycleOn();
+      $('cycleSetup').hidden = !needSetup;
+      $('cycleAdjust').hidden = !cycleOn() || cards.length !== 1 || !canEdit(curBook) || !['entries', 'day', 'week'].includes(level());
+      $('cycleLbl').textContent = needSetup ? 'Billing cycle' : cards.length === 1 ? `${cycleDays(cards[0])} billing cycle` : 'Billing cycles';
+      if (needSetup) { $('cycleInfo').innerHTML = `<b>${esc(sole)}</b> has no billing cycle yet`; return; }
+      let info = cards.length > 1 ? cards.map(c => `${esc(c)} <b>${cycleDays(c)}</b>`).join(' · ') : '';
+      if (cycleOn() && ['entries', 'day', 'week'].includes(level())) {
+        const p = period();
+        info += (info ? ' · ' : '') + `<b>${shortDate(p.from)} – ${shortDate(p.to)}</b>${p.due ? ` · due ${shortDate(p.due)}` : ''}${p.adjusted ? ' <span class="adj-tag">✏️ adjusted</span>' : ''}`;
       }
-      const p = period();
-      $('cycleInfo').innerHTML = `<b>${shortDate(p.from)} – ${shortDate(p.to)}</b> · statement ${shortDate(p.to)} · ` +
-        `bill due <b>${shortDate(p.due)}</b> ${dueText(p.due)}${p.adjusted ? ' <span class="adj-tag">✏️ adjusted</span>' : ''}` +
-        (['entries', 'day', 'week'].includes(level()) ? (() => {
-          const c = countedItems(), owe = c.reduce((a, e) => a + (+e.sent || 0) - (+e.received || 0), 0);
-          return ` · to pay <b class="sent">${money(Math.max(0, owe))}</b>`;
-        })() : '');
+      $('cycleInfo').innerHTML = info;
     }
 
     $('cycleToggle').addEventListener('change', ev => { cycleView = ev.target.checked; applyFilter(); });
-    $('cycleSetup').addEventListener('click', () => openCardsDialog(cycleCard()));
+    $('cycleSetup').addEventListener('click', () => openCardsDialog(soleFilter()));
 
     // ✏️ exact dates for this one statement (banks sometimes shift the dates)
     $('cycleAdjust').addEventListener('click', () => {
@@ -2591,16 +2824,16 @@
     $('cardsDlg').addEventListener('click', ev => { if (ev.target === $('cardsDlg')) closeCardsDialog(); });
     document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('cardsDlg').hidden) closeCardsDialog(); });
 
-    // 💳 picking a card (one with a billing cycle) switches to its billing cycle by itself, on the bill running today;
-    // the "Billing cycle" switch can still turn it off until another card is picked
+    // 💳 picking card(s) with a billing cycle in 🔍 Filter switches to their billing cycles by itself (one card: on the bill
+    // running today); the switch can still turn it off until other cards are picked. Without a filter it starts off (calendar month).
     let autoCycleFor = null;
     function autoCycle() {
-      const c = cycleCard(), key = c && isCard(c) ? c : null;
+      const fc = [...viaFilter].filter(isCard).sort(), key = fc.length ? fc.join('|') : null;
       if (key === autoCycleFor) return;
       autoCycleFor = key;
       if (!key) return;
       cycleView = true;
-      const t = today(), st = cycleOf(key).start;
+      const t = today(), st = fc.length === 1 ? cycleOf(fc[0]).start : 1;
       if (curMonth === t.slice(0, 7) && st > 1 && +t.slice(8) >= st) curMonth = shiftMonth(t.slice(0, 7), 1);   // today is already on next month's bill
     }
 
@@ -2620,12 +2853,13 @@
       applyFilter();
     });
     $('filterAll').addEventListener('click', () => { filterChoices().forEach(c => viaFilter.add(c.v)); renderFilterList(); applyFilter(); });
-    $('filterNone').addEventListener('click', () => { viaFilter.clear(); renderFilterList(); applyFilter(); });
+    $('filterNone').addEventListener('click', () => { viaFilter.clear(); flowFilter = ''; renderFilterList(); applyFilter(); });
+    $('filterFlow').addEventListener('change', ev => { if (ev.target.name === 'flow') { flowFilter = ev.target.value; applyFilter(); renderFilterList(); } });
     const openFilter = () => { renderFilterList(); $('filterDlg').hidden = false; };
     const closeFilter = () => { $('filterDlg').hidden = true; };
     $('filterBtn').addEventListener('click', openFilter);
     $('filterEdit').addEventListener('click', openFilter);
-    $('filterClear').addEventListener('click', () => { viaFilter.clear(); applyFilter(); });
+    $('filterClear').addEventListener('click', () => { viaFilter.clear(); flowFilter = ''; applyFilter(); });
     $('filterClose').addEventListener('click', closeFilter);
     $('filterDone').addEventListener('click', closeFilter);
     $('filterDlg').addEventListener('click', ev => { if (ev.target === $('filterDlg')) closeFilter(); });
@@ -2639,6 +2873,51 @@
       expenses.forEach(e => { if (e.purpose || +e.sent || +e.received) (groups[dupKey(e)] ||= []).push(e.id); });
       return new Set(Object.values(groups).filter(g => g.length > 1).flat());
     }
+    // groups of look-alike entries among `list` (each group oldest first)
+    function dupGroups(list) {
+      const groups = {};
+      list.forEach(e => { if (e.purpose || +e.sent || +e.received) (groups[dupKey(e)] ||= []).push(e); });
+      return Object.values(groups).filter(g => g.length > 1).map(g => g.sort((a, b) => a.created - b.created));
+    }
+
+    /* ⚠ duplicates bar: "3 possible duplicates · 👁 Review · 🗑 Delete extra copies" (one of each kept);
+       while reviewing only the duplicates are listed – tick some and "🗑 Delete ticked" */
+    function updateDupBar() {
+      const groups = level() === 'entries' ? dupGroups(baseItems()) : [];
+      const extra = groups.reduce((a, g) => a + g.length - 1, 0);
+      if (!extra && dupOnly) dupOnly = false;
+      $('dupBar').hidden = !extra && !dupOnly;
+      if ($('dupBar').hidden) return;
+      const edit = canEdit(curBook), ticked = visibleItems().filter(e => selected.has(e.id)).length;
+      $('dupText').innerHTML = dupOnly
+        ? `⚠ Reviewing <b>${extra + groups.length}</b> look-alike entries (same day, amount &amp; purpose)`
+        : `⚠ <b>${extra}</b> possible duplicate${extra === 1 ? '' : 's'} – same day, amount &amp; purpose`;
+      $('dupReview').textContent = dupOnly ? '✕ Show all' : '👁 Review';
+      $('dupDelExtra').hidden = !edit;
+      $('dupDelExtra').textContent = `🗑 Delete ${extra} extra cop${extra === 1 ? 'y' : 'ies'}`;
+      $('dupDelSel').hidden = !edit || !dupOnly;
+      $('dupDelSel').disabled = !ticked;
+      $('dupDelSel').textContent = `🗑 Delete ticked (${ticked})`;
+    }
+    $('dupReview').addEventListener('click', () => { dupOnly = !dupOnly; selected.clear(); renderMonthly(); });
+    $('dupDelExtra').addEventListener('click', () => {
+      const targets = dupGroups(baseItems()).flatMap(g => g.slice(1));
+      if (!targets.length) return;
+      askConfirm({
+        title: `🗑 Delete ${targets.length} extra cop${targets.length === 1 ? 'y' : 'ies'}?`,
+        html: `<ul class="confirm-list">${targets.slice(0, 6).map(entryLine).join('')}${targets.length > 6 ? `<li>… and ${targets.length - 6} more</li>` : ''}</ul>
+          <p class="hint">The first one of each stays. You can undo right after.</p>`,
+        ok: `Delete ${targets.length}`,
+        onOk: () => { deleteEntries(targets); }
+      });
+    });
+    $('dupDelSel').addEventListener('click', () => {
+      const targets = visibleItems().filter(e => selected.has(e.id));
+      if (!targets.length) return;
+      askConfirm({ title: `🗑 Delete ${targets.length} ticked entr${targets.length === 1 ? 'y' : 'ies'}?`,
+        html: `<ul class="confirm-list">${targets.slice(0, 6).map(entryLine).join('')}</ul><p class="hint">You can undo right after.</p>`,
+        ok: `Delete ${targets.length}`, onOk: () => deleteEntries(targets) });
+    });
 
     // who added an entry – shown as "By" in shared books
     const byMe = () => user ? { by: user.name, byEmail: myEmail() } : {};
@@ -2664,18 +2943,18 @@
         </div></td>
         <td class="c-date-cell"><div class="dt-cell">
           <span class="dt-view"><span class="dv-date">${dayName(e.date)}</span>${e.time ? `<span class="dv-sep"> · </span><span class="dv-time">${fmtTime(e.time)}</span>` : ''}<span class="dv-compact">${compactDT(e)}</span></span>
-          <input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
+          ${isEventBook() ? `<input type="date" class="date-in" data-f="edate" value="${esc(e.date)}" title="Date">` : ''}<input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
         </div></td>
         <td class="c-sent"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="sent" value="${+e.sent || ''}"></td>
         <td class="c-recv"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="received" value="${+e.received || ''}"></td>
         ${amountCell(e)}
-        <td class="c-purpose"><textarea data-f="purpose" rows="1" placeholder="Purpose" title="${esc(e.purpose)}">${esc(e.purpose)}</textarea><span class="dup-tag" hidden>⚠ Duplicate</span></td>
+        <td class="c-purpose"><textarea data-f="purpose" rows="1" placeholder="Purpose" title="${esc(e.purpose)}">${esc(e.purpose)}</textarea>${kindChip(e)}<span class="dup-tag" hidden>⚠ Duplicate</span></td>
         <td class="c-sv"><select data-f="sentVia" data-prev="${esc(e.sentVia)}">${modeOptions(e.sentVia)}</select></td>
         <td class="c-rv"><select data-f="receivedVia" data-prev="${esc(e.receivedVia)}">${modeOptions(e.receivedVia)}</select></td>
-        <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select>${isShared(bookOf(e)) ? `<small class="by-chip via-by" title="Added by ${esc(e.by || e.byEmail || 'unknown')}">${esc(byName(e))}</small>` : ''}</td>
-        <td class="c-by" title="Added by ${esc(e.by || e.byEmail || 'unknown')}"><span class="by-chip">${esc(byName(e))}</span></td>
+        <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select>${showByCol(bookOf(e)) ? `<small class="by-chip via-by" title="${isGroupType(bookOf(e)) ? 'Paid by' : 'Added by'} ${esc(payerOf(e))}">${esc(payerOf(e))}</small>` : ''}</td>
+        <td class="c-by" title="${isGroupType(bookOf(e)) ? 'Paid by' : 'Added by'} ${esc(payerOf(e))}">${isGroupType(bookOf(e)) ? `<input type="text" data-f="payer" list="payerNames" maxlength="30" placeholder="Who paid" value="${esc(payerOf(e))}">` : `<span class="by-chip">${esc(byName(e))}</span>`}</td>
         <td class="c-note"><input type="text" data-f="note" placeholder="Note" value="${esc(e.note)}" title="${esc(e.note)}"></td>
-        <td class="c-del">${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
+        <td class="c-del">${isEventBook() && bookOf(e) === curBook ? `<button type="button" class="mv-btn" data-mv="-1" title="Move up">▲</button><button type="button" class="mv-btn" data-mv="1" title="Move down">▼</button>` : ''}${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
 
     /* ---------- Monthly notes (salary, rent, dues…) ---------- */
     const NOTES_KEY = 'monthNotes_v1';
@@ -2686,17 +2965,18 @@
     // grows with the text up to ~40% of the screen, then scrolls
     const growNote = () => { const t = $('monthNote'); t.style.height = 'auto'; t.style.height = Math.min(Math.max(t.scrollHeight + 2, 72), Math.round(innerHeight * 0.4)) + 'px'; };
     function renderNotePreview() {
-      const text = (monthNotes[noteKey(curMonth)] || '').trim();
+      const text = (monthNotes[noteKey(noteMonth())] || '').trim();
       const lines = text.split('\n').filter(l => l.trim());
       const p = $('notePreview');
       p.classList.toggle('is-empty', !text);
       p.innerHTML = text
         ? esc(lines[0]) + (lines.length > 1 ? `<span class="more">+${lines.length - 1} more line${lines.length > 2 ? 's' : ''}</span>` : '')
+        : isEventBook() ? (canEdit(curBook) ? 'Click to add notes for this event – budget, guests, to-dos…' : 'No notes for this event')
         : canEdit(curBook) ? `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…` : `No notes for ${esc(monthLabel(curMonth))}`;
     }
     $('notePreview').addEventListener('click', () => {
       const ro = !canEdit(curBook);                         // view-only shared expense: read the note, no editing
-      if (ro && !(monthNotes[noteKey(curMonth)] || '').trim()) return;
+      if (ro && !(monthNotes[noteKey(noteMonth())] || '').trim()) return;
       $('monthNote').readOnly = ro;
       $('notePreview').hidden = true;
       $('monthNote').hidden = false;
@@ -2713,7 +2993,7 @@
     $('monthNote').addEventListener('input', ev => {
       growNote();
       const v = ev.target.value;
-      if (v.trim()) monthNotes[noteKey(curMonth)] = v; else delete monthNotes[noteKey(curMonth)];
+      if (v.trim()) monthNotes[noteKey(noteMonth())] = v; else delete monthNotes[noteKey(noteMonth())];
       saveNotes();
       const st = $('noteSaved');
       st.textContent = '✓ Saved';
@@ -2741,8 +3021,12 @@
     const viaFilter = new Set();
     // ⭐ starred only (view mode): totals follow, like the payment filter
     let starOnly = false;
-    const filtering = () => viaFilter.size > 0 || starOnly;
-    const passesFilter = e => (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!starOnly || !!e.starred);
+    let dupOnly = false;
+    // 🔍 money sent only / received only ('' = both)
+    let flowFilter = '';
+    const filtering = () => viaFilter.size > 0 || !!flowFilter || starOnly || dupOnly;
+    const passesFilter = e => (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!starOnly || !!e.starred) &&
+      (!flowFilter || (flowFilter === 'received' ? isReceived(e) : !isReceived(e)));
     /* 📊 display: what the table shows (view mode – editing always shows every entry and every date)
        level: 'entries' | 'day' (day totals only) | 'week' (week totals only) | 'year' (12 month totals)
        viewOpts (remembered on this device): date rows with day totals (on), week total rows (off) */
@@ -2750,7 +3034,7 @@
     let viewOpts = (() => { const d = { dayRows: true, weekRows: false }; try { return { ...d, ...JSON.parse(localStorage.getItem(VIEW_KEY)) }; } catch { return d; } })();
     let viewLevel = 'entries';
     const editing = () => editMode && canEdit(curBook);
-    const level = () => editing() ? 'entries' : viewLevel;
+    const level = () => editing() || isEventBook() ? 'entries' : viewLevel;      // 🎉 an event is always its full list
     const saveViewOpts = () => { try { localStorage.setItem(VIEW_KEY, JSON.stringify(viewOpts)); } catch {} };
     // the 12 months of the year being viewed ("YYYY-01" … "YYYY-12")
     const yearMonths = () => Array.from({ length: 12 }, (_, i) => `${curMonth.slice(0, 4)}-${String(i + 1).padStart(2, '0')}`);
@@ -2798,16 +3082,28 @@
        settles the PREVIOUS bill – it is listed but not counted, so the total is what this bill asks you to pay.
        Refunds / cashback still reduce the bill. */
     const BILL_PAY_RE = /payment\s*rec|bbps|thank\s*you|auto\s*-?debit|bill\s*pa(id|yment)|card\s*payment|neft\s*payment|upi\s*payment|imps\s*payment/i;
-    const isBillPayment = e => +e.received > 0 && !(+e.sent > 0) && BILL_PAY_RE.test(e.purpose || '');
+    // a credit-card entry's money received is either 💸 paying the bill or ↩ a refund – set by the chip, else guessed from its wording
+    const isBillPayment = e => +e.received > 0 && !(+e.sent > 0) && (e.kind ? e.kind === 'bill' : BILL_PAY_RE.test(e.purpose || ''));
+    const kindChip = e => !isReceived(e) || !(bookType(bookOf(e)) === 'card' || cycleOn()) ? '' : isBillPayment(e)
+      ? `<button type="button" class="kind-btn bill" title="Paying the card – settles the previous bill, not part of this one. Tap (✏️ Edit) to mark it a refund">💸 Bill paid${cycleOn() ? ' · not counted' : ''}</button>`
+      : `<button type="button" class="kind-btn refund" title="Money back from a shop – lowers this bill. Tap (✏️ Edit) to mark it a bill payment">↩ Refund${cycleOn() ? ' · lowers the bill' : ''}</button>`;
     const countable = e => !(cycleOn() && isBillPayment(e));
     const countedItems = () => visibleItems().filter(countable);
     // year / month lines: "Net" – or, for a card's bills, what each bill asks you to pay
     const netCell = (s, r) => cycleOn() ? `To pay: <span class="sent">${money(Math.max(0, s - r))}</span>` : `Net: <span class="${r - s < 0 ? 'sent' : 'received'}">${money(r - s)}</span>`;
 
     // what the table shows (and totals count): the open month (or bill), the whole year, or every year
-    function visibleItems() {
+    function baseItems() {
       const l = level();
+      if (isEventBook()) return bookItems().filter(passesFilter);          // 🎉 an event: every entry, no months
       return (l === 'years' ? bookItems() : l === 'year' ? yearItems() : periodItems()).filter(passesFilter);
+    }
+    // ⚠ reviewing duplicates: only the entries that have a twin (same day, amount, purpose) on screen
+    function visibleItems() {
+      const list = baseItems();
+      if (!dupOnly) return list;
+      const ids = new Set(dupGroups(list).flat().map(e => e.id));
+      return list.filter(e => ids.has(e.id));
     }
 
     /* ---------- 💳 credit card billing cycle ----------
@@ -2820,13 +3116,30 @@
     let cycleView = false;
     const isoDate = dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
     const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
-    // the single payment option being filtered (billing cycles are per card)
-    function cycleCard() { const v = [...viaFilter]; return v.length === 1 && v[0] ? v[0] : null; }
+    // the one payment option being filtered (to offer "set up card" for it)
+    function soleFilter() { const v = [...viaFilter]; return v.length === 1 && v[0] ? v[0] : null; }
     // cards = payment options with a billing cycle set up in ⚙ Card management
     const isCard = name => !!cardCycles[name];
     const cycleOf = card => ({ start: 1, due: 1, overrides: {}, ...(cardCycles[card] || {}) });
-    const cycleOn = () => cycleView && !!cycleCard() && isCard(cycleCard());
+    /* the cards whose billing cycles apply: the cards in the 🔍 filter – or, in a credit-card expense
+       with no filter, every card it uses. Several cards = each entry follows its own card's cycle,
+       e.g. 16th–15th and 12th–11th → "Sep" runs 12 Aug – 15 Sep, a 14 Aug spend on the 16th card is not in it */
+    function cycleCards() {
+      if (viaFilter.size) return [...viaFilter].filter(isCard).sort();
+      if (bookType(curBook) !== 'card') return [];
+      return [...new Set(expenses.filter(e => bookOf(e) === curBook).map(viaOf))].filter(isCard).sort();
+    }
+    // exactly one card (✏️ adjusting a statement, its due date)
+    function cycleCard() { const c = cycleCards(); return c.length === 1 ? c[0] : null; }
+    const cycleOn = () => cycleView && cycleCards().length > 0;
     const dateOf = iso => new Date(iso + 'T00:00:00');
+    // "16th – 15th" (a cycle starting on the 1st runs to the month's end)
+    const cycleDays = card => { const s = cycleOf(card).start; return s > 1 ? `${ordinal(s)} – ${ordinal(s - 1)}` : '1st – month end'; };
+    // one card's statement for month `key`: its usual cycle, or the dates set by hand
+    function cardRange(card, key) {
+      const ov = cycleOf(card).overrides?.[key];
+      return ov ? { from: dateOf(ov.from), to: dateOf(ov.to), due: dateOf(ov.due), adjusted: true } : { ...usualCycle(card, key), adjusted: false };
+    }
 
     // usual cycle of a card for statement month `key` (YYYY-MM): { from, to, due } as Dates
     function usualCycle(card, key) {
@@ -2842,19 +3155,30 @@
     // (a cycle can be adjusted by hand: cardCycles[card].overrides['YYYY-MM'] = { from, to, due })
     function period(key = curMonth) {
       const [y, m] = key.split('-').map(Number);
-      let from = new Date(y, m - 1, 1), to = new Date(y, m, 0), due = null, adjusted = false;
-      if (cycleOn()) {
-        const card = cycleCard(), ov = cycleOf(card).overrides?.[key];
-        if (ov) { from = dateOf(ov.from); to = dateOf(ov.to); due = dateOf(ov.due); adjusted = true; }
-        else ({ from, to, due } = usualCycle(card, key));
+      const mFrom = new Date(y, m - 1, 1), mTo = new Date(y, m, 0);
+      let from = mFrom, to = mTo, due = null, adjusted = false, ranges = null;
+      const cycle = cycleOn();
+      if (cycle) {
+        const cards = cycleCards(), rs = cards.map(c => cardRange(c, key));
+        ranges = Object.fromEntries(cards.map((c, i) => [c, { from: isoDate(rs[i].from), to: isoDate(rs[i].to) }]));
+        from = new Date(Math.min(...rs.map(r => r.from))); to = new Date(Math.max(...rs.map(r => r.to)));
+        if (rs.length === 1) ({ due, adjusted } = rs[0]);
+        // entries paid some other way (no card cycle) stay on the calendar month – make room for them
+        const others = expenses.some(e => bookOf(e) === curBook && e.date.startsWith(key) && !ranges[viaOf(e)] && passesFilter(e));
+        if (others) { if (mFrom < from) from = mFrom; if (mTo > to) to = mTo; }
       }
       const days = [];
       for (const d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) days.push(isoDate(d));
-      return { from: isoDate(from), to: isoDate(to), days, due: due && isoDate(due), cycle: cycleOn(), adjusted };
+      return { key, from: isoDate(from), to: isoDate(to), days, due: due && isoDate(due), cycle, adjusted, ranges };
+    }
+    // is an entry (its date + payment method) part of period p: its card's own cycle, else the calendar month
+    function inPeriod(date, via, p) {
+      if (p.cycle) { const r = p.ranges[via]; return r ? date >= r.from && date <= r.to : date.startsWith(p.key); }
+      return date >= p.from && date <= p.to;
     }
     function periodItems(key = curMonth) {
-      const { from, to } = period(key);
-      return expenses.filter(e => bookOf(e) === curBook && e.date >= from && e.date <= to)
+      const p = period(key);
+      return expenses.filter(e => bookOf(e) === curBook && inPeriod(e.date, viaOf(e), p))
         .sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
     }
     // month notes per book; Monthly Expenses keeps the original "YYYY-MM" keys
@@ -2877,10 +3201,11 @@
     }
 
     function renderMonthly() {
+      if (dupOnly && !dupGroups(baseItems()).length) dupOnly = false;      // nothing left to review
       // month dropdown: every month with data or notes, plus this month and the one being viewed
       const counts = {};
       expenses.filter(e => bookOf(e) === curBook).forEach(e => counts[e.date.slice(0, 7)] = (counts[e.date.slice(0, 7)] || 0) + 1);
-      const noteMonths = Object.keys(monthNotes).map(k => curBook === 'monthly' ? (/^\d{4}-\d{2}$/.test(k) ? k : null) : (k.startsWith(curBook + '|') ? k.slice(curBook.length + 1) : null)).filter(Boolean);
+      const noteMonths = Object.keys(monthNotes).map(k => curBook === 'monthly' ? (/^\d{4}-\d{2}$/.test(k) ? k : null) : (k.startsWith(curBook + '|') ? k.slice(curBook.length + 1) : null)).filter(k => k && /^\d{4}-\d{2}$/.test(k));   // ("YYYY-MM#bal" = that month's opening balance)
       const keys = new Set([...Object.keys(counts), ...noteMonths, today().slice(0, 7), curMonth]);
       // narrow screens get short labels so the toolbar stays on one line: "Sep 2026 (18)", phones "Sep 26 (18)"
       const w = window.innerWidth;
@@ -2904,15 +3229,20 @@
       ).join('');
       $('thisMonth').hidden = yearsMode || (yearMode ? curMonth.slice(0, 4) === today().slice(0, 4) : curMonth === today().slice(0, 7));
       $('monthly').classList.toggle('yearmode', yearMode || yearsMode);
+      $('monthly').classList.toggle('eventmode', isEventBook());
+      $('mTable').classList.toggle('is-event', isEventBook());
+      $('mTable').classList.toggle('seqmode', isEventBook() && sortCol === 'seq');
+      $('evLbl').hidden = !isEventBook();
+      $('seqSort').textContent = sortCol === 'seq' ? (sortDir === 1 ? '#▲' : '#▼') : '#';
       renderCrumbs();
       $('prevMonth').disabled = $('nextMonth').disabled = $('monthSelect').disabled = yearsMode;   // every year is on screen
       $('viewBtn').classList.toggle('on', lvl !== 'entries' || !viewOpts.dayRows || viewOpts.weekRows);
       $('prevMonth').title = yearMode ? 'Previous year' : 'Previous month';
       $('nextMonth').title = yearMode ? 'Next year' : 'Next month';
 
-      $('monthNote').value = monthNotes[noteKey(curMonth)] || '';
+      $('monthNote').value = monthNotes[noteKey(noteMonth())] || '';
       renderNotePreview();
-      $('monthNote').placeholder = `Plan for ${monthLabel(curMonth)} – e.g. Salary ₹50,000 on 1st · Rent ₹15,000 due 5th · Owe Rahul ₹2,000 · EMI on 10th`;
+      $('monthNote').placeholder = isEventBook() ? 'Notes for this event – e.g. Budget ₹2,00,000 · 150 guests · book the hall by 10th' : `Plan for ${monthLabel(curMonth)} – e.g. Salary ₹50,000 on 1st · Rent ₹15,000 due 5th · Owe Rahul ₹2,000 · EMI on 10th`;
 
       document.querySelectorAll('#mHead th[data-sort]').forEach(th => {
         th.classList.toggle('asc', th.dataset.sort === sortCol && sortDir === 1);
@@ -2925,15 +3255,17 @@
         $(id).textContent = on ? (sortDir === 1 ? '▲' : '▼') : '⇅';
       });
 
-      const cols = (showTime ? 9 : 8) + (isShared(curBook) ? 1 : 0);   // tools, date, [time], sent, recv, purpose, via, [by], note, ✕
+      const cols = (showTime ? 9 : 8) + (showByCol(curBook) ? 1 : 0);   // tools, date, [time], sent, recv, purpose, via, [by], note, ✕
       $('mTable').classList.toggle('flat', sortCol !== 'date');     // flat list shows the full date box
       // which summary rows (editing: every date, for ＋ Add)
       const showEntries = lvl === 'entries';
       const showDays = lvl === 'day' || (showEntries && (viewOpts.dayRows || editing()));
-      const showWeeks = lvl === 'week' || (lvl !== 'year' && viewOpts.weekRows);
+      const showWeeks = lvl === 'week' || (lvl !== 'year' && viewOpts.weekRows && !filtering());   // a filter on: no week subtotals
       $('mTable').classList.toggle('no-days', !showDays);
-      const showBy = isShared(curBook);
+      const showBy = showByCol(curBook);
       $('mTable').classList.toggle('with-by', showBy);
+      $('mTable').classList.toggle('with-payer', isGroupType(curBook));
+      document.querySelector('#mHead th.c-by').textContent = isGroupType(curBook) ? 'Paid by' : 'By';
       const span = showBy ? 5 : 4;                                  // purpose … note area of date / week rows
       const items = visibleItems().sort(compareRows);
       const row = (e, cls = '') => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
@@ -2944,7 +3276,8 @@
         const ys = yearsShown();
         if (sortDir === -1) ys.reverse();
         html = ys.map(y => {
-          const p = yearSpan(y), list = items.filter(e => e.date >= p.from && e.date <= p.to && countable(e));
+          const ps = Array.from({ length: 12 }, (_, i) => period(`${y}-${String(i + 1).padStart(2, '0')}`));
+          const list = items.filter(e => countable(e) && ps.some(p => inPeriod(e.date, viaOf(e), p)));
           const s = list.reduce((a, e) => a + (+e.sent || 0), 0), r = list.reduce((a, e) => a + (+e.received || 0), 0);
           const months = new Set(list.map(e => e.date.slice(0, 7))).size;
           return `<tr class="week-total month-row year-row${list.length ? '' : ' no-entries'}" data-year="${y}" title="Open ${y} – month by month">
@@ -2959,10 +3292,10 @@
         const months = yearMonths();
         if (sortDir === -1) months.reverse();
         html = months.map(k => {
-          const p = period(k), list = items.filter(e => e.date >= p.from && e.date <= p.to && countable(e));
+          const p = period(k), list = items.filter(e => inPeriod(e.date, viaOf(e), p) && countable(e));
           const s = list.reduce((a, e) => a + (+e.sent || 0), 0), r = list.reduce((a, e) => a + (+e.received || 0), 0);
           const mName = new Date(+k.slice(0, 4), +k.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-          const range = p.cycle ? `<span class="mr-range">${shortDate(p.from)} – ${shortDate(p.to)} · due ${shortDate(p.due)}</span>` : '';
+          const range = p.cycle ? `<span class="mr-range">${shortDate(p.from)} – ${shortDate(p.to)}${p.due ? ` · due ${shortDate(p.due)}` : ''}</span>` : '';
           return `<tr class="week-total month-row${list.length ? '' : ' no-entries'}" data-month="${k}" title="Open ${monthLabel(k)}">
             <td class="c-tools"><div class="tools"><span class="caret">›</span></div></td>
             <td class="c-date-cell wk-label-cell"><span class="wk-label">${p.cycle ? '💳 ' : ''}${mName}</span></td><td class="c-time-cell"></td>
@@ -2970,7 +3303,11 @@
             <td colspan="${span}" class="wk-net">${netCell(s, r)}
               <span class="day-count">· ${list.length} entr${list.length === 1 ? 'y' : 'ies'}</span>${range}</td></tr>`;
         }).join('');
-      } else if (sortCol !== 'date') {
+      } else if (isEventBook() && sortCol === 'seq') {
+        html = eventRows(items, cols);
+      } else if (sortCol === 'via') {
+        html = viaGroupRows(items, cols, row);
+      } else if (sortCol !== 'date' || isEventBook()) {
         // sorted by another column: plain list
         html = items.map(e => row(e)).join('');
       } else {
@@ -3036,8 +3373,11 @@
         });
       }
 
-      $('tbody').innerHTML = html ||
-        `<tr><td colspan="${cols}" class="empty">${starOnly ? `No starred entries in ${monthLabel(curMonth)} – tap ☆ on an entry to star it.` : `No entries for ${monthLabel(curMonth)} yet. Tap <b>✏️ Edit</b>, then <b>＋ Add</b> on a date, or use <b>🧾 Bulk add</b>.`}</td></tr>`;
+      $('tbody').innerHTML = balanceRow(lvl, cols) + (html ||
+        `<tr><td colspan="${cols}" class="empty">${starOnly ? `No starred entries in ${monthLabel(curMonth)} – tap ☆ on an entry to star it.` : `No entries for ${monthLabel(curMonth)} yet. Tap <b>✏️ Edit</b>, then <b>＋ Add</b> on a date, or use <b>🧾 Bulk add</b>.`}</td></tr>`);
+      // 👥 group expense: names already used, offered when typing "who paid"
+      if (isGroupType(curBook)) $('payerNames').innerHTML = [...new Set([user?.name, ...expenses.filter(e => bookOf(e) === curBook).map(payerOf)].filter(n => n && n !== '—'))]
+        .map(n => `<option value="${esc(n)}">`).join('');
       $('tbody').querySelectorAll('tr[data-id]').forEach(markRow);
       $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
       markDuplicates();
@@ -3046,7 +3386,6 @@
         const e = expenses.find(x => x.id === tr.dataset.id);
         if (!e || !isBillPayment(e)) return;
         tr.classList.add('bill-pay');
-        tr.querySelector('.c-purpose').insertAdjacentHTML('beforeend', '<span class="pay-tag" title="Paying the card settles the previous bill – it is not counted in this bill">💸 bill payment · not counted</span>');
       });
       $('totSums').colSpan = $('selSums').colSpan = showBy ? 7 : 6;
       updateMonthTotals();
@@ -3062,17 +3401,138 @@
       $('starOnlyBtn').hidden = editMode && !ro;
       $('starOnlyBtn').classList.toggle('on', starOnly);
       $('starOnlyBtn').title = starOnly ? 'Show all entries' : 'Show starred entries only';
-      if (editMode && !ro) document.documentElement.classList.add('tbl-wide');   // editing = full table
-      $('wideBtn').classList.toggle('lock', editMode && !ro);
       $('editBtn').classList.toggle('on', editMode && !ro);
       $('editBtn').innerHTML = editMode ? '✔<span class="lbl"> Done</span>' : '✏️<span class="lbl"> Edit</span>';
       $('editBtn').title = editMode ? 'Done editing – back to view only' : 'Edit the table';
       if (locked) {
-        $('tbody').querySelectorAll('select, .sign-btn').forEach(el => el.disabled = true);
+        $('tbody').querySelectorAll('select, .sign-btn, .kind-btn').forEach(el => el.disabled = true);
         $('tbody').querySelectorAll('input:not(.row-sel):not(.grp-sel), textarea').forEach(el => { el.readOnly = true; if (el.type === 'date' || el.type === 'time') el.disabled = true; });
         if (ro) $('tbody').querySelectorAll('.star-btn').forEach(el => el.disabled = true);      // ⭐ still works in view mode
       }
     }
+
+    // 💸 / ↩ chip (✏️ editing): switch money received between "bill paid" and "refund"
+    $('tbody').addEventListener('click', ev => {
+      const b = ev.target.closest('.kind-btn');
+      if (!b || b.disabled) return;
+      const e = expenses.find(x => x.id === b.closest('tr').dataset.id);
+      if (!e) return;
+      e.kind = isBillPayment(e) ? 'refund' : 'bill';
+      save();
+      renderMonthly();
+    });
+
+    /* 🎉 Event / party expenses: one numbered list (no months) – 1, 2, 3… in your own order (▲▼ while editing) –
+       that you can put into named groups ("Car & travel", "Food"): a coloured line with the group's total above its entries */
+    const isEventBook = () => bookType(curBook) === 'event';
+    const noteMonth = () => isEventBook() ? '0000-00' : curMonth;        // an event has one note, not one per month
+    const seqOf = e => e.seq ?? e.created;
+    const grpColor = name => [...name].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7) % 6;
+    function eventRows(items, cols) {
+      const ordered = items.slice().sort((a, b) => (seqOf(a) - seqOf(b)) * sortDir || a.created - b.created);
+      const edit = editing(), done = new Set();
+      let n = 0, html = '';
+      const row = (e, cls) => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e)}</tr>`
+        .replace('<div class="tools">', `<div class="tools"><span class="seq-no">${++n}</span>`);
+      ordered.forEach(e => {
+        if (!e.grp) { html += row(e, ''); return; }
+        if (done.has(e.grp)) return;
+        done.add(e.grp);
+        const members = ordered.filter(x => x.grp === e.grp), g = grpColor(e.grp), open = !collapsed.has('g:' + e.grp);
+        const s = members.reduce((a, x) => a + (+x.sent || 0), 0), r = members.reduce((a, x) => a + (+x.received || 0), 0);
+        html += `<tr class="grp-head g${g}" data-grp="${esc(e.grp)}" title="Click to ${open ? 'fold' : 'unfold'} this group">
+          <td class="c-tools"><div class="tools"><input type="checkbox" class="grp-sel" data-grp="g:${esc(e.grp)}" title="Select this group"><span class="caret">${open ? '▾' : '▸'}</span></div></td>
+          <td colspan="${cols - 1}" class="grp-cell"><div class="sums grp-line"><b class="grp-name">🗂 ${esc(e.grp)}</b>
+            <span class="day-count">${members.length} entr${members.length === 1 ? 'y' : 'ies'}</span>
+            ${s ? `<span class="day-pill out">${money(s)}</span>` : ''}${r ? `<span class="day-pill in">${money(r)}</span>` : ''}
+            ${edit ? `<span class="grp-acts"><button type="button" class="grp-ren" title="Rename the group">✏️</button><button type="button" class="grp-off" title="Ungroup (the entries stay)">✕</button></span>` : ''}
+          </div></td></tr>`;
+        if (open) members.forEach(x => { html += row(x, `in-grp g${g}`); }); else n += members.length;
+      });
+      if (edit) html += `<tr class="add-row"><td colspan="${cols}"><button type="button" class="day-add" data-date="${today()}" title="Add an entry at the end">＋ Add entry</button></td></tr>`;
+      return html;
+    }
+    /* sorted by "Pay via": the entries grouped by payment method – a coloured line per method with its total
+       (like the week rows), tap it to fold the group */
+    function viaGroupRows(items, cols, row) {
+      let html = '', i = 0, k = 0;
+      while (i < items.length) {
+        const v = viaOf(items[i]), list = [];
+        while (i < items.length && viaOf(items[i]) === v) list.push(items[i++]);
+        const name = viaName(v), g = k++ % 6, key = 'p:' + v, open = !collapsed.has(key);   // colours in turn: neighbours always differ
+        const s = list.reduce((a, x) => a + (+x.sent || 0), 0), r = list.reduce((a, x) => a + (+x.received || 0), 0);
+        html += `<tr class="grp-head via-head g${g}" data-key="${esc(key)}" title="Click to ${open ? 'fold' : 'unfold'} ${esc(name)}">
+          <td class="c-tools"><div class="tools"><input type="checkbox" class="grp-sel" data-grp="${esc(key)}" title="Select all paid by ${esc(name)}"><span class="caret">${open ? '▾' : '▸'}</span></div></td>
+          <td colspan="${cols - 1}" class="grp-cell"><div class="sums grp-line"><b class="grp-name">${isCard(v) ? '💳' : '💰'} ${esc(name)}</b>
+            <span class="day-count">${list.length} entr${list.length === 1 ? 'y' : 'ies'}</span>
+            ${s ? `<span class="day-pill out">${money(s)}</span>` : ''}${r ? `<span class="day-pill in">${money(r)}</span>` : ''}
+            ${s && r ? `<span class="grp-net">Net: <span class="${r - s < 0 ? 'sent' : 'received'}">${money(r - s)}</span></span>` : ''}
+          </div></td></tr>`;
+        if (open) list.forEach(e => { html += row(e, `in-grp g${g}`); });
+      }
+      return html;
+    }
+
+    // 🗂 Group: put the ticked entries under one name
+    $('groupBtn').addEventListener('click', () => {
+      const picked = visibleItems().filter(e => selected.has(e.id));
+      if (!picked.length) return;
+      const used = [...new Set(bookItems().map(e => e.grp).filter(Boolean))];
+      const name = (prompt(`Group name for ${picked.length} entr${picked.length === 1 ? 'y' : 'ies'} – e.g. Car & travel, Food${used.length ? `\nGroups so far: ${used.join(', ')}` : ''}`, picked.find(e => e.grp)?.grp || '') || '').trim();
+      if (!name) return;
+      picked.forEach(e => { e.grp = name; });
+      selected.clear(); save(); renderMonthly();
+    });
+    $('tbody').addEventListener('click', ev => {
+      // ✏️ rename / ✕ ungroup on a group line
+      const gb = ev.target.closest('.grp-ren, .grp-off');
+      if (gb) {
+        const old = gb.closest('tr.grp-head').dataset.grp, members = bookItems().filter(e => e.grp === old);
+        let name = '';
+        if (gb.classList.contains('grp-ren')) { const v = prompt('Rename the group (empty = ungroup)', old); if (v === null) return; name = v.trim(); }
+        members.forEach(e => { if (name) e.grp = name; else delete e.grp; });
+        save(); renderMonthly();
+        return;
+      }
+      // ▲▼ move an entry in the numbered list (swaps places with the one above / below)
+      const mb = ev.target.closest('.mv-btn');
+      if (!mb) return;
+      const tr = mb.closest('tr[data-id]'), rows = [...$('tbody').querySelectorAll('tr[data-id]')], i = rows.indexOf(tr), nb = rows[i + +mb.dataset.mv];
+      if (!nb) return;
+      bookItems().sort((a, b) => seqOf(a) - seqOf(b) || a.created - b.created).forEach((e, k) => { e.seq = k; });   // give everyone a place number once
+      const a = expenses.find(e => e.id === tr.dataset.id), b = expenses.find(e => e.id === nb.dataset.id);
+      [a.seq, b.seq] = [b.seq, a.seq];
+      save(); renderMonthly();
+    });
+
+    /* 💰 opening balance (monthly / savings / account expenses): one line on top of the month; the total row then shows
+       what's left (opening + received − sent). Kept per month with the month notes, as "YYYY-MM#bal". */
+    const balKey = m => noteKey(m) + '#bal';
+    const openingBal = m => { const v = monthNotes[balKey(m)]; return v === undefined || v === '' || isNaN(+v) ? null : +v; };
+    function closingBal(m) {
+      const ob = openingBal(m);
+      if (ob === null) return null;
+      return expenses.filter(e => bookOf(e) === curBook && e.date.startsWith(m)).reduce((a, e) => a + (+e.received || 0) - (+e.sent || 0), ob);
+    }
+    const balanceOn = lvl => hasBalance(curBook) && ['entries', 'day', 'week'].includes(lvl) && !filtering() && sortCol === 'date' && !cycleOn();
+    function balanceRow(lvl, cols) {
+      if (!balanceOn(lvl)) return '';
+      const ob = openingBal(curMonth), edit = editing();
+      if (!edit && ob === null) return '';
+      const prev = ob === null ? closingBal(shiftMonth(curMonth, -1)) : null;
+      return `<tr class="bal-row"><td colspan="${cols}"><div class="bal-line">💰 <span class="bal-lbl">Opening balance</span> ` +
+        (edit ? `<input type="text" inputmode="decimal" id="balIn" placeholder="0.00" value="${ob ?? ''}" title="Money available at the start of ${esc(monthLabel(curMonth))}">` +
+                (prev !== null ? ` <button type="button" class="btn btn-light btn-sm" id="balPrev" title="Carry over last month's closing balance">↪ last month's ${money(prev)}</button>` : '')
+              : `<b>${money(ob)}</b>`) + `</div></td></tr>`;
+    }
+    function setOpeningBal(v) {
+      const n = parseFloat(String(v).replace(/[,₹\s]/g, ''));
+      if (isNaN(n)) delete monthNotes[balKey(curMonth)]; else monthNotes[balKey(curMonth)] = String(n);
+      saveNotes();
+    }
+    $('tbody').addEventListener('change', ev => { if (ev.target.id === 'balIn') { setOpeningBal(ev.target.value); updateMonthTotals(); } });
+    $('tbody').addEventListener('keydown', ev => { if (ev.target.id === 'balIn' && ev.key === 'Enter') ev.target.blur(); });
+    $('tbody').addEventListener('click', ev => { if (ev.target.id === 'balPrev') { setOpeningBal(closingBal(shiftMonth(curMonth, -1))); renderMonthly(); } });
 
     // Monday of the week, as YYYY-MM-DD
     function weekStart(date) {
@@ -3131,13 +3591,14 @@
     const byDate = (a, b) => cmp(a.date, b.date) || cmp(a.time || '~', b.time || '~') || a.created - b.created;
     const viaOf = e => e.sentVia || e.receivedVia || '';
     function compareRows(a, b) {
+      if (sortCol === 'seq') return (seqOf(a) - seqOf(b)) * sortDir;
       if (sortCol === 'via') {
         const x = viaOf(a).toLowerCase(), y = viaOf(b).toLowerCase();
         if (!x !== !y) return x ? -1 : 1;
         return x.localeCompare(y) * sortDir || byDate(a, b);
       }
       if (sortCol === 'date') return byDate(a, b) * sortDir;
-      if (sortCol === 'by') return byName(a).localeCompare(byName(b)) * sortDir || byDate(a, b);
+      if (sortCol === 'by') return payerOf(a).localeCompare(payerOf(b)) * sortDir || byDate(a, b);
       if (sortCol === 'amount') {
         // all amounts: sent entries first, then received; within each, ascending (or descending on 2nd tap)
         const ra = isReceived(a) ? 1 : 0, rb = isReceived(b) ? 1 : 0;
@@ -3178,7 +3639,7 @@
       const [ty, tm] = curMonth.split('-').map(Number);
       const yr = level() === 'year' || level() === 'years', ysh = level() === 'years' && yearsShown();
       const yLbl = ysh ? (ysh.length > 1 ? `${ysh[0]}–${String(ysh[ysh.length - 1]).slice(2)}` : `${ysh[0]}`) : ty;
-      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size ? '🔍 Filtered total' : starOnly ? '⭐ Starred total'
+      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (isEventBook() ? '🎉 Event total' : cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size || flowFilter ? '🔍 Filtered total' : dupOnly ? '⚠ Duplicates total' : starOnly ? '⭐ Starred total'
         : ysh ? 'All years' : yr ? 'Year total' : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`);
       $('mTotalLabel').title = `Total for ${ysh ? 'all years' : yr ? ty : monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
       $('mTotalLabel').parentElement.classList.toggle('filtered', filtering());
@@ -3189,6 +3650,10 @@
       $('mNetLbl').textContent = bill ? 'To pay:' : 'Net:';
       $('mNet').textContent = money(bill ? Math.max(0, -net) : net);
       $('mNet').className = bill || net < 0 ? 'sent' : 'received';
+      // 💰 balance left = opening balance + this month's net
+      const ob = balanceOn(level()) ? openingBal(curMonth) : null;
+      $('mBalWrap').hidden = ob === null;
+      if (ob !== null) { $('mBal').textContent = money(ob + net); $('mBal').className = ob + net < 0 ? 'sent' : 'received'; }
       $('mNet').title = bill ? (net > 0 ? `Credit of ${money(net)} – nothing to pay` : 'Spends minus refunds in this billing cycle (card payments not counted)') : '';
 
       $('tbody').querySelectorAll('tr.day-head').forEach(tr => {
@@ -3285,7 +3750,8 @@
     // 📍 in billing-cycle view jumps to the cycle that contains today (after the statement day that's next month's)
     $('thisMonth').addEventListener('click', () => {
       const t = today();
-      goMonth(cycleOn() && +t.slice(8) >= cycleOf(cycleCard()).start && cycleOf(cycleCard()).start > 1 ? shiftMonth(t.slice(0, 7), 1) : t.slice(0, 7));
+      const st = cycleOn() && cycleCard() ? cycleOf(cycleCard()).start : 1;
+      goMonth(st > 1 && +t.slice(8) >= st ? shiftMonth(t.slice(0, 7), 1) : t.slice(0, 7));
     });
     $('monthSelect').addEventListener('change', ev => goMonth(ev.target.value));
 
@@ -3305,6 +3771,8 @@
         if (s) { rec = s[1] === '+'; v = v.replace(/^\s*[+\-−]\s*/, ''); inp.value = v; }
         setSign(wrap, rec);
         applyAmount(e, rec, parseFloat(v.replace(/,/g, '')) || 0);
+      } else if (f === 'edate') {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(inp.value)) e.date = inp.value;      // 🎉 an event entry's date
       } else if (f === 'anyVia') {
         // one Via column: it belongs to the sent side, or the received side for received entries
         const rec = wrap.offsetParent ? wrap.classList.contains('plus') : isReceived(e);
@@ -3385,7 +3853,7 @@
     const collapsed = new Set();        // 'd:YYYY-MM-DD' (a day) or 'w:YYYY-MM-DD' (a week, keyed by its Monday)
 
     // ids of the entries in a day ('d:…') or week ('w:…') of the month being viewed
-    const groupIds = key => visibleItems()
+    const groupIds = key => key.startsWith('p:') ? visibleItems().filter(e => viaOf(e) === key.slice(2)).map(e => e.id) : key.startsWith('g:') ? visibleItems().filter(e => e.grp === key.slice(2)).map(e => e.id) : visibleItems()
       .filter(e => key.startsWith('d:') ? e.date === key.slice(2) : weekStart(e.date) === key.slice(2))
       .map(e => e.id);
 
@@ -3408,8 +3876,12 @@
         $('selSent').textContent = money(ss); $('selRecv').textContent = money(sr);
         $('selNet').textContent = money(sr - ss); $('selNet').className = sr - ss < 0 ? 'sent' : 'received';
       }
+      $('groupBtn').hidden = !(isEventBook() && editing());
+      $('groupBtn').disabled = !selected.size;
+      $('groupCount').textContent = `(${selected.size})`;
       $('selAll').checked = inMonth.size > 0 && selected.size === inMonth.size;
       $('selAll').indeterminate = selected.size > 0 && selected.size < inMonth.size;
+      updateDupBar();
 
       // day / week checkboxes: ticked when all of their entries are selected
       $('tbody').querySelectorAll('.grp-sel').forEach(cb => {
@@ -3439,13 +3911,13 @@
 
     // click a date row / week-total row to collapse or expand it
     $('tbody').addEventListener('click', ev => {
-      const head = ev.target.closest('tr.day-head, tr.week-total');
+      const head = ev.target.closest('tr.day-head, tr.week-total, tr.grp-head');
       if (!head || ev.target.closest('input, button, select')) return;
       if (head.classList.contains('year-row')) { crumbs = ['years']; viewLevel = 'year'; goMonth(head.dataset.year + curMonth.slice(4)); return; }   // all years: that year's months
       if (head.classList.contains('month-row')) { crumbs = ['years', 'year']; viewLevel = 'entries'; goMonth(head.dataset.month); return; }   // full year: open that month
       if (level() !== 'entries') return;                     // day / week totals only: nothing to fold
       if (head.classList.contains('no-entries')) return;
-      const key = head.classList.contains('day-head') ? 'd:' + head.dataset.date : 'w:' + head.dataset.week;
+      const key = head.dataset.key || (head.classList.contains('grp-head') ? 'g:' + head.dataset.grp : head.classList.contains('day-head') ? 'd:' + head.dataset.date : 'w:' + head.dataset.week);
       if (collapsed.has(key)) collapsed.delete(key); else collapsed.add(key);
       renderMonthly();
     });
@@ -3462,7 +3934,7 @@
       collapsed.delete('w:' + weekStart(date));
       // under a payment filter, start the entry with the (first) filtered method so it stays visible
       const via = [...viaFilter].find(v => v) || '';
-      const e = { id: newId(), book: curBook, created: Date.now(), ...byMe(),
+      const e = { id: newId(), book: curBook, created: Date.now(), ...byMe(), ...(isEventBook() ? { seq: Math.max(0, ...bookItems().map(seqOf)) + 1 } : {}),
                   date, sent: 0, received: 0, purpose: '', sentVia: via, receivedVia: '', note: '' };
       expenses.push(e);
       renderMonthly();
@@ -3590,13 +4062,11 @@
     document.addEventListener('click', ev => { if (!tip.hidden && !ev.target.closest('.cell-tip')) hideTip(); });
     $('mTable').parentElement.addEventListener('scroll', hideTip, { passive: true });
 
-    // ✏️ Edit / ✔ Done – on an upright phone, editing always uses the full table (↔ can't collapse it)
+    // ✏️ Edit / ✔ Done – on an upright phone you edit right in the compact list (two lines per entry); ↔ still opens the full table
     $('starOnlyBtn').addEventListener('click', () => { starOnly = !starOnly; selected.clear(); renderMonthly(); });
     $('editBtn').addEventListener('click', () => {
       editMode = !editMode;
       if (editMode) starOnly = false;                       // edit the whole month
-      $('wideBtn').classList.toggle('on', editMode);
-      document.documentElement.classList.toggle('tbl-wide', editMode || isRotated());      // turned page keeps the full grid
       if (!editMode) pruneBlank();
       renderMonthly();
     });
@@ -3885,44 +4355,54 @@
     }
     const safeName = s => s.replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim();
 
-    // what to export: the month on screen (as shown – filter / billing cycle included) or every month of this book
-    function exportData(scope) {
-      const all = scope === 'all' || level() === 'years';     // 📈 all years on screen = every month
-      const items = (all ? expenses.filter(e => bookOf(e) === curBook) : visibleItems()).slice().sort(byDate);
-      const yr = !all && level() === 'year';                // 📆 full year on screen: that year, month by month
-      const label = all ? 'All months' : yr ? `Year ${curMonth.slice(0, 4)}${cycleOn() ? ` – ${cycleCard()} bills` : ''}`
-        : cycleOn() ? `${cycleCard()} bill ${shortDate(period().from)} – ${shortDate(period().to)}` : monthLabel(curMonth);
-      const withBy = isShared(curBook);
+    // what to export: the month on screen (as shown – filter / billing cycle included) or every month of this book;
+    // opts.ticked – only the rows ticked (☐) in the table; opts.cols – the optional columns to include
+    const COLS = { date: 'Date', time: 'Time', sent: 'Sent', received: 'Received', purpose: 'Purpose', via: 'Pay via', note: 'Note', by: 'By' };
+    const OPT_COLS = ['time', 'purpose', 'via', 'note', 'by'];             // date + amounts always go out
+    const EXP_COLS_KEY = 'exportCols_v1';
+    let expCols = (() => { try { const v = JSON.parse(localStorage.getItem(EXP_COLS_KEY)); return new Set(Array.isArray(v) ? v : OPT_COLS); } catch { return new Set(OPT_COLS); } })();
+    function exportData(scope, opts = {}) {
+      const ticked = !!opts.ticked;
+      const all = !ticked && (scope === 'all' || level() === 'years');     // 📈 all years on screen = every month
+      const items = (ticked ? visibleItems().filter(e => selected.has(e.id)) : all ? expenses.filter(e => bookOf(e) === curBook) : visibleItems()).slice().sort(byDate);
+      const yr = !all && !ticked && level() === 'year';     // 📆 full year on screen: that year, month by month
+      const cardLbl = cycleCard() || 'Card';
+      const label = (all ? 'All months' : yr ? `Year ${curMonth.slice(0, 4)}${cycleOn() ? ` – ${cardLbl} bills` : ''}`
+        : cycleOn() ? `${cardLbl} bill ${shortDate(period().from)} – ${shortDate(period().to)}` : level() === 'year' ? `Year ${curMonth.slice(0, 4)}` : isEventBook() ? 'Whole event' : monthLabel(curMonth))
+        + (ticked ? ' (selected)' : '');
+      const withBy = showByCol(curBook);
+      const want = opts.cols || expCols;
+      const cols = Object.keys(COLS).filter(k => ['date', 'sent', 'received'].includes(k) || (want.has(k) && (k !== 'by' || withBy)));
       const recs = items.map(e => ({ date: e.date, time: e.time || '', sent: +e.sent || 0, received: +e.received || 0,
-        purpose: e.purpose || '', via: viaOf(e), note: e.note || '', by: withBy ? (e.by || (e.byEmail || '').split('@')[0]) : '' }));
+        purpose: e.purpose || '', via: viaOf(e), note: e.note || '', by: withBy ? payerOf(e) : '' }));
       const sum = f => recs.reduce((a, r) => a + r[f], 0);
       // groups for the PDF: the period on screen, or one per calendar month
       let groups;
       if (yr) groups = yearMonths().map(k => {
         const p = period(k);
         return { label: p.cycle ? `${monthLabel(k)} bill (${shortDate(p.from)} – ${shortDate(p.to)})` : monthLabel(k), from: p.from, to: p.to,
-          recs: recs.filter(r => r.date >= p.from && r.date <= p.to) };
+          recs: recs.filter(r => inPeriod(r.date, r.via, p)) };
       }).filter(g => g.recs.length);
-      else if (!all) groups = [{ label, from: period().from, to: period().to, recs }];
+      else if (!all && !ticked && level() !== 'year' && !isEventBook()) groups = [{ label, from: period().from, to: period().to, recs }];
       else groups = [...new Set(recs.map(r => r.date.slice(0, 7)))].map(m => {
         const [y, mo] = m.split('-').map(Number);
         return { label: monthLabel(m), from: m + '-01', to: isoDate(new Date(y, mo, 0)), recs: recs.filter(r => r.date.startsWith(m)) };
       });
-      return { title: bookTitle(curBook), label, recs, groups, withBy, sent: sum('sent'), received: sum('received'),
+      return { title: bookTitle(curBook), label, recs, groups, cols, withBy, sent: sum('sent'), received: sum('received'),
         file: safeName(`${bookTitle(curBook)} - ${all ? 'all months' : label}`) };
     }
-    const HEAD = ['Date', 'Time', 'Sent', 'Received', 'Purpose', 'Pay via', 'Note'];
-    const recRow = (r, withBy) => [r.date, r.time, r.sent || '', r.received || '', r.purpose, r.via, r.note, ...(withBy ? [r.by] : [])];
+    const recRow = (r, cols) => cols.map(k => k === 'sent' || k === 'received' ? (r[k] || '') : r[k]);
     const num2 = n => (Number(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     const exporters = {
       csv(d) {
         const cell = v => { v = String(v ?? ''); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
-        const lines = [[...HEAD, ...(d.withBy ? ['By'] : [])], ...d.recs.map(r => recRow(r, d.withBy))].map(r => r.map(cell).join(','));
-        downloadBlob(new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), d.file + '.csv');
+        const lines = [d.cols.map(k => COLS[k]), ...d.recs.map(r => recRow(r, d.cols))].map(r => r.map(cell).join(','));
+        downloadBlob(new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' }), d.file + '.csv');
       },
-      // same format as Bulk add, so it can be pasted / imported back
+      // same format as Bulk add, so it can be pasted / imported back (left-out columns stay empty)
       txt(d) {
+        const has = k => d.cols.includes(k);
         const out = [`# ${d.title} – ${d.label}`, `# Sent ${money(d.sent)} · Received ${money(d.received)} · Net ${money(d.received - d.sent)}`,
           '# Each line: Time - Amount - Purpose - Pay via - Note   (+amount = received)', ''];
         let lastDate = '';
@@ -3931,18 +4411,20 @@
           const amt = r.received && !r.sent ? '+' + r.received : String(r.sent);
           const clean = s => (s || '').replace(/\s+-\s+/g, ' – ').trim();
           // Time - Amount - Purpose - Pay via - Note (empty middle fields as "—", nothing trailing)
-          const f = [clean(r.purpose) || 'Unknown', clean(r.via), clean(r.note)];
+          const f = [has('purpose') ? clean(r.purpose) || 'Unknown' : '', has('via') ? clean(r.via) : '', has('note') ? clean(r.note) : ''];
           while (f.length && !f[f.length - 1]) f.pop();
-          out.push([r.time ? fmtTime(r.time).replace(' ', '') : '', amt, ...f.map(x => x || '—')].filter((x, i) => i || x).join(' - '));
+          out.push([has('time') && r.time ? fmtTime(r.time).replace(' ', '') : '', amt, ...f.map(x => x || '—')].filter((x, i) => i || x).join(' - '));
         });
         downloadBlob(new Blob([out.join('\r\n') + '\r\n'], { type: 'text/plain;charset=utf-8' }), d.file + '.txt');
       },
       async xlsx(d) {
         await loadLib('xlsx');
-        const head = [...HEAD, ...(d.withBy ? ['By'] : [])];
-        const aoa = [head, ...d.recs.map(r => recRow(r, d.withBy)), [], ['Total', '', d.sent, d.received, 'Net ' + num2(d.received - d.sent)]];
+        const total = d.cols.map((k, i) => k === 'date' ? 'Total' : k === 'sent' ? d.sent : k === 'received' ? d.received
+          : i === d.cols.indexOf('received') + 1 ? 'Net ' + num2(d.received - d.sent) : '');
+        const aoa = [d.cols.map(k => COLS[k]), ...d.recs.map(r => recRow(r, d.cols)), [], total];
         const ws = XLSX.utils.aoa_to_sheet(aoa);
-        ws['!cols'] = [{ wch: 11 }, { wch: 7 }, { wch: 11 }, { wch: 11 }, { wch: 34 }, { wch: 16 }, { wch: 24 }, { wch: 12 }];
+        const W = { date: 11, time: 7, sent: 11, received: 11, purpose: 34, via: 16, note: 24, by: 12 };
+        ws['!cols'] = d.cols.map(k => ({ wch: W[k] }));
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, safeName(d.label).slice(0, 31) || 'Expenses');
         const buf = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
@@ -3954,7 +4436,7 @@
         doc.setFontSize(16); doc.text(d.title, 40, 46);
         doc.setFontSize(10); doc.setTextColor(110); doc.text(`${d.label}  |  ${d.recs.length} entr${d.recs.length === 1 ? 'y' : 'ies'}  |  Sent Rs ${num2(d.sent)}  |  Received Rs ${num2(d.received)}  |  Net Rs ${num2(d.received - d.sent)}`.replace(/[–—]/g, '-'), 40, 64);
         const rs = n => n ? num2(n) : '';                // ₹ isn't in the PDF's built-in font – amounts are in Rs
-        const W = d.withBy ? 8 : 7;                       // columns
+        const C = d.cols, W = C.length, iS = C.indexOf('sent'), iR = C.indexOf('received'), rest = W - iR - 1;
         const tot = list => [list.reduce((a, r) => a + r.sent, 0), list.reduce((a, r) => a + r.received, 0)];
         const dayText = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
         // "Week 1 - 6" (the week clipped to the month / bill period), "Week 29 Aug - 4 Sep" across two months
@@ -3969,8 +4451,8 @@
         // a summary line: label · sent · received · net (kind decides the colours)
         const sumRow = (label, list, kind) => {
           const [s, r] = tot(list);
-          return [{ content: label, colSpan: 2, kind }, { content: num2(s), kind }, { content: num2(r), kind },
-            { content: `Net ${num2(r - s)}`, colSpan: W - 4, kind, net: r - s }];
+          return [{ content: rest ? label : `${label}  (Net ${num2(r - s)})`, colSpan: iS, kind }, { content: num2(s), kind }, { content: num2(r), kind },
+            ...(rest ? [{ content: `Net ${num2(r - s)}`, colSpan: rest, kind, net: r - s }] : [])];
         };
         const body = [];
         d.groups.forEach(g => {
@@ -3980,10 +4462,10 @@
             if (weekStart(day) !== weekKey) { endWeek(); weekKey = weekStart(day); }
             const list = g.recs.filter(r => r.date === day), [s, r] = tot(list);
             // the date once, with the day's totals …
-            body.push([{ content: dayText(day), colSpan: 2, kind: 'day' }, { content: rs(s), kind: 'day' }, { content: rs(r), kind: 'day' },
-              { content: `${list.length} entr${list.length === 1 ? 'y' : 'ies'}`, colSpan: W - 4, kind: 'day' }]);
+            body.push([{ content: dayText(day), colSpan: iS, kind: 'day' }, { content: rs(s), kind: 'day' }, { content: rs(r), kind: 'day' },
+              ...(rest ? [{ content: `${list.length} entr${list.length === 1 ? 'y' : 'ies'}`, colSpan: rest, kind: 'day' }] : [])]);
             // … then its entries with just the time
-            list.forEach(x => body.push(['', x.time ? fmtTime(x.time) : '', rs(x.sent), rs(x.received), x.purpose, x.via, x.note, ...(d.withBy ? [x.by] : [])]));
+            list.forEach(x => body.push(C.map(k => k === 'date' ? '' : k === 'time' ? (x.time ? fmtTime(x.time) : '') : k === 'sent' || k === 'received' ? rs(x[k]) : x[k])));
             weekRecs.push(...list);
           });
           endWeek();
@@ -3997,35 +4479,62 @@
           total: { fill: [237, 224, 255], text: [59, 7, 100], sent: [200, 30, 30], recv: [21, 128, 61] },
           grand: { fill: [221, 196, 255], text: [46, 16, 101], sent: [185, 28, 28], recv: [21, 128, 61] }
         };
+        const colStyles = { 0: { cellWidth: 92 }, [iS]: { halign: 'right', textColor: [240, 106, 106], cellWidth: 62 }, [iR]: { halign: 'right', textColor: [47, 191, 108], cellWidth: 62 } };
+        if (C.includes('time')) colStyles[C.indexOf('time')] = { cellWidth: 46 };
         doc.autoTable({
           startY: 78,
-          head: [['Date', 'Time', 'Sent (Rs)', 'Recv (Rs)', 'Purpose', 'Pay via', 'Note', ...(d.withBy ? ['By'] : [])]],
+          head: [C.map(k => k === 'sent' ? 'Sent (Rs)' : k === 'received' ? 'Recv (Rs)' : COLS[k])],
           body,
           styles: { fontSize: 8.5, cellPadding: 4, lineColor: [229, 231, 235], lineWidth: { bottom: 0.5 } },
           headStyles: { fillColor: [79, 70, 229] },
-          columnStyles: { 0: { cellWidth: 92 }, 1: { cellWidth: 46 }, 2: { halign: 'right', textColor: [240, 106, 106], cellWidth: 62 }, 3: { halign: 'right', textColor: [47, 191, 108], cellWidth: 62 } },
+          columnStyles: colStyles,
           didParseCell: data => {
             const k = data.section === 'body' && data.cell.raw && data.cell.raw.kind;
             if (!k) return;
             const L = LOOK[k], st = data.cell.styles, i = data.column.index;
             st.fillColor = L.fill; st.textColor = L.text; st.fontStyle = 'bold';
             if (k !== 'day') st.fontSize = k === 'week' ? 8.5 : 9.5;
-            if (i === 2) st.textColor = L.sent;
-            if (i === 3) st.textColor = L.recv;
+            if (i === iS) st.textColor = L.sent;
+            if (i === iR) st.textColor = L.recv;
             if (data.cell.raw.net !== undefined) st.textColor = data.cell.raw.net < 0 ? L.sent : L.recv;
             if (k === 'day') st.fontSize = 8.5;
-            if (k === 'day' && i >= 4) { st.fontStyle = 'normal'; st.textColor = [100, 116, 139]; }
+            if (k === 'day' && i > iR) { st.fontStyle = 'normal'; st.textColor = [100, 116, 139]; }
           }
         });
         downloadBlob(doc.output('blob'), d.file + '.pdf');
       }
     };
 
+    // export options: column ticks (remembered on this device) and "only the ticked rows"
+    function renderExportOpts() {
+      const withBy = showByCol(curBook), n = visibleItems().filter(e => selected.has(e.id)).length;
+      $('ioCols').innerHTML = OPT_COLS.filter(k => k !== 'by' || withBy)
+        .map(k => `<label><input type="checkbox" data-col="${k}"${expCols.has(k) ? ' checked' : ''}> ${COLS[k]}</label>`).join('');
+      $('ioTicked').disabled = !n;
+      $('ioTickedLbl').textContent = n ? `Only the ${n} ticked row${n === 1 ? '' : 's'}` : 'Only the ticked rows (none ticked)';
+      // rows ticked in the table → export just those by default
+      document.querySelector(`input[name=ioRows][value=${n ? 'ticked' : 'all'}]`).checked = true;
+      syncExportScope();
+    }
+    // "only ticked" covers what's on screen – the "All months" choice doesn't apply then
+    function syncExportScope() {
+      const ticked = document.querySelector('input[name=ioRows]:checked').value === 'ticked';
+      document.querySelectorAll('input[name=ioScope]').forEach(r => { r.disabled = ticked && r.value === 'all'; if (ticked && r.value === 'month') r.checked = true; });
+    }
+    $('ioCols').addEventListener('change', ev => {
+      const c = ev.target.closest('[data-col]');
+      if (!c) return;
+      if (c.checked) expCols.add(c.dataset.col); else expCols.delete(c.dataset.col);
+      try { localStorage.setItem(EXP_COLS_KEY, JSON.stringify([...expCols])); } catch {}
+    });
+    $('ioRowsBox').addEventListener('change', syncExportScope);
+
     function openIO() {
       $('ioBook').textContent = '· ' + bookTitle(curBook);
       $('ioMonthLbl').textContent = level() === 'years' ? 'All years (as shown)' : level() === 'year' ? `Year ${curMonth.slice(0, 4)} (as shown)` : cycleOn() ? 'This bill (as shown)' : viaFilter.size ? `${monthLabel(curMonth)} (filtered, as shown)` : monthLabel(curMonth);
       $('ioImport').hidden = !canEdit(curBook);          // view-only shared expense: export only
       $('ioExpMsg').hidden = true;
+      renderExportOpts();
       resetImport();
       $('ioDlg').hidden = false;
     }
@@ -4039,7 +4548,7 @@
     $('ioDlg').querySelector('.io-grid').addEventListener('click', async ev => {
       const b = ev.target.closest('[data-exp]');
       if (!b) return;
-      const d = exportData(document.querySelector('input[name=ioScope]:checked').value);
+      const d = exportData(document.querySelector('input[name=ioScope]:checked').value, { ticked: document.querySelector('input[name=ioRows]:checked').value === 'ticked' });
       const msg = (text, bad) => { $('ioExpMsg').textContent = text; $('ioExpMsg').style.background = bad ? '#fee2e2' : ''; $('ioExpMsg').style.color = bad ? '#991b1b' : ''; $('ioExpMsg').hidden = false; };
       if (!d.recs.length) return msg('Nothing to export – there are no entries here yet.', true);
       document.querySelectorAll('.io-fmt').forEach(x => x.disabled = true);
@@ -4435,7 +4944,7 @@
       const notes = {};
       Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) notes[k.slice(bid.length + 1)] = monthNotes[k]; });
       return {
-        name: r.name, ownerName: r.role === 'owner' ? user.name : r.ownerName, ownerEmail: r.ownerEmail,
+        name: r.name, type: r.type, ownerName: r.role === 'owner' ? user.name : r.ownerName, ownerEmail: r.ownerEmail,
         expenses: expenses.filter(e => bookOf(e) === bid).map(({ book, ...e }) => e),
         monthNotes: notes, savedAt: nowIso()
       };
@@ -4457,11 +4966,11 @@
       // Monthly Expenses keeps its notes under plain "YYYY-MM" keys, other books under "<id>|YYYY-MM"
       const noteKeyOf = m => bookId === 'monthly' ? m : `${bookId}|${m}`;
       Object.keys(monthNotes).forEach(k => {
-        if (bookId === 'monthly' ? /^\d{4}-\d{2}$/.test(k) : k.startsWith(bookId + '|')) notes[bookId === 'monthly' ? k : k.slice(bookId.length + 1)] = monthNotes[k];
+        if (bookId === 'monthly' ? /^\d{4}-\d{2}(#bal)?$/.test(k) : k.startsWith(bookId + '|')) notes[bookId === 'monthly' ? k : k.slice(bookId.length + 1)] = monthNotes[k];
       });
       expenses.forEach(e => { if (bookOf(e) === bookId && !e.byEmail) { e.by = user.name; e.byEmail = myEmail(); } });
       const payload = {
-        name: b.name, ownerName: user.name, ownerEmail: myEmail(),
+        name: b.name, type: bookType(bookId), ownerName: user.name, ownerEmail: myEmail(),
         expenses: expenses.filter(e => bookOf(e) === bookId).map(({ book, ...e }) => e),
         monthNotes: notes, savedAt: nowIso()
       };
@@ -4471,7 +4980,7 @@
       // move entries + notes over to the shared book id, forget the private book
       const bid = SH + row.id;
       sharedFiles[row.id] = { key, salt, modified: row.updated_at };
-      sharedRefs.push({ id: row.id, name: b.name, ownerName: user.name, ownerEmail: myEmail(), role: 'owner', members: [] });
+      sharedRefs.push({ id: row.id, name: b.name, type: bookType(bookId), ownerName: user.name, ownerEmail: myEmail(), role: 'owner', members: [] });
       expenses.forEach(e => { if (bookOf(e) === bookId) { e.book = bid; if (!e.byEmail) { e.by = user.name; e.byEmail = myEmail(); } } });
       Object.keys(notes).forEach(m => { monthNotes[`${bid}|${m}`] = notes[m]; delete monthNotes[noteKeyOf(m)]; });
       if (bookId === 'monthly') monthlyShared = row.id;       // the home button now opens the shared copy
@@ -4499,7 +5008,7 @@
       Object.entries(data.monthNotes || {}).forEach(([m, v]) => monthNotes[`${bid}|${m}`] = v);
 
       const i = sharedRefs.findIndex(x => x.id === id);
-      const r = refFromRow(row, { ...(sharedRefs[i] || {}), ownerName: data.ownerName || undefined });
+      const r = refFromRow(row, { ...(sharedRefs[i] || {}), ownerName: data.ownerName || undefined, type: data.type || sharedRefs[i]?.type });
       if (i < 0) sharedRefs.push(r); else sharedRefs[i] = r;
       return r;
     }
@@ -4508,12 +5017,13 @@
     async function openShared(id, push = true) {
       if (!user) { alert('Log in to open shared expenses.'); return; }
       const bid = SH + id;
-      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; }
+      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; sortForType(bid); }
       curBook = bid;
       openScreen('book', push);
       $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
       try {
         await loadSharedFile(id);
+        if (curBook === bid && bookType(bid) === 'event' && sortCol === 'date') sortForType(bid);   // its type is known once loaded
         $('mMsg').hidden = true;
         if (screen === 'book' && curBook === bid) openScreen('book', false);
       } catch (e) {
@@ -4822,7 +5332,7 @@
     function setRotated(on) {
       const h = document.documentElement;
       h.classList.toggle('rot90', on);
-      h.classList.toggle('tbl-wide', on || editMode || $('wideBtn').classList.contains('on'));
+      h.classList.toggle('tbl-wide', on || $('wideBtn').classList.contains('on'));
       $('landscapeBtn').classList.toggle('on', on);
       $('landscapeBtn').title = on ? 'Rotate back – upright view' : 'Rotate – landscape view (works with auto-rotate off)';
       hideTip();
