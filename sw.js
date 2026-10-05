@@ -1,7 +1,7 @@
 // Service worker: makes the app installable and lets it open without a connection.
 // The page itself is fetched fresh whenever online (so updates show up straight away);
 // the saved copy is only used when offline. Supabase / other sites are never cached.
-const CACHE = 'expense-manager-v1';
+const CACHE = 'expense-manager-v2';
 const SHELL = [
   './',
   './index.html',
@@ -28,8 +28,8 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // the (versioned) Supabase library: cache first, so the app still starts offline
-  if (req.url === LIB) {
+  // the (versioned) libraries – Supabase, and Excel / PDF export once used: cache first, so they work offline
+  if (req.url === LIB || req.url.startsWith('https://cdnjs.cloudflare.com/ajax/libs/')) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
