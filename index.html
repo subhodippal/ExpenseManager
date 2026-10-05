@@ -118,6 +118,15 @@
     .sync-dot { position: absolute; right: -1px; bottom: -1px; width: 11px; height: 11px; border-radius: 50%; border: 2px solid #fff; background: #22c55e; }
     .sync-dot.saving, .sync-dot.loading { background: #f59e0b; animation: dotPulse 1s ease-in-out infinite; }
     .sync-dot.error { background: #ef4444; }
+    .sync-dot.offline { background: #9ca3af; }
+    /* 📴 offline note; in a browser tab everything that changes data is switched off */
+    .offline-bar { background: #374151; color: #f9fafb; border-radius: 8px; padding: 8px 12px; margin-bottom: 10px; font-size: .88rem; font-weight: 600; }
+    .offline-bar small { display: block; font-weight: 400; opacity: .85; font-size: .78rem; }
+    body.book-mode .offline-bar { margin: 0 0 6px; padding: 5px 10px; font-size: .8rem; }
+    body.offline-lock :is(#editBtn, #bulkBtn, #cardsBtn, .book-actions [data-act]:not([data-act=fav]):not([data-act=quick]):not([data-act=unquick]), #addBookCard,
+      [data-go=newBook], #profileBtn, .fav-btn, .star-btn, #addSharedBtn, .day-sep, .kind-btn) { pointer-events: none; opacity: .4; }
+    html[data-theme=dark] .offline-bar { background: #1f2937; border: 1px solid #374151; }
+    .off-pill { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.45); border-radius: 999px; padding: 1px 8px; font-weight: 600; white-space: nowrap; }
     @keyframes dotPulse { 50% { opacity: .35; } }
     .sync-err { font-size: .78rem; display: inline-flex; align-items: center; gap: 4px; }
     .sync-err:empty { display: none; }
@@ -682,6 +691,25 @@
     .filter-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .filter-bar .btn { padding: 3px 10px; flex: 0 0 auto; }
     .filter-quick { display: flex; gap: 8px; }
+    .filter-search { display: flex; flex-direction: column; gap: 6px; }
+    /* the search box stands out: purple frame, 🔍 inside, soft glow when typing */
+    .filter-search input { padding: 10px 12px 10px 36px; font-size: .95rem; font-weight: 500; border: 2px solid #a78bfa; border-radius: 10px;
+      background: #faf5ff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%237c3aed' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-3.5-3.5'/%3E%3C/svg%3E") no-repeat 11px center;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, .12); }
+    .filter-search input::placeholder { color: #8b5cf6; opacity: .8; }
+    .filter-search input:focus { outline: none; border-color: #7c3aed; background-color: #fff; box-shadow: 0 0 0 4px rgba(124, 58, 237, .18); }
+    html[data-theme=dark] .filter-search input { background-color: #191021; border-color: #6d4aa8; color: var(--text); box-shadow: none; }
+    html[data-theme=dark] .filter-search input::placeholder { color: #a78bfa; }
+    html[data-theme=dark] .filter-search input:focus { background-color: #1d1430; border-color: #8b5cf6; box-shadow: 0 0 0 4px rgba(139, 92, 246, .25); }
+    .tag-chips { display: flex; flex-wrap: wrap; gap: 5px; max-height: 96px; overflow-y: auto; }
+    .tag-chip { border: 1px solid #c4b5fd; background: #f5f3ff; color: #5b21b6; border-radius: 999px; padding: 2px 9px; font: inherit; font-size: .8rem; font-weight: 600; cursor: pointer; }
+    .tag-chip small { color: #7c3aed; opacity: .75; font-weight: 500; }
+    .tag-chip.on { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+    .tag-chip.on small { color: #ede9fe; }
+    html[data-theme=dark] .tag-chip { background: #1d1929; color: #c4b5fd; border-color: #433667; }
+    html[data-theme=dark] .tag-chip.on { background: #6d28d9; color: #fff; border-color: #8b5cf6; }
+    .tag-txt { color: #6d28d9; }
+    html[data-theme=dark] .tag-txt { color: #c4b5fd; }
     .filter-flow { display: flex; gap: 6px; flex-wrap: wrap; }
     .filter-flow label { flex: 1 1 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 7px 8px; border: 2px solid var(--border);
       border-radius: 8px; cursor: pointer; font-weight: 700; font-size: .86rem; white-space: nowrap; }
@@ -712,6 +740,15 @@
     .mv-btn { border: none; background: none; cursor: pointer; font-size: .7rem; color: var(--muted); padding: 2px 3px; line-height: 1; }
     .mv-btn:hover { color: var(--primary); }
     #monthly:is(.viewmode, .readonly) .mv-btn, #mTable:not(.seqmode) .mv-btn { display: none; }
+    /* ▲ over ▼, beside the 🗑 – fits the narrow last column */
+    .mv-wrap { display: inline-flex; flex-direction: column; vertical-align: middle; }
+    #mTable:not(.seqmode) .mv-wrap, #monthly:is(.viewmode, .readonly) .mv-wrap { display: none; }
+    .mv-wrap .mv-btn { padding: 1px 2px; font-size: .62rem; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.seqmode #tbody .c-del { white-space: nowrap; padding-left: 0; padding-right: 0; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.seqmode #tbody .c-del .row-del { padding: 4px 2px; }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.seqmode #tbody tr[data-id] .c-del { flex-direction: column; gap: 0; align-self: center; }
+    }
     .date-in { display: none; }
     #monthly:not(.viewmode):not(.readonly) #mTable.is-event .date-in { display: inline-block; width: 128px; padding: 4px; font-size: .78rem; flex: 0 0 auto; }
     #monthly:not(.viewmode):not(.readonly) #mTable.is-event .dt-view { display: none !important; }
@@ -748,6 +785,117 @@
       html:not(.tbl-wide) #mTable.is-event #tbody tr[data-id] .c-del { flex-wrap: wrap; }
     }
 
+    /* ⎯ separator: what's available up to here */
+    tr.sep-row td { background: #fffbeb; border-top: 2px dashed #f59e0b; border-bottom: 2px dashed #f59e0b; padding: 6px 10px; }
+    .sep-line { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; font-size: .84rem; color: #78350f; }
+    .sep-name { color: #92400e; }
+    .sep-fig b { font-weight: 800; }
+    .sep-fig { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-weight: 600; }
+    .sep-in { width: 96px; padding: 3px 6px; font-weight: 800; text-align: right; font-size: .84rem; border: 1px solid #fcd34d; background: #fff; }
+    .sep-in.sent { color: var(--sent); } .sep-in.received { color: var(--received); }
+    .sep-fig.manual .sep-in { border-color: #f59e0b; background: #fff7ed; }
+    .sep-man { color: #b45309; font-weight: 800; }
+    .sep-time { width: 112px; padding: 3px 4px; font-size: .8rem; border: 1px solid #fcd34d; background: #fff; }
+    .sep-at { color: #92400e; font-weight: 600; font-size: .8rem; white-space: nowrap; }
+    html[data-theme=dark] .sep-time { background: #120c02; border-color: #92400e; color: var(--text); }
+    html[data-theme=dark] .sep-at { color: #fcd34d; }
+    .sep-auto { border: 1px solid #fcd34d; background: #fff; color: #92400e; border-radius: 6px; cursor: pointer; padding: 2px 8px; font-size: .76rem; font-weight: 700; }
+    html[data-theme=dark] .sep-in { background: #120c02; border-color: #92400e; }
+    html[data-theme=dark] .sep-fig.manual .sep-in { background: #2a1606; }
+    html[data-theme=dark] .sep-man { color: #fbbf24; }
+    html[data-theme=dark] .sep-auto { background: #1f1606; border-color: #92400e; color: #fde68a; }
+    .sep-acts { margin-left: auto; display: inline-flex; gap: 2px; }
+    .sep-acts button { border: none; background: rgba(255,255,255,.7); border-radius: 6px; cursor: pointer; padding: 2px 6px; font-size: .78rem; }
+    tr.day-add-row td { padding: 6px 8px; border-bottom: 1px solid var(--border); }
+    .add-line { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .no-entry { color: var(--muted); font-size: .8rem; }
+    .add-btns { display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+    .add-btns .day-add { float: none; margin: 0; }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) #tbody tr.day-add-row td { padding: 5px 6px !important; }
+    }
+    #monthly:is(.viewmode, .readonly) .day-sep { display: none; }
+    html[data-theme=dark] tr.sep-row td { background: #1f1606; border-color: #92400e; }
+    html[data-theme=dark] .sep-line { color: #fcd34d; }
+    html[data-theme=dark] .sep-name { color: #fde68a; }
+    html[data-theme=dark] .sep-acts button { background: rgba(0,0,0,.35); }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) #tbody tr.sep-row { background: #fffbeb; border-top: 2px dashed #f59e0b; border-bottom: 2px dashed #f59e0b; }
+      html:not(.tbl-wide) #tbody tr.sep-row td { background: transparent; padding: 5px 6px !important; }
+      html:not(.tbl-wide) .sep-line { gap: 2px 10px; font-size: .76rem; }
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr.sep-row { background: #1f1606; border-color: #92400e; }
+    }
+
+    /* 💳 the list: a heading on each month, "earlier entries" at the very top; 📜 / 📅 switch */
+    #tbody tr.feed-head td { background: #ede9fe; border-top: 3px solid #7c3aed; border-bottom: 1px solid #c4b5fd; padding: 7px 10px; }
+    .month-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; font-size: .86rem; color: #4c1d95; }
+    .month-line > b { font-size: .95rem; margin-right: auto; }
+    html[data-theme=dark] #tbody tr.feed-head td { background: #1d1430; border-bottom-color: #3b2a63; }
+    html[data-theme=dark] .month-line { color: #ddd6fe; }
+    /* the list: no total line at the bottom (months / 🧾 groups carry the sums) */
+    #mTable.feed-on tfoot tr.total { display: none !important; }
+    #tbody tr.feed-head.marker, #tbody tr.feed-head.marker td { height: 0 !important; padding: 0 !important; border: 0 !important; background: none !important; box-shadow: none !important; line-height: 0; font-size: 0; }
+    .cycle-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; font-size: .86rem; color: #4c1d95; }
+    .ch-name { font-size: .95rem; }
+    .ch-range { color: #6d28d9; }
+    .ch-sum { margin-left: auto; }
+    tr.feed-more td { text-align: center; padding: 10px; color: var(--muted); font-size: .82rem; }
+    .feed-load { border: 1px solid #c4b5fd; background: #f5f3ff; color: #5b21b6; border-radius: 999px; padding: 4px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+    html[data-theme=dark] .cycle-line { color: #ddd6fe; }
+    html[data-theme=dark] .ch-range { color: #c4b5fd; }
+    html[data-theme=dark] .feed-load { background: #1d1929; border-color: #433667; color: #c4b5fd; }
+    .card-pick-bar { margin-bottom: 8px; }
+    .card-pick-bar label { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; font-weight: 700; color: #5b21b6; }
+    .card-pick-bar select { border: 1px solid #c4b5fd; background: #f5f3ff; color: #4c1d95; border-radius: 999px; padding: 4px 10px; font: inherit; font-weight: 600; max-width: min(320px, 70vw); }
+    .card-pick-bar.on select { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+    html[data-theme=dark] .card-pick-bar label { color: #c4b5fd; }
+    html[data-theme=dark] .card-pick-bar select { background: #1d1929; border-color: #433667; color: #ddd6fe; }
+    html[data-theme=dark] .card-pick-bar.on select { background: #6d28d9; color: #fff; }
+    /* 🧾 a group: one block in its own colour with a border */
+    tr.bg-head td { background: var(--gh); border-top: 3px solid var(--gb); padding: 7px 10px; }
+    .bg-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 14px; font-size: .84rem; color: var(--gt); }
+    .bg-sum { margin-left: auto; }
+    .bg-off { border: 1px solid var(--gb); background: rgba(255,255,255,.7); color: var(--gt); border-radius: 999px; padding: 1px 10px; font: inherit; font-size: .74rem; font-weight: 700; cursor: pointer; }
+    html[data-theme=dark] .bg-off { background: rgba(0,0,0,.35); }
+    #tbody tr.bg-member td { background: var(--gl); }
+    #tbody tr.bg-member td:first-child { box-shadow: inset 4px 0 0 var(--gb); }
+    #tbody tr.bg-member td:last-child { box-shadow: inset -4px 0 0 var(--gb); }
+    #tbody tr.bg-last td { border-bottom: 3px solid var(--gb); }
+    /* 💳 one card (blueprint): no Pay via; in view, no date column – the date · time sits under the amount */
+    #mTable.card-one :is(.c-via, .c-sv, .c-rv) { display: none !important; }
+    .amt-dt { display: none; }
+    #monthly:is(.viewmode, .readonly) #mTable.card-one .amt-dt { display: block; font-size: .72rem; color: var(--muted); font-weight: 500; margin-top: 2px; white-space: nowrap; }
+    #monthly:is(.viewmode, .readonly) #mTable.card-one .c-date-cell { display: none !important; }
+    #mTable.card-one .c-recv { text-align: right; }
+    #mTable.card-one .c-sent, #mTable.card-one .c-recv { width: 150px; }
+    /* the list, editing: a date box on every row */
+    #monthly:not(.viewmode):not(.readonly) #mTable.is-list .date-in { display: inline-block; width: 128px; padding: 4px; font-size: .78rem; flex: 0 0 auto; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.is-list .dt-view { display: none !important; }
+    #monthly:not(.viewmode):not(.readonly) #mTable.is-list .c-date-cell { width: 230px !important; }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) .ch-sum, html:not(.tbl-wide) .bg-sum { margin-left: 0; }
+      html:not(.tbl-wide) #tbody tr.bg-head { background: var(--gh); border-top: 3px solid var(--gb); }
+      html:not(.tbl-wide) #tbody tr.bg-head td { background: transparent; padding: 6px 8px !important; border: none; }
+      html:not(.tbl-wide) #tbody tr.bg-member { background: var(--gl); box-shadow: inset 3px 0 0 var(--gb), inset -3px 0 0 var(--gb); }
+      html:not(.tbl-wide) #tbody tr.bg-last { border-bottom: 3px solid var(--gb); }
+      html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.is-list #tbody tr[data-id] .date-in { width: 100%; margin-bottom: 2px; }
+    }
+
+    /* 💸 the payment(s) that paid this bill: highlighted at the bottom of the bill */
+    tr.paid-head td { background: #dbeafe; border-top: 2px solid #60a5fa; padding: 6px 10px; color: #1e3a8a; }
+    #tbody tr.bill-settle td { background: #eff6ff; }
+    #tbody tr.bill-settle td:first-child { box-shadow: inset 4px 0 0 #3b82f6; }
+    #tbody tr.bill-settle.late .kind-btn { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+    html[data-theme=dark] tr.paid-head td { background: #0c1f3a; border-top-color: #1d4ed8; color: #93c5fd; }
+    html[data-theme=dark] #tbody tr.bill-settle td { background: #081627; }
+    @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
+      html:not(.tbl-wide) #tbody tr.paid-head { background: #dbeafe; border-top: 2px solid #60a5fa; }
+      html:not(.tbl-wide) #tbody tr.paid-head td { background: transparent; padding: 5px 6px !important; }
+      html:not(.tbl-wide) #tbody tr.bill-settle { background: #eff6ff; box-shadow: inset 3px 0 0 #3b82f6; }
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr.paid-head { background: #0c1f3a; }
+      html[data-theme=dark]:not(.tbl-wide) #tbody tr.bill-settle { background: #081627; }
+    }
+
     /* 💸 bill paid / ↩ refund chip on money received (credit-card expenses) */
     .kind-btn { display: block; width: max-content; max-width: 100%; margin: 2px 4px 0; padding: 0 7px; border-radius: 999px; border: 1px solid transparent;
       font: inherit; font-size: .68rem; font-weight: 700; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -759,7 +907,7 @@
     html[data-theme=dark] .kind-btn.refund { background: #052e16; color: #86efac; border-color: #14532d; }
     #tbody tr.bill-pay .kind-btn { opacity: 1; }
     /* 💳 billing cycle: a card payment is listed, faded, and not counted in the bill */
-    #tbody tr.bill-pay :is(textarea, input, select, .amt-view, .dt-view) { opacity: .5; }
+    #mTable:not(.card-one) #tbody tr.bill-pay :is(textarea, input:not(.row-sel), select, .amt-view, .dt-view) { opacity: .5; }   /* (one card's list: it's the "Bill received") */
     .pay-tag { display: block; width: max-content; max-width: 100%; margin: 1px 4px 0; padding: 0 6px; border-radius: 4px; font-size: .66rem; font-weight: 600;
       background: #e0f2fe; color: #075985; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     html[data-theme=dark] .pay-tag { background: #0b2533; color: #7dd3fc; }
@@ -1229,7 +1377,7 @@
       .month-pick { order: -2; flex: 1 1 calc(100% - 98px); }
       .month-bar > #filterBtn { order: -1; flex: 0 0 44px; }
       .month-bar > #ioBtn { order: 0; flex: 0 0 44px; }
-      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #starOnlyBtn { order: 4; } #viewBtn { order: 4; } #wideBtn { order: 5; }
+      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #bgBtn { order: 3; } #starOnlyBtn { order: 4; } #viewBtn { order: 4; } #wideBtn { order: 5; }
       #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
       html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
 
@@ -1330,10 +1478,10 @@
     }
     html.rot90 .landscape-btn { display: inline-flex !important; }
     html.rot90 .wide-btn { display: none !important; }
-    /* the one-line note stays put – the entries scroll under it. Only a phone held sideways (no room to spare)
-       slides it out of the way while you scroll the entries (never while you're typing in it) */
+    /* phones / tablets (little room): the one-line note slides out of the way while you scroll the entries and comes
+       back with a tap anywhere (never while you're typing in it); big screens keep it in place */
     .month-notes { transition: max-height .25s ease, opacity .2s ease, margin-bottom .25s ease; max-height: 60vh; }
-    @media (max-height: 520px) and (orientation: landscape) {
+    @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
       #monthly.list-scrolled .month-notes:not(:focus-within) { max-height: 0; opacity: 0; margin-bottom: 0; overflow: hidden; pointer-events: none; }
     }
     /* ---------- Responsive ---------- */
@@ -1486,6 +1634,7 @@
 
 
   <main>
+    <div class="offline-bar" id="offlineBar" role="status" hidden></div>
     <!-- App usage detail -->
     <div class="info" id="homeInfo">
       <span>✨ Manage your expenses easily, take them anywhere and share them with anyone.</span>
@@ -1579,6 +1728,7 @@
         <button type="button" class="btn btn-light icon-btn fs-btn" id="fsBtn" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="fs-in" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="fs-out" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
         <button type="button" class="btn btn-light icon-btn landscape-btn" id="landscapeBtn" title="Rotate – landscape view (works with auto-rotate off)"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2.5" width="10" height="17" rx="2.2"/><path d="M3.5 13.5a8.6 8.6 0 0 0 7 7.8M8.2 21.4l2.4-.2-.9-2.3"/></svg></button>
         <button type="button" class="btn btn-light wide-btn" id="wideBtn" title="Full table – scroll sideways">↔</button>
+        <button type="button" class="btn btn-light" id="bgBtn" title="Group the ticked entries (expenses + the bill payment / refunds)" hidden>🧾<span class="lbl"> Group</span> <span id="bgCount">(0)</span></button>
         <button type="button" class="btn btn-light" id="groupBtn" title="Put the ticked entries in a named group" hidden>🗂<span class="lbl"> Group</span> <span id="groupCount">(0)</span></button>
         <button type="button" class="btn btn-light star-only-btn" id="starOnlyBtn" title="Show starred entries only">⭐<span class="lbl"> Starred</span></button>
         <button type="button" class="btn btn-light" id="viewBtn" title="Display – day / week totals, full year">📊<span class="lbl"> View</span></button>
@@ -1586,6 +1736,9 @@
         <button type="button" class="btn btn-light" id="cardsBtn" title="Payment management – cards, billing cycles, payment options">⚙️</button>
       </div>
       <nav class="crumbs" id="crumbs" aria-label="Where you are" hidden></nav>
+      <div class="card-pick-bar" id="cardPickBar" hidden>
+        <label>💳 <span class="lbl">Card</span> <select id="cardPick" aria-label="Show one card" title="One card: its entries by billing cycle – tick and 🧾 Group them"></select></label>
+      </div>
       <div class="dup-bar" id="dupBar" hidden>
         <span class="dup-text" id="dupText"></span>
         <button type="button" class="btn btn-light btn-sm" id="dupReview">👁 Review</button>
@@ -1652,7 +1805,7 @@
 
       <div class="rotate-tip" id="rotateTip" hidden>📱↻ Use in landscape mode for better visibility<button type="button" id="rotateTipX" title="Close">✕</button></div>
       <div class="month-notes">
-        <label for="monthNote" title="Month notes" aria-label="Month notes"><span class="note-ico">📝</span><span class="lbl"> Notes</span> <span class="saved" id="noteSaved"></span></label>
+        <label for="monthNote" title="Month notes" aria-label="Month notes"><span class="note-ico">📝</span><span class="lbl"> Notes</span></label>
         <button type="button" class="note-preview" id="notePreview" title="Click to open the full note"></button>
         <textarea id="monthNote" rows="4" hidden></textarea>
       </div>
@@ -1872,7 +2025,11 @@
         <label class="out"><input type="radio" name="flow" value="sent"> − Sent only</label>
         <label class="in"><input type="radio" name="flow" value="received"> + Received only</label>
       </div>
-      <p class="hint" id="filterHint"></p>
+      <div class="filter-search">
+        <input type="search" id="filterQ" list="tagList" autocomplete="off" placeholder="Search text, or type # for tags (#fuel, #trainTicket…)" aria-label="Search text or tags">
+        <datalist id="tagList"></datalist>
+        <div class="tag-chips" id="tagChips"></div>
+      </div>
       <div class="filter-quick">
         <button type="button" class="btn btn-light btn-sm" id="filterAll">Select all</button>
         <button type="button" class="btn btn-light btn-sm" id="filterNone">Show everything</button>
@@ -1968,7 +2125,7 @@
     const bookTitle = id => { const r = isShared(id) && refOf(id); return r && r.role !== 'owner' ? `${r.ownerName || r.ownerEmail}'s ${r.name.replace(/^My /, '')}` : bookName(id); };
     // the book behind the home "Monthly Expenses" button (the shared copy once I've shared it)
     const monthlyBook = () => monthlyShared && refOf(SH + monthlyShared) ? SH + monthlyShared : 'monthly';
-    const canEdit = id => !isShared(id) || ['owner', 'writer'].includes(refOf(id)?.role);
+    const canEdit = id => !offlineLocked() && (!isShared(id) || ['owner', 'writer'].includes(refOf(id)?.role));   // (offline in a browser tab: view only)
     const bookExists = id => isShared(id) ? !!refOf(id) : books.some(b => b.id === id);
 
     /* Expense types – picked when creating an expense, changeable with ✏️:
@@ -1992,7 +2149,9 @@
       if (BOOK_TYPES[t]) return t;
       return /credit\s*card|\bcc\b/i.test(bookName(id)) ? 'card' : 'monthly';
     }
-    const hasBalance = id => ['monthly', 'savings', 'account'].includes(bookType(id));
+    const hasBalance = id => ['savings', 'account'].includes(bookType(id));
+    // 💰 "Left for this month" line (on the 1st, after EMIs / loans / bills): monthly, savings and account expenses
+    const hasSep = id => ['monthly', 'savings', 'account'].includes(bookType(id));
     // "By" (who paid / who added) only where several people are involved: a shared expense, or a "shared by several people" one
     const showByCol = id => isShared(id) || bookType(id) === 'group';
     const isGroupType = id => bookType(id) === 'group';
@@ -2059,7 +2218,7 @@
     }
 
     function openBook(id, push = true) {
-      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; sortForType(id); }
+      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; tagFilter.clear(); textFilter = ''; feedFrom = feedTo = null; cardSel = ''; if (bookType(id) === 'card') curMonth = today().slice(0, 7); sortForType(id); }
       curBook = id;
       openScreen('book', push);
     }
@@ -2106,7 +2265,7 @@
       const mineShared = sharedRefs.filter(r => r.role === 'owner');
       $('booksList').innerHTML = mineShared.filter(r => r.id === monthlyShared).map(r => sharedCard(r)).join('') +
       books.filter(b => !(b.id === 'monthly' && isShared(monthlyBook()))).map(b => {
-        const items = expenses.filter(e => bookOf(e) === b.id);
+        const items = expenses.filter(e => bookOf(e) === b.id && !e.sep);
         let s = 0, r = 0;
         items.filter(e => e.date.startsWith(m)).forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
         const last = items.reduce((a, e) => e.date > a ? e.date : a, '');
@@ -2650,7 +2809,6 @@
     }
 
     function renderFilterList() {
-      $('filterHint').innerHTML = `Pick one or more for <b>${esc(monthLabel(curMonth))}</b> – the table and every total then count only those.`;
       $('filterList').innerHTML = filterChoices().map(c => `
         <label class="filter-opt ${viaFilter.has(c.v) ? 'on' : ''}">
           <input type="checkbox" data-v="${esc(c.v)}"${viaFilter.has(c.v) ? ' checked' : ''}>
@@ -2662,12 +2820,12 @@
 
     const FLOW_TXT = { sent: '− money sent', received: '+ money received' };
     function updateFilterUI() {
-      const on = viaFilter.size > 0 || !!flowFilter;
+      const on = viaFilter.size > 0 || !!flowFilter || tagFilter.size > 0 || !!textFilter;
       $('filterBtn').classList.toggle('on', on);
       $('filterCount').hidden = !on;
-      $('filterCount').textContent = viaFilter.size + (flowFilter ? 1 : 0);
+      $('filterCount').textContent = viaFilter.size + (flowFilter ? 1 : 0) + tagFilter.size + (textFilter ? 1 : 0);
       $('filterBar').hidden = !on;
-      $('filterText').innerHTML = on ? '🔍 Showing only: ' + [...(flowFilter ? [`<b>${FLOW_TXT[flowFilter]}</b>`] : []), ...[...viaFilter].map(v => `<b>${esc(viaName(v))}</b>`)].join(', ') : '';
+      $('filterText').innerHTML = on ? '🔍 Showing only: ' + [...(flowFilter ? [`<b>${FLOW_TXT[flowFilter]}</b>`] : []), ...[...tagFilter].map(x => `<b class="tag-txt">#${esc(x)}</b>`), ...(textFilter ? [`<b>“${esc(textFilter)}”</b>`] : []), ...[...viaFilter].map(v => `<b>${esc(viaName(v))}</b>`)].join(', ') : '';
       document.querySelectorAll('input[name=flow]').forEach(r => { r.checked = r.value === flowFilter; });
       updateCycleUI();
     }
@@ -2681,12 +2839,13 @@
 
     // 💳 billing-cycle bar: "☐ 💳 16th – 15th billing cycle" (several cards: each one's days); when on, the dates on screen
     function updateCycleUI() {
-      const cards = cycleCards(), sole = soleFilter(), needSetup = !cards.length && !!sole && !isCard(sole);
+      const cards = cycleCards(), sole = soleCard(), needSetup = !cards.length && !!sole && !isCard(sole);
       $('cycleBar').hidden = !cards.length && !needSetup;
       $('mTotalLabel').parentElement.classList.toggle('cycle', cycleOn());
       $('cycleEdit').hidden = true;
       if ($('cycleBar').hidden) return;
       $('cycleToggle').disabled = !cards.length;
+      $('cycleToggle').hidden = cardList();
       $('cycleToggle').checked = cycleOn();
       $('cycleSetup').hidden = !needSetup;
       $('cycleAdjust').hidden = !cycleOn() || cards.length !== 1 || !canEdit(curBook) || !['entries', 'day', 'week'].includes(level());
@@ -2700,8 +2859,12 @@
       $('cycleInfo').innerHTML = info;
     }
 
-    $('cycleToggle').addEventListener('change', ev => { cycleView = ev.target.checked; applyFilter(); });
-    $('cycleSetup').addEventListener('click', () => openCardsDialog(soleFilter()));
+    $('cycleToggle').addEventListener('change', ev => {
+      cycleView = ev.target.checked;
+      if (cycleView && cycleCard()) { const t = today(), st = cycleOf(cycleCard()).start; feedReset(curMonth = st > 1 && +t.slice(8) >= st ? shiftMonth(t.slice(0, 7), 1) : t.slice(0, 7)); }
+      applyFilter();
+    });
+    $('cycleSetup').addEventListener('click', () => openCardsDialog(soleCard()));
 
     // ✏️ exact dates for this one statement (banks sometimes shift the dates)
     $('cycleAdjust').addEventListener('click', () => {
@@ -2828,13 +2991,15 @@
     // running today); the switch can still turn it off until other cards are picked. Without a filter it starts off (calendar month).
     let autoCycleFor = null;
     function autoCycle() {
-      const fc = [...viaFilter].filter(isCard).sort(), key = fc.length ? fc.join('|') : null;
+      const sole = soleCard(), key = sole && isCard(sole) ? sole : null;
       if (key === autoCycleFor) return;
       autoCycleFor = key;
-      if (!key) return;
+      if (!key) { if (cardList()) { curMonth = today().slice(0, 7); feedReset(curMonth); } return; }   // the list: back to this month
       cycleView = true;
-      const t = today(), st = fc.length === 1 ? cycleOf(fc[0]).start : 1;
-      if (curMonth === t.slice(0, 7) && st > 1 && +t.slice(8) >= st) curMonth = shiftMonth(t.slice(0, 7), 1);   // today is already on next month's bill
+      // open on the bill running today, scrolled to the bottom (newest), like a chat
+      const t = today(), st = cycleOf(key).start;
+      curMonth = st > 1 && +t.slice(8) >= st ? shiftMonth(t.slice(0, 7), 1) : t.slice(0, 7);
+      feedReset(curMonth);
     }
 
     function applyFilter() {
@@ -2853,13 +3018,58 @@
       applyFilter();
     });
     $('filterAll').addEventListener('click', () => { filterChoices().forEach(c => viaFilter.add(c.v)); renderFilterList(); applyFilter(); });
-    $('filterNone').addEventListener('click', () => { viaFilter.clear(); flowFilter = ''; renderFilterList(); applyFilter(); });
+    $('filterNone').addEventListener('click', () => { viaFilter.clear(); flowFilter = ''; tagFilter.clear(); textFilter = ''; $('filterQ').value = ''; renderFilterList(); renderTagChips(); applyFilter(); });
     $('filterFlow').addEventListener('change', ev => { if (ev.target.name === 'flow') { flowFilter = ev.target.value; applyFilter(); renderFilterList(); } });
-    const openFilter = () => { renderFilterList(); $('filterDlg').hidden = false; };
+    /* 🏷 tags & text: chips for every #tag used in this expense (count this month), tap to filter (any of them);
+       the box searches purpose / note / payment method, "#" suggests tags as you type */
+    function renderTagChips() {
+      const q = $('filterQ').value.trim(), pre = q.startsWith('#') ? q.slice(1).toLowerCase() : null;
+      const all = new Map(), here = new Map(), disp = new Map();     // disp: the tag as first written (#trainTicket)
+      expenses.filter(e => bookOf(e) === curBook).forEach(e => {
+        tagsOf(e).forEach(x => all.set(x, (all.get(x) || 0) + 1));
+        (((e.purpose || '') + ' ' + (e.note || '')).match(TAG_RE) || []).forEach(w => { if (!disp.has(w.slice(1).toLowerCase())) disp.set(w.slice(1).toLowerCase(), w.slice(1)); });
+      });
+      const show = x => esc(disp.get(x) || x);
+      periodItems().forEach(e => tagsOf(e).forEach(x => here.set(x, (here.get(x) || 0) + 1)));
+      const tags = [...all.keys()].filter(x => pre === null ? true : x.startsWith(pre))
+        .sort((a, b) => tagFilter.has(b) - tagFilter.has(a) || (here.get(b) || 0) - (here.get(a) || 0) || a.localeCompare(b));
+      $('tagList').innerHTML = [...all.keys()].sort().map(x => `<option value="#${show(x)}">`).join('');
+      $('tagChips').innerHTML = tags.length
+        ? tags.slice(0, 40).map(x => `<button type="button" class="tag-chip${tagFilter.has(x) ? ' on' : ''}" data-tag="${esc(x)}" title="${here.get(x) || 0} this month · ${all.get(x)} in all">#${show(x)} <small>${here.get(x) || 0}</small></button>`).join('')
+        : `<span class="hint">${all.size ? 'No tag starts with that.' : 'No tags yet – add some to a purpose, e.g. <b>petrol #fuel</b>.'}</span>`;
+    }
+    const addTag = raw => { const x = raw.replace(/^#/, '').trim().toLowerCase(); if (x) tagFilter.add(x); $('filterQ').value = ''; textFilter = ''; applyFilter(); renderTagChips(); };
+    $('filterQ').addEventListener('input', ev => {
+      const q = $('filterQ').value.trim();
+      if (q.startsWith('#')) {
+        // picked from the suggestions (not typed letter by letter): filter by that tag straight away
+        if (ev.inputType === 'insertReplacementText' || ev.inputType === undefined) {
+          const all = new Set(expenses.filter(e => bookOf(e) === curBook).flatMap(e => [...tagsOf(e)]));
+          if (all.has(q.slice(1).toLowerCase())) { addTag(q); return; }
+        }
+        if (textFilter) { textFilter = ''; applyFilter(); }
+        renderTagChips();
+        return;
+      }
+      textFilter = q;
+      applyFilter();
+      renderTagChips();
+    });
+    $('filterQ').addEventListener('keydown', ev => { if (ev.key === 'Enter') { ev.preventDefault(); const q = $('filterQ').value.trim(); if (q.startsWith('#')) addTag(q); } });
+    $('filterQ').addEventListener('change', () => { const q = $('filterQ').value.trim(); if (/^#\S+$/.test(q)) addTag(q); });
+    $('tagChips').addEventListener('click', ev => {
+      const c = ev.target.closest('.tag-chip');
+      if (!c) return;
+      const x = c.dataset.tag;
+      if (tagFilter.has(x)) tagFilter.delete(x); else tagFilter.add(x);
+      if ($('filterQ').value.trim().startsWith('#')) $('filterQ').value = '';
+      applyFilter(); renderTagChips();
+    });
+    const openFilter = () => { renderFilterList(); $('filterQ').value = textFilter; renderTagChips(); $('filterDlg').hidden = false; };
     const closeFilter = () => { $('filterDlg').hidden = true; };
     $('filterBtn').addEventListener('click', openFilter);
     $('filterEdit').addEventListener('click', openFilter);
-    $('filterClear').addEventListener('click', () => { viaFilter.clear(); flowFilter = ''; applyFilter(); });
+    $('filterClear').addEventListener('click', () => { viaFilter.clear(); flowFilter = ''; tagFilter.clear(); textFilter = ''; applyFilter(); });
     $('filterClose').addEventListener('click', closeFilter);
     $('filterDone').addEventListener('click', closeFilter);
     $('filterDlg').addEventListener('click', ev => { if (ev.target === $('filterDlg')) closeFilter(); });
@@ -2870,13 +3080,13 @@
     const dupKey = e => [bookOf(e), e.date, e.time || '', +e.sent || 0, +e.received || 0, (e.purpose || '').trim().toLowerCase()].join('|');
     function duplicateIds() {
       const groups = {};
-      expenses.forEach(e => { if (e.purpose || +e.sent || +e.received) (groups[dupKey(e)] ||= []).push(e.id); });
+      expenses.forEach(e => { if (!e.sep && (e.purpose || +e.sent || +e.received)) (groups[dupKey(e)] ||= []).push(e.id); });
       return new Set(Object.values(groups).filter(g => g.length > 1).flat());
     }
     // groups of look-alike entries among `list` (each group oldest first)
     function dupGroups(list) {
       const groups = {};
-      list.forEach(e => { if (e.purpose || +e.sent || +e.received) (groups[dupKey(e)] ||= []).push(e); });
+      list.forEach(e => { if (!e.sep && (e.purpose || +e.sent || +e.received)) (groups[dupKey(e)] ||= []).push(e); });
       return Object.values(groups).filter(g => g.length > 1).map(g => g.sort((a, b) => a.created - b.created));
     }
 
@@ -2935,6 +3145,8 @@
         </div><div class="amt-view ${rec ? 'in' : 'out'}"><span class="av-amt">${val ? (rec ? '+' : '') + (+val).toLocaleString('en-IN', { maximumFractionDigits: 2 }) : '–'}</span><span class="av-time"><span class="av-date">${shortDay(e.date)}</span>${e.time ? `<span class="av-t">${fmtTime(e.time)}</span>` : ''}</span></div></td>`;
     };
 
+    // "Mon, 29 Jun · 1:29 PM" under the amount (one card's list has no date column)
+    const amtWhen = e => `<small class="amt-dt">${new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}${e.time ? ' · ' + fmtTime(e.time) : ''}</small>`;
     // Editable cells for one expense row
     const rowInputs = e => `
         <td class="c-tools"><div class="tools">
@@ -2943,10 +3155,10 @@
         </div></td>
         <td class="c-date-cell"><div class="dt-cell">
           <span class="dt-view"><span class="dv-date">${dayName(e.date)}</span>${e.time ? `<span class="dv-sep"> · </span><span class="dv-time">${fmtTime(e.time)}</span>` : ''}<span class="dv-compact">${compactDT(e)}</span></span>
-          ${isEventBook() ? `<input type="date" class="date-in" data-f="edate" value="${esc(e.date)}" title="Date">` : ''}<input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
+          ${isEventBook() || cardList() ? `<input type="date" class="date-in" data-f="edate" value="${esc(e.date)}" title="Date">` : ''}<input type="time" class="time-in" data-f="time" value="${esc(e.time)}" title="Time (optional)">
         </div></td>
-        <td class="c-sent"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="sent" value="${+e.sent || ''}"></td>
-        <td class="c-recv"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="received" value="${+e.received || ''}"></td>
+        <td class="c-sent"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="sent" value="${+e.sent || ''}">${+e.sent ? amtWhen(e) : ''}</td>
+        <td class="c-recv"><input type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00" data-f="received" value="${+e.received || ''}">${+e.received && !+e.sent ? amtWhen(e) : ''}</td>
         ${amountCell(e)}
         <td class="c-purpose"><textarea data-f="purpose" rows="1" placeholder="Purpose" title="${esc(e.purpose)}">${esc(e.purpose)}</textarea>${kindChip(e)}<span class="dup-tag" hidden>⚠ Duplicate</span></td>
         <td class="c-sv"><select data-f="sentVia" data-prev="${esc(e.sentVia)}">${modeOptions(e.sentVia)}</select></td>
@@ -2954,7 +3166,7 @@
         <td class="c-via"><select data-f="anyVia" data-prev="${esc(isReceived(e) ? e.receivedVia : e.sentVia)}">${modeOptions(isReceived(e) ? e.receivedVia : e.sentVia)}</select>${showByCol(bookOf(e)) ? `<small class="by-chip via-by" title="${isGroupType(bookOf(e)) ? 'Paid by' : 'Added by'} ${esc(payerOf(e))}">${esc(payerOf(e))}</small>` : ''}</td>
         <td class="c-by" title="${isGroupType(bookOf(e)) ? 'Paid by' : 'Added by'} ${esc(payerOf(e))}">${isGroupType(bookOf(e)) ? `<input type="text" data-f="payer" list="payerNames" maxlength="30" placeholder="Who paid" value="${esc(payerOf(e))}">` : `<span class="by-chip">${esc(byName(e))}</span>`}</td>
         <td class="c-note"><input type="text" data-f="note" placeholder="Note" value="${esc(e.note)}" title="${esc(e.note)}"></td>
-        <td class="c-del">${isEventBook() && bookOf(e) === curBook ? `<button type="button" class="mv-btn" data-mv="-1" title="Move up">▲</button><button type="button" class="mv-btn" data-mv="1" title="Move down">▼</button>` : ''}${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
+        <td class="c-del">${isEventBook() ? '<span class="mv-wrap"><button type="button" class="mv-btn" data-mv="-1" title="Move up">▲</button><button type="button" class="mv-btn" data-mv="1" title="Move down">▼</button></span>' : ''}${e.note ? `<button type="button" class="note-btn" title="Show note">📝</button>` : ''}<button type="button" class="row-del" title="Delete entry">🗑</button></td>`;
 
     /* ---------- Monthly notes (salary, rent, dues…) ---------- */
     const NOTES_KEY = 'monthNotes_v1';
@@ -2971,11 +3183,14 @@
       p.classList.toggle('is-empty', !text);
       p.innerHTML = text
         ? esc(lines[0]) + (lines.length > 1 ? `<span class="more">+${lines.length - 1} more line${lines.length > 2 ? 's' : ''}</span>` : '')
-        : isEventBook() ? (canEdit(curBook) ? 'Click to add notes for this event – budget, guests, to-dos…' : 'No notes for this event')
-        : canEdit(curBook) ? `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…` : `No notes for ${esc(monthLabel(curMonth))}`;
+        : noteEditable() ? (isEventBook() ? 'Click to add notes for this event – budget, guests, to-dos…' : `Click to add notes for ${esc(monthLabel(curMonth))} – salary, rent, dues…`)
+        : (isEventBook() ? 'No notes for this event' : `No notes for ${esc(monthLabel(curMonth))}`) + (canEdit(curBook) ? ' – tap ✏️ Edit to add some' : '');
+      p.title = text ? (noteEditable() ? 'Click to open and edit the note' : 'Click to read the full note (✏️ Edit to change it)') : '';
     }
+    // the month note can be changed only while ✏️ editing (and never in a view-only shared expense)
+    const noteEditable = () => canEdit(curBook) && editMode;
     $('notePreview').addEventListener('click', () => {
-      const ro = !canEdit(curBook);                         // view-only shared expense: read the note, no editing
+      const ro = !noteEditable();                           // read the note, no editing
       if (ro && !(monthNotes[noteKey(noteMonth())] || '').trim()) return;
       $('monthNote').readOnly = ro;
       $('notePreview').hidden = true;
@@ -2995,10 +3210,6 @@
       const v = ev.target.value;
       if (v.trim()) monthNotes[noteKey(noteMonth())] = v; else delete monthNotes[noteKey(noteMonth())];
       saveNotes();
-      const st = $('noteSaved');
-      st.textContent = '✓ Saved';
-      clearTimeout(st.t);
-      st.t = setTimeout(() => st.textContent = '', 1500);
     });
 
     /* ---------- Monthly table (one month at a time, editable) ---------- */
@@ -3024,9 +3235,16 @@
     let dupOnly = false;
     // 🔍 money sent only / received only ('' = both)
     let flowFilter = '';
-    const filtering = () => viaFilter.size > 0 || !!flowFilter || starOnly || dupOnly;
-    const passesFilter = e => (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!starOnly || !!e.starred) &&
-      (!flowFilter || (flowFilter === 'received' ? isReceived(e) : !isReceived(e)));
+    // 🔍 #tags (written in the purpose / note, e.g. "petrol #fuel") and free text
+    const tagFilter = new Set();
+    let textFilter = '';
+    const TAG_RE = /#[\p{L}\p{N}_-]+/gu;
+    const tagsOf = e => new Set((((e.purpose || '') + ' ' + (e.note || '')).match(TAG_RE) || []).map(x => x.slice(1).toLowerCase()));
+    const textOf = e => [e.purpose, e.note, viaOf(e)].join(' ').toLowerCase();
+    const filtering = () => viaFilter.size > 0 || !!flowFilter || tagFilter.size > 0 || !!textFilter || starOnly || dupOnly;
+    const passesFilter = e => (!e.sep || !filtering()) && (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!cardSel || !cardBook() || (e.sentVia || e.receivedVia || '') === cardSel) && (!starOnly || !!e.starred) &&
+      (!flowFilter || (flowFilter === 'received' ? isReceived(e) : !isReceived(e))) &&
+      (!tagFilter.size || [...tagsOf(e)].some(x => tagFilter.has(x))) && (!textFilter || textOf(e).includes(textFilter.toLowerCase()));
     /* 📊 display: what the table shows (view mode – editing always shows every entry and every date)
        level: 'entries' | 'day' (day totals only) | 'week' (week totals only) | 'year' (12 month totals)
        viewOpts (remembered on this device): date rows with day totals (on), week total rows (off) */
@@ -3088,6 +3306,175 @@
       ? `<button type="button" class="kind-btn bill" title="Paying the card – settles the previous bill, not part of this one. Tap (✏️ Edit) to mark it a refund">💸 Bill paid${cycleOn() ? ' · not counted' : ''}</button>`
       : `<button type="button" class="kind-btn refund" title="Money back from a shop – lowers this bill. Tap (✏️ Edit) to mark it a bill payment">↩ Refund${cycleOn() ? ' · lowers the bill' : ''}</button>`;
     const countable = e => !(cycleOn() && isBillPayment(e));
+    // 💸 the payments that settle bill `key`: each card's bill payments made after its statement, up to the next statement
+    // (paid by the due date – or later, marked "late"). The next bill lists them as "not counted", so nothing counts twice.
+    const settleShown = () => cycleOn() && sortCol === 'date' && ['entries', 'day', 'week'].includes(level());
+
+    /* 💳 credit-card expenses: by default one long list of every entry (all cards), newest at the bottom, like a chat –
+       scrolling up loads the month before; the picker and the totals follow the month in view. "📅 Month by month"
+       switches to the usual one-month view (where one card can also be seen by its billing cycle). */
+    const cardBook = () => bookType(curBook) === 'card';
+    let cardSel = '';                                          // 💳 the one card picked (credit-card expense)
+    const cardOne = () => cardList() && !!cardSel;
+    const cardList = cardBook;
+    let feedFrom = null, feedTo = null, feedScrollBottom = false, feedLoading = false, renderedIds = new Set();
+    const feedOn = () => cardList() && level() === 'entries' && sortCol === 'date' && sortDir === 1;
+    function feedKeys() { const out = []; if (feedFrom) for (let k = feedFrom; k <= feedTo; k = shiftMonth(k, 1)) out.push(k); return out; }
+    // opens with the two months / bills before it too (more load as you scroll up)
+    function feedReset(key) { feedTo = key; feedFrom = shiftMonth(key, -2); feedScrollBottom = true; }
+    // the newest month / bill there is: today's (or a later entry's) – no going into empty future months
+    function feedMax() {
+      const sole = cycleOn() ? cycleCard() : null, t = today();
+      const todayKey = sole && cycleOf(sole).start > 1 && +t.slice(8) >= cycleOf(sole).start ? shiftMonth(t.slice(0, 7), 1) : t.slice(0, 7);
+      const last = bookItems().filter(passesFilter).reduce((m, e) => e.date > m ? e.date : m, '');
+      return last && last.slice(0, 7) > todayKey ? last.slice(0, 7) : todayKey;
+    }
+    // too few entries to scroll: load earlier months until the list fills the screen (so it can scroll up)
+    let feedFilling = false;
+    function fillFeed() {
+      const wrap = $('mTable').parentElement;
+      if (feedFilling || !wrap.clientHeight) return;
+      feedFilling = true;
+      for (let i = 0; i < 36 && wrap.scrollHeight <= wrap.clientHeight + 120; i++) {
+        if (feedHasEarlier()) feedFrom = shiftMonth(feedFrom, -1);           // earlier first…
+        else if (feedTo < feedMax()) feedTo = shiftMonth(feedTo, 1);          // …nothing earlier: the months after
+        else break;
+        renderMonthly();
+      }
+      feedFilling = false;
+    }
+    // make month `key` part of the list: next to it → add it, anywhere else → start over there
+    function feedEnsure(key) {
+      if (!feedFrom) return feedReset(key);
+      if (key >= shiftMonth(feedFrom, -1) && key <= shiftMonth(feedTo, 1)) { if (key < feedFrom) feedFrom = key; if (key > feedTo) feedTo = key; }
+      else feedReset(key);
+    }
+    function feedAll() { const seen = new Set(); return feedKeys().flatMap(k => periodItems(k)).filter(e => passesFilter(e) && !seen.has(e.id) && seen.add(e.id)); }
+    const feedHasEarlier = () => !!feedFrom && bookItems().some(e => passesFilter(e) && e.date < period(feedFrom).from);
+    // what can be ticked: every row on screen in the list, else the month / bill
+    const selectableItems = () => feedOn() ? expenses.filter(e => renderedIds.has(e.id)) : visibleItems();
+    // "Aug–Sep 2026" (a bill that runs over two months), "Sep 2026" (one month)
+    function cycleLabel(k, short) {
+      const pp = period(k), a = dateOf(pp.from), b = dateOf(pp.to);
+      const m = d => d.toLocaleDateString('en-IN', { month: 'short' }), y = d => short ? String(d.getFullYear()).slice(2) : d.getFullYear();
+      if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear()) return `${m(b)} ${y(b)}`;
+      return a.getFullYear() === b.getFullYear() ? `${m(a)}–${m(b)} ${y(b)}` : `${m(a)} ${y(a)}–${m(b)} ${y(b)}`;
+    }
+    // where each month / bill starts in the list (the picker and ◀ ▶ follow it): all cards – "October 2026 · Spent · Received";
+    // one card – no line on screen (its 🧾 groups say it all), just a marker
+    function monthHead(k, items, cols) {
+      if (cardOne()) return `<tr class="feed-head marker" data-key="${k}" aria-hidden="true"><td colspan="${cols}"></td></tr>`;
+      const s = items.reduce((a, e) => a + (+e.sent || 0), 0), r = items.reduce((a, e) => a + (+e.received || 0), 0);
+      return `<tr class="feed-head" data-key="${k}"><td colspan="${cols}"><div class="month-line">
+        <b>${monthLabel(k)}</b><span>Spent <b class="sent">${money(s)}</b></span><span>Received <b class="received">${money(r)}</b></span></div></td></tr>`;
+    }
+    function loadEarlier() {
+      if (feedLoading || !feedOn() || !feedHasEarlier()) return;
+      feedLoading = true;
+      const wrap = $('mTable').parentElement, h0 = wrap.scrollHeight, t0 = wrap.scrollTop;
+      feedFrom = shiftMonth(feedFrom, -1);
+      renderMonthly();
+      wrap.scrollTop = wrap.scrollHeight - h0 + t0;          // stay where you were – the earlier month goes above
+      feedLoading = false;
+    }
+    // (after picking an older month) near the bottom → the month after, up to today's
+    function loadLater() {
+      if (feedLoading || !feedOn() || !feedTo || feedTo >= feedMax()) return;
+      feedLoading = true;
+      const wrap = $('mTable').parentElement, t0 = wrap.scrollTop;
+      feedTo = shiftMonth(feedTo, 1);
+      renderMonthly();
+      wrap.scrollTop = t0;                                     // the later month goes below
+      feedLoading = false;
+    }
+    // the month in view: picker, totals, note follow it
+    function syncFeedMonth() {
+      if (!feedOn()) return;
+      const wr = $('mTable').parentElement.getBoundingClientRect(), top = (wr.top + wr.bottom) / 2;   // the month across the middle of the list
+      let key = feedFrom;
+      $('tbody').querySelectorAll('tr.feed-head').forEach(r => { if (r.getBoundingClientRect().top <= top) key = r.dataset.key; });
+      const w = $('mTable').parentElement;
+      if (w.scrollTop + w.clientHeight >= w.scrollHeight - 4) key = feedTo;      // at the very bottom: the newest month
+      if (!key || key === curMonth) return;
+      curMonth = key;
+      $('monthSelect').value = key;
+      $('nextMonth').disabled = key >= feedMax();                // 💳 no future months
+      renderNotePreview(); updateMonthTotals(); updateCycleUI();
+    }
+    function scrollToBill(key, smooth = true) {
+      const r = $('tbody').querySelector(`tr.feed-head[data-key="${key}"]`), wrap = $('mTable').parentElement;
+      if (!r) return;
+      const y = wrap.scrollTop + r.getBoundingClientRect().top - wrap.getBoundingClientRect().top - ($('mHead').offsetHeight || 0);
+      wrap.scrollTo({ top: Math.max(0, y), behavior: smooth ? 'smooth' : 'auto' });
+    }
+    // 💳 Card: all cards, or one card – one card shows by its billing cycle (and its entries can be 🧾 grouped)
+    function renderCardPick() {
+      const used = new Set(payModes.filter(isCard));
+      bookItems().forEach(e => { if (+e.sent && e.sentVia) used.add(e.sentVia); if (+e.received && e.receivedVia) used.add(e.receivedVia); });
+      if (cardSel) used.add(cardSel);
+      $('cardPick').innerHTML = '<option value="">All cards</option>' +
+        [...used].sort().map(c => `<option value="${esc(c)}" ${c === cardSel ? 'selected' : ''}>${esc(c)}${isCard(c) ? '' : ' (no billing cycle)'}</option>`).join('');
+      $('cardPickBar').classList.toggle('on', !!cardSel);
+    }
+    $('cardPick').addEventListener('change', ev => {
+      cardSel = ev.target.value;
+      autoCycleFor = undefined;                       // start again at today's bill
+      applyFilter();
+    });
+
+    /* 🧾 groups (credit card, one card picked): tick expenses and the bill payment / refunds, tap "🧾 Group" – they show
+       together as one block in its own colour with a border: spent, received, settled or to pay. ✕ Ungroup on the block. */
+    // one card: "Expense ₹ · Purpose · Bill received ₹" (Bill received moves after Purpose)
+    function cardOneHead() {
+      const on = $('mTable').classList.contains('card-one'), hr = $('mHead').querySelector('tr'), s = hr.querySelector('th.c-sent'), r = hr.querySelector('th.c-recv'), pu = hr.querySelector('th.c-purpose');
+      s.dataset.t ??= s.textContent; r.dataset.t ??= r.textContent;
+      s.textContent = on ? 'Expense ₹' : s.dataset.t; r.textContent = on ? 'Bill received ₹' : r.dataset.t;
+      if (on) pu.after(r); else s.after(r);
+    }
+    const groupView = () => cardList() && !!cardSel;
+    function groupBlocks() {
+      const map = new Map();
+      bookItems().filter(e => e.bg && passesFilter(e)).forEach(e => { if (!map.has(e.bg)) map.set(e.bg, []); map.get(e.bg).push(e); });
+      return [...map].map(([bg, members]) => {
+        members.sort(byDate);
+        // the block starts where its expenses start (the payment, usually in the next bill, is its last row)
+        return { id: 'G:' + bg, grpBlock: true, bg, members, date: members[0].date, time: '', created: 0 };
+      });
+    }
+    function groupBlockHtml(g, cols, row) {
+      const c = grpColor(g.bg), s = g.members.reduce((a, e) => a + (+e.sent || 0), 0), r = g.members.reduce((a, e) => a + (+e.received || 0), 0), left = s - r;
+      return `<tr class="bg-head g${c}" data-bg="${esc(g.bg)}"><td colspan="${cols}"><div class="bg-line">
+          <b>🧾 Group · ${g.members.length} entries</b>
+          <span class="ch-range">${shortDate(g.members[0].date)} – ${shortDate(g.members[g.members.length - 1].date)}</span>
+          <span class="bg-sum">Spent <b class="sent">${money(s)}</b> · Received <b class="received">${money(r)}</b> · ${left > 0.004 ? `<b class="sent">${money(left)} to pay</b>` : '<b class="received">Settled ✅</b>'}</span>
+          ${canEdit(curBook) ? '<button type="button" class="bg-off" title="Ungroup – the entries go back to their own dates">✕ Ungroup</button>' : ''}
+        </div></td></tr>` + g.members.map((m, i) => row(m, `bg-member g${c}${i === g.members.length - 1 ? ' bg-last' : ''}`)).join('');
+    }
+    $('bgBtn').addEventListener('click', () => {
+      const picked = selectableItems().filter(e => selected.has(e.id) && !e.sep);
+      if (picked.length < 2) return;
+      const bg = 'bg' + newId();
+      picked.forEach(e => { e.bg = bg; });
+      selected.clear(); save(); renderMonthly();
+      mFlash(`🧾 Grouped ${picked.length} entries.`);
+    });
+    $('tbody').addEventListener('click', ev => {
+      const off = ev.target.closest('.bg-off');
+      if (off) { const bg = off.closest('tr.bg-head').dataset.bg; expenses.forEach(e => { if (e.bg === bg) delete e.bg; }); save(); renderMonthly(); return; }
+      if (ev.target.closest('.feed-later')) loadLater();
+      else if (ev.target.closest('.feed-load')) loadEarlier();
+    });
+    function billPayments(key = curMonth) {
+      if (!cycleOn()) return [];
+      const out = [];
+      cycleCards().forEach(c => {
+        const r = cardRange(c, key), from = isoDate(r.to), to = isoDate(cardRange(c, shiftMonth(key, 1)).to), due = isoDate(r.due);
+        expenses.forEach(e => {
+          if (bookOf(e) === curBook && viaOf(e) === c && isBillPayment(e) && passesFilter(e) && e.date > from && e.date <= to) out.push({ e, late: e.date > due });
+        });
+      });
+      return out.sort((a, b) => a.e.date.localeCompare(b.e.date) || a.e.created - b.e.created);
+    }
     const countedItems = () => visibleItems().filter(countable);
     // year / month lines: "Net" – or, for a card's bills, what each bill asks you to pay
     const netCell = (s, r) => cycleOn() ? `To pay: <span class="sent">${money(Math.max(0, s - r))}</span>` : `Net: <span class="${r - s < 0 ? 'sent' : 'received'}">${money(r - s)}</span>`;
@@ -3118,20 +3505,19 @@
     const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
     // the one payment option being filtered (to offer "set up card" for it)
     function soleFilter() { const v = [...viaFilter]; return v.length === 1 && v[0] ? v[0] : null; }
+    // the one card whose bills are shown: in a credit-card expense the 💳 Card picker (🔍 Filter just filters there), else the filter
+    const soleCard = () => cardBook() ? (cardSel || null) : soleFilter();
     // cards = payment options with a billing cycle set up in ⚙ Card management
     const isCard = name => !!cardCycles[name];
     const cycleOf = card => ({ start: 1, due: 1, overrides: {}, ...(cardCycles[card] || {}) });
     /* the cards whose billing cycles apply: the cards in the 🔍 filter – or, in a credit-card expense
        with no filter, every card it uses. Several cards = each entry follows its own card's cycle,
        e.g. 16th–15th and 12th–11th → "Sep" runs 12 Aug – 15 Sep, a 14 Aug spend on the 16th card is not in it */
-    function cycleCards() {
-      if (viaFilter.size) return [...viaFilter].filter(isCard).sort();
-      if (bookType(curBook) !== 'card') return [];
-      return [...new Set(expenses.filter(e => bookOf(e) === curBook).map(viaOf))].filter(isCard).sort();
-    }
+    // the bill view is for ONE card: exactly one card picked in 🔍 Filter (several cards / all cards = the monthly view)
+    function cycleCards() { const sole = soleCard(); return sole && isCard(sole) ? [sole] : []; }
     // exactly one card (✏️ adjusting a statement, its due date)
     function cycleCard() { const c = cycleCards(); return c.length === 1 ? c[0] : null; }
-    const cycleOn = () => cycleView && cycleCards().length > 0;
+    const cycleOn = () => (cycleView || cardList()) && cycleCards().length > 0;
     const dateOf = iso => new Date(iso + 'T00:00:00');
     // "16th – 15th" (a cycle starting on the 1st runs to the month's end)
     const cycleDays = card => { const s = cycleOf(card).start; return s > 1 ? `${ordinal(s)} – ${ordinal(s - 1)}` : '1st – month end'; };
@@ -3195,7 +3581,17 @@
 
     function goMonth(key) {
       pruneBlank();
-      if (key !== curMonth) selected.clear();
+      if (feedOn() && key > feedMax()) key = feedMax();            // 💳 nothing to see in the future
+      if (key !== curMonth && !feedOn()) selected.clear();
+      if (feedOn()) {                                          // 💳 the list: bring that month into view
+        const far = !feedFrom || key < shiftMonth(feedFrom, -1) || key > shiftMonth(feedTo, 1);
+        feedEnsure(key);
+        curMonth = key;
+        feedScrollBottom = false;
+        renderMonthly();
+        scrollToBill(key, !far);
+        return;
+      }
       curMonth = key;
       renderMonthly();
     }
@@ -3203,13 +3599,21 @@
     function renderMonthly() {
       if (dupOnly && !dupGroups(baseItems()).length) dupOnly = false;      // nothing left to review
       // month dropdown: every month with data or notes, plus this month and the one being viewed
+      // 💳 the bill list: keep the bill in view loaded (a bill picked far away starts the list over)
+      if (feedOn()) {
+        const mx = feedMax();
+        if (curMonth > mx) curMonth = mx;
+        if (!feedFrom || curMonth < feedFrom || curMonth > feedTo) feedEnsure(curMonth);
+        if (feedTo > mx) feedTo = mx;
+      } else { feedFrom = feedTo = null; }
       const counts = {};
-      expenses.filter(e => bookOf(e) === curBook).forEach(e => counts[e.date.slice(0, 7)] = (counts[e.date.slice(0, 7)] || 0) + 1);
+      expenses.filter(e => bookOf(e) === curBook && !e.sep).forEach(e => counts[e.date.slice(0, 7)] = (counts[e.date.slice(0, 7)] || 0) + 1);
       const noteMonths = Object.keys(monthNotes).map(k => curBook === 'monthly' ? (/^\d{4}-\d{2}$/.test(k) ? k : null) : (k.startsWith(curBook + '|') ? k.slice(curBook.length + 1) : null)).filter(k => k && /^\d{4}-\d{2}$/.test(k));   // ("YYYY-MM#bal" = that month's opening balance)
-      const keys = new Set([...Object.keys(counts), ...noteMonths, today().slice(0, 7), curMonth]);
+      let keys = new Set([...Object.keys(counts), ...noteMonths, today().slice(0, 7), curMonth, ...feedKeys()]);
+      if (feedOn()) { const mx = feedMax(); keys = new Set([...keys, mx].filter(k => k <= mx)); }
       // narrow screens get short labels so the toolbar stays on one line: "Sep 2026 (18)", phones "Sep 26 (18)"
       const w = window.innerWidth;
-      const label = k => w < 760
+      const label = k => cycleOn() ? (w < 760 ? '' : '💳 ') + cycleLabel(k, w < 600) : w < 760
         ? new Date(+k.slice(0, 4), +k.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: w < 600 ? '2-digit' : 'numeric' })
         : '📅 ' + monthLabel(k);
       const lvl = level(), yearMode = lvl === 'year', yearsMode = lvl === 'years';
@@ -3230,15 +3634,22 @@
       $('thisMonth').hidden = yearsMode || (yearMode ? curMonth.slice(0, 4) === today().slice(0, 4) : curMonth === today().slice(0, 7));
       $('monthly').classList.toggle('yearmode', yearMode || yearsMode);
       $('monthly').classList.toggle('eventmode', isEventBook());
+      $('mTable').classList.toggle('is-list', cardList());
+      $('mTable').classList.toggle('card-one', cardOne() && feedOn());
+      $('mTable').classList.toggle('feed-on', feedOn());
+      cardOneHead();
+      $('cardPickBar').hidden = !cardBook();
+      if (cardBook()) renderCardPick();
       $('mTable').classList.toggle('is-event', isEventBook());
       $('mTable').classList.toggle('seqmode', isEventBook() && sortCol === 'seq');
       $('evLbl').hidden = !isEventBook();
       $('seqSort').textContent = sortCol === 'seq' ? (sortDir === 1 ? '#▲' : '#▼') : '#';
       renderCrumbs();
       $('prevMonth').disabled = $('nextMonth').disabled = $('monthSelect').disabled = yearsMode;   // every year is on screen
+      if (feedOn() && curMonth >= feedMax()) $('nextMonth').disabled = true;                      // 💳 no future months
       $('viewBtn').classList.toggle('on', lvl !== 'entries' || !viewOpts.dayRows || viewOpts.weekRows);
-      $('prevMonth').title = yearMode ? 'Previous year' : 'Previous month';
-      $('nextMonth').title = yearMode ? 'Next year' : 'Next month';
+      $('prevMonth').title = yearMode ? 'Previous year' : cycleOn() ? 'Previous bill' : 'Previous month';
+      $('nextMonth').title = yearMode ? 'Next year' : cycleOn() ? 'Next bill' : 'Next month';
 
       $('monthNote').value = monthNotes[noteKey(noteMonth())] || '';
       renderNotePreview();
@@ -3255,21 +3666,34 @@
         $(id).textContent = on ? (sortDir === 1 ? '▲' : '▼') : '⇅';
       });
 
-      const cols = (showTime ? 9 : 8) + (showByCol(curBook) ? 1 : 0);   // tools, date, [time], sent, recv, purpose, via, [by], note, ✕
+      const cols = (showTime ? 9 : 8) + (showByCol(curBook) ? 1 : 0)    // tools, date, [time], sent, recv, purpose, via, [by], note, ✕
+        - (cardOne() && feedOn() ? 1 + (editing() ? 0 : 1) : 0);         // (one card: no via; in view no date column either)
       $('mTable').classList.toggle('flat', sortCol !== 'date');     // flat list shows the full date box
       // which summary rows (editing: every date, for ＋ Add)
       const showEntries = lvl === 'entries';
-      const showDays = lvl === 'day' || (showEntries && (viewOpts.dayRows || editing()));
-      const showWeeks = lvl === 'week' || (lvl !== 'year' && viewOpts.weekRows && !filtering());   // a filter on: no week subtotals
+      const showDays = lvl === 'day' || (showEntries && (viewOpts.dayRows || editing()) && !(cardOne() && feedOn()));   // (one card's list: the date is under the amount)
+      const showWeeks = lvl === 'week' || (lvl !== 'year' && viewOpts.weekRows && !filtering() && !feedOn());   // a filter on / the card list: no week subtotals
       $('mTable').classList.toggle('no-days', !showDays);
       const showBy = showByCol(curBook);
       $('mTable').classList.toggle('with-by', showBy);
       $('mTable').classList.toggle('with-payer', isGroupType(curBook));
       document.querySelector('#mHead th.c-by').textContent = isGroupType(curBook) ? 'Paid by' : 'By';
       const span = showBy ? 5 : 4;                                  // purpose … note area of date / week rows
-      const items = visibleItems().sort(compareRows);
-      const row = (e, cls = '') => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
+      const sepsShown = sortCol === 'date' && sortDir === 1;            // ⎯ "Available till now" lines: date order, oldest first only
+      const items = visibleItems().filter(e => !e.sep || sepsShown).sort(compareRows);
+      const sepCalc = runningAt(items);
+      const row = (e, cls = '') => e.grpBlock ? groupBlockHtml(e, cols, row) : e.sep ? sepRow(e, cols, sepCalc) : `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
       let html = '';
+      const feed = feedOn();
+      // 💸 the payment(s) that settled bill `key` (made after its statement, by the next one) – at the bottom of the bill
+      const settleHtml = key => {
+        const settle = settleShown() ? billPayments(key) : [];
+        if (!settle.length) return '';
+        const paid = settle.reduce((a, x) => a + (+x.e.received || 0), 0);
+        return `<tr class="paid-head"><td colspan="${cols}"><div class="sums"><b>💸 Bill paid</b>
+            <span class="day-count">${settle.length} payment${settle.length === 1 ? '' : 's'} after the statement</span><span class="day-pill in">${money(paid)}</span></div></td></tr>` +
+          settle.map(x => row(x.e, 'bill-settle' + (x.late ? ' late' : ''))).join('');
+      };
 
       if (yearsMode) {
         // 📈 all years: one line per year (a year of bills with a billing cycle); tap to see its months
@@ -3306,13 +3730,14 @@
       } else if (isEventBook() && sortCol === 'seq') {
         html = eventRows(items, cols);
       } else if (sortCol === 'via') {
-        html = viaGroupRows(items, cols, row);
+        html = viaGroupRows(items.filter(e => !e.sep), cols, row);
       } else if (sortCol !== 'date' || isEventBook()) {
         // sorted by another column: plain list
-        html = items.map(e => row(e)).join('');
+        html = items.filter(e => !e.sep).map(e => row(e)).join('');
       } else {
         // every day of the month gets a date row; entries sit under their date; weekly subtotal after each week
-        const days = period().days;                        // calendar month, or the card's billing cycle
+        const dateBlock = (days, items) => {
+        let html = '';
         if (sortDir === -1) days.reverse();
         const weeks = [];
         days.forEach(d => {
@@ -3323,33 +3748,20 @@
         });
         const todayStr = today();
 
-        // billing cycle spanning two months: a separator between the previous month's part and this month's
-        let lastMonthShown = null;
-        const monthPart = key => {
-          const part = items.filter(e => e.date.startsWith(key) && countable(e));   // card payments aren't part of the bill
-          const ps = part.reduce((a, e) => a + (+e.sent || 0), 0), pr = part.reduce((a, e) => a + (+e.received || 0), 0);
-          const lbl = new Date(+key.slice(0, 4), +key.slice(5) - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-          return `<span class="ms-part"><b>${lbl}</b> part: <span class="sent">− ${money(ps)}</span>${pr ? ` · <span class="received">+ ${money(pr)}</span>` : ''}</span>`;
-        };
-        const separator = (prevKey, nextKey) => `<tr class="month-sep"><td colspan="${cols}">
-            <span class="ms-line">${monthPart(prevKey)}<span class="ms-arrow">${sortDir === 1 ? '▲ │ ▼' : '▼ │ ▲'}</span>${monthPart(nextKey)}</span></td></tr>`;
-
         // view mode (and with a filter on): only the days / weeks that have entries; editing shows every date (for ＋ Add)
-        const hideEmpty = filtering() || !editMode || !canEdit(curBook);
+        const hideEmpty = filtering() || !editMode || !canEdit(curBook) || feed;    // (the list: only dates with entries)
         weeks.forEach(w => {
           if (hideEmpty && !items.some(e => weekStart(e.date) === w.key)) return;
           const wOpen = !showWeeks || !collapsed.has('w:' + w.key);
           if (wOpen && (showDays || showEntries)) w.days.forEach(d => {
-            const dayItems = items.filter(e => e.date === d);
+            const dayItems = items.filter(e => e.date === d), nReal = dayItems.filter(e => !e.sep).length;
             if (hideEmpty && !dayItems.length) return;
-            if (cycleOn() && lastMonthShown && d.slice(0, 7) !== lastMonthShown) html += separator(lastMonthShown, d.slice(0, 7));
-            lastMonthShown = d.slice(0, 7);
             const dOpen = !collapsed.has('d:' + d);
             const dt = new Date(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8));
             const wd = dt.getDay();
-            if (showDays) html += `<tr class="day-head${wd === 0 || wd === 6 ? ' weekend' : ''}${d === todayStr ? ' is-today' : ''}${dayItems.length ? '' : ' no-entries'}" data-date="${d}" title="Click to ${dOpen ? 'collapse' : 'expand'}">
+            if (showDays) html += `<tr class="day-head${wd === 0 || wd === 6 ? ' weekend' : ''}${d === todayStr ? ' is-today' : ''}${nReal ? '' : ' no-entries'}" data-date="${d}" title="Click to ${dOpen ? 'collapse' : 'expand'}">
               <td class="c-tools"><div class="tools">
-                <input type="checkbox" class="grp-sel" data-grp="d:${d}" title="Select this day"${dayItems.length ? '' : ' disabled'}>
+                <input type="checkbox" class="grp-sel" data-grp="d:${d}" title="Select this day"${nReal ? '' : ' disabled'}>
                 <span class="caret">${dayItems.length && showEntries ? (dOpen ? '▾' : '▸') : ''}</span>
               </div></td>
               <td class="c-date-cell day-label"><span class="dl-long">${dt.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}</span><span class="dl-short">${dt.toLocaleDateString('en-IN', { weekday: 'short' })}, ${d.slice(8)}</span></td>
@@ -3357,10 +3769,14 @@
               <td class="c-sent num day-sent"></td>
               <td class="c-recv num day-recv"></td>
               <td colspan="${span}" class="day-info"><div class="sums">
-                ${d === todayStr ? '<span class="today-tag">Today</span>' : ''}<span class="day-count">${dayItems.length ? `${dayItems.length} entr${dayItems.length > 1 ? 'ies' : 'y'}` : 'no entries'}</span>
-                <button type="button" class="day-add" data-date="${d}" title="Add an entry for this date">＋ Add</button>
+                ${d === todayStr ? '<span class="today-tag">Today</span>' : ''}<span class="day-count">${nReal ? `${nReal} entr${nReal > 1 ? 'ies' : 'y'}` : 'no entries'}</span>
               </div></td></tr>`;
             if (showEntries && (dOpen || !showDays)) html += dayItems.map(e => row(e, showDays ? 'day-entry' : '')).join('');
+            // ✏️ editing: "＋ Add" and "⎯ Available till now" centred on a line under the day's entries
+            if (showEntries && editing() && (dOpen || !showDays)) html += `<tr class="day-add-row" data-date="${d}"><td colspan="${cols}"><div class="add-line">
+                ${nReal ? '' : '<span class="no-entry">No entries for this date</span>'}
+                <span class="add-btns"><button type="button" class="day-add" data-date="${d}" title="Add an entry for this date">＋ Add row</button>${hasSep(curBook) && sepsShown && d.endsWith('-01') ? `<button type="button" class="day-add day-sep" data-date="${d}" title="After the first-of-month payments (EMIs, loans, bills): work out what's available to spend this month">🧮 Calculate available</button>` : ''}</span>
+              </div></td></tr>`;
           });
           if (showWeeks) html += `<tr class="week-total${wOpen ? '' : ' closed'}" data-week="${w.key}" title="Click to ${wOpen ? 'collapse' : 'expand'} this week">
             <td class="c-tools"><div class="tools">
@@ -3371,8 +3787,26 @@
             <td class="c-sent num wk-sent"></td><td class="c-recv num wk-recv"></td>
             <td colspan="${span}" class="wk-net"></td></tr>`;
         });
+        return html;
+        };
+        if (feed) {
+          // 💳 every loaded month, oldest first; one card picked: its 🧾 groups as blocks (at their newest entry)
+          const blocks = groupView() ? groupBlocks() : [], inGroup = new Set(blocks.flatMap(b => b.members.map(m => m.id))), keysF = feedKeys();
+          // each group goes in the first loaded bill / month it has entries in, at its first entry there
+          blocks.forEach(b => {
+            b.at = keysF.find(k => { const pk = period(k); return b.members.some(m => inPeriod(m.date, viaOf(m), pk)); });
+            if (b.at) { const pk = period(b.at); b.date = b.members.find(m => inPeriod(m.date, viaOf(m), pk)).date; }
+          });
+          html = `<tr class="feed-more"><td colspan="${cols}">${feedHasEarlier() ? '<button type="button" class="feed-load">⬆ Earlier entries</button> <small>or scroll up</small>' : '— start of this expense —'}</td></tr>` +
+            feedKeys().map(k => {
+              const raw = periodItems(k).filter(e => passesFilter(e) && !e.sep);
+              const here = blocks.filter(b => b.at === k), ik = raw.filter(e => !inGroup.has(e.id)).concat(here).sort(compareRows);
+              return monthHead(k, raw, cols) + dateBlock(period(k).days, ik);
+            }).join('') +
+            (feedTo < feedMax() ? `<tr class="feed-more"><td colspan="${cols}"><button type="button" class="feed-load feed-later">⬇ Later entries</button> <small>or scroll down</small></td></tr>` : '') +
+            (editing() ? `<tr class="add-row"><td colspan="${cols}"><button type="button" class="day-add" data-date="${today()}" title="A new entry for today – set its date and time in the row">＋ Add entry</button> <small>then set its date &amp; time in the row</small></td></tr>` : '');
+        } else html = dateBlock(period().days, items) + settleHtml(curMonth);
       }
-
       $('tbody').innerHTML = balanceRow(lvl, cols) + (html ||
         `<tr><td colspan="${cols}" class="empty">${starOnly ? `No starred entries in ${monthLabel(curMonth)} – tap ☆ on an entry to star it.` : `No entries for ${monthLabel(curMonth)} yet. Tap <b>✏️ Edit</b>, then <b>＋ Add</b> on a date, or use <b>🧾 Bulk add</b>.`}</td></tr>`);
       // 👥 group expense: names already used, offered when typing "who paid"
@@ -3382,12 +3816,21 @@
       $('tbody').querySelectorAll('textarea[data-f=purpose]').forEach(fitPurpose);
       markDuplicates();
       // 💳 card payments in a billing cycle: listed, but not part of this bill
-      if (cycleOn()) $('tbody').querySelectorAll('tr[data-id]').forEach(tr => {
+      if (cycleOn()) $('tbody').querySelectorAll('tr[data-id]:not(.bill-settle)').forEach(tr => {
         const e = expenses.find(x => x.id === tr.dataset.id);
         if (!e || !isBillPayment(e)) return;
         tr.classList.add('bill-pay');
       });
-      $('totSums').colSpan = $('selSums').colSpan = showBy ? 7 : 6;
+      // …while the payments at the bottom are the ones that paid THIS bill
+      $('tbody').querySelectorAll('tr.bill-settle .kind-btn').forEach(k => {
+        k.textContent = k.closest('tr').classList.contains('late') ? '💸 Paid this bill · after the due date' : '💸 Paid this bill';
+      });
+      renderedIds = new Set([...$('tbody').querySelectorAll('tr[data-id]')].map(tr => tr.dataset.id));
+      if ($('mTable').classList.contains('card-one')) $('tbody').querySelectorAll('tr[data-id]').forEach(tr => { const r = tr.querySelector('td.c-recv'), pu = tr.querySelector('td.c-purpose'); if (r && pu) pu.after(r); });
+      // the list opens at the newest month, at the bottom
+      if (feed) fillFeed();
+      if (feed && feedScrollBottom && !feedFilling) { const wrap = $('mTable').parentElement; wrap.scrollTop = wrap.scrollHeight; feedScrollBottom = false; }
+      $('totSums').colSpan = $('selSums').colSpan = (showBy ? 7 : 6) - (cardOne() && feedOn() ? 1 + (editing() ? 0 : 1) : 0);   // (one card: fewer columns)
       updateMonthTotals();
       updateSelection();
       updateFilterUI();
@@ -3505,6 +3948,96 @@
       save(); renderMonthly();
     });
 
+    /* ⎯ separator (monthly / savings / account): a line you drop on a day – e.g. on the 1st after EMIs, loans and card
+       bills – showing what's available up to there: total (opening balance + received − sent so far), cash (what went
+       through "Cash") and balance (the rest: bank / UPI / cards). Kept as an entry { sep: true, purpose: its name }. */
+    const signed = n => (n < 0 ? '− ' : '+ ') + money(Math.abs(n));
+    const sepAmt = n => (n < 0 ? '− ' : '') + money(Math.abs(n));
+    const SEP_NAME = 'Till this date';
+    const isCash = v => /\bcash\b/i.test(v || '');
+    function runningAt(items) {
+      const out = new Map();
+      if (!items.some(e => e.sep)) return out;
+      let total = balanceOn(level()) ? openingBal(curMonth) || 0 : 0, cash = 0;
+      items.slice().sort(byDate).forEach(e => {
+        if (e.sep) {
+          // figures typed in by hand win; the next lines carry on from them
+          const has = k => e[k] !== undefined && e[k] !== null && e[k] !== '';
+          let tt = has('ovTotal') ? +e.ovTotal : total, cc = has('ovCash') ? +e.ovCash : cash;
+          let bb = has('ovBank') ? +e.ovBank : tt - cc;
+          if (has('ovBank') && !has('ovTotal')) tt = cc + bb;                       // cash + balance typed → total follows
+          if (has('ovBank') && has('ovTotal') && !has('ovCash')) cc = tt - bb;     // total + balance typed → cash follows
+          out.set(e.id, { total: tt, cash: cc, bank: bb, manual: ['ovTotal', 'ovCash', 'ovBank'].filter(has) });
+          total = tt; cash = cc;
+          return;
+        }
+        const n = (+e.received || 0) - (+e.sent || 0);
+        total += n;
+        if (isCash(viaOf(e))) cash += n;
+      });
+      return out;
+    }
+    function sepRow(e, cols, calc) {
+      const c = calc.get(e.id) || { total: 0, cash: 0, bank: 0, manual: [] }, cls = n => n < 0 ? 'sent' : 'received';
+      const edit = editing(), man = k => (c.manual || []).includes(k);
+      // ✏️ editing: each figure is a box (type your own value – empty = worked out again); ✎ marks one typed by hand
+      const fig = (label, k, v) => edit
+        ? `<label class="sep-fig${man(k) ? ' manual' : ''}">${label} <input type="text" inputmode="decimal" class="sep-in ${cls(v)}" data-k="${k}" value="${Math.round(v * 100) / 100}" title="Type the real figure – leave empty to work it out from the rows above (balance = bank / UPI / cards)">${man(k) ? '<span class="sep-man" title="Typed by hand">✎</span>' : ''}</label>`
+        : `<span class="sep-fig${man(k) ? ' manual' : ''}">${label} <b class="${cls(v)}">${sepAmt(v)}</b>${man(k) ? '<span class="sep-man" title="Typed by hand">✎</span>' : ''}</span>`;
+      return `<tr class="sep-row" data-sep="${e.id}"><td colspan="${cols}"><div class="sep-line">
+        <b class="sep-name">${esc(!e.purpose || ['Available till now', 'Left for this month'].includes(e.purpose) ? SEP_NAME : e.purpose)}</b>
+        ${edit ? `<input type="time" class="sep-time" value="${esc(e.time || '')}" title="Time – places the line among the day's entries (empty = after them)">` : e.time ? `<span class="sep-at">${fmtTime(e.time)}</span>` : ''}
+        ${fig('Total Available', 'ovTotal', c.total)}
+        ${fig('Where Cash', 'ovCash', c.cash)}
+        ${fig('and balance', 'ovBank', c.bank)}
+        ${edit && (c.manual || []).length ? '<button type="button" class="sep-auto" title="Forget the typed figures – work them out from the rows above">↺ auto</button>' : ''}
+        ${editing() ? '<span class="sep-acts"><button type="button" class="sep-del" title="Remove this line">🗑</button></span>' : ''}
+      </div></td></tr>`;
+    }
+    // a figure typed in an "Available till now" line (empty = work it out again)
+    // its time: where it sits among the day's entries (and what's counted above it)
+    $('tbody').addEventListener('change', ev => {
+      const ti = ev.target.closest('.sep-time');
+      if (!ti) return;
+      const e = expenses.find(x => x.id === ti.closest('tr.sep-row').dataset.sep);
+      if (!e) return;
+      if (ti.value) e.time = ti.value; else delete e.time;
+      save(); renderMonthly();
+    });
+    $('tbody').addEventListener('change', ev => {
+      const inp = ev.target.closest('.sep-in');
+      if (!inp) return;
+      const e = expenses.find(x => x.id === inp.closest('tr.sep-row').dataset.sep);
+      if (!e) return;
+      const v = inp.value.trim().replace(/[,₹\s+]/g, '').replace(/^−/, '-'), n = parseFloat(v);
+      if (v === '' || isNaN(n)) delete e[inp.dataset.k]; else e[inp.dataset.k] = n;
+      save(); renderMonthly();
+    });
+    $('tbody').addEventListener('keydown', ev => { if (ev.target.closest('.sep-in') && ev.key === 'Enter') { ev.preventDefault(); ev.target.blur(); } });
+    $('tbody').addEventListener('click', ev => {
+      const au = ev.target.closest('.sep-auto');
+      if (au) {
+        const e = expenses.find(x => x.id === au.closest('tr.sep-row').dataset.sep);
+        if (e) { ['ovTotal', 'ovCash', 'ovBank'].forEach(k => delete e[k]); save(); renderMonthly(); }
+        return;
+      }
+      const add = ev.target.closest('.day-sep');
+      if (add) {
+        const name = SEP_NAME;
+        // after every entry already on that day
+        const created = Math.max(Date.now(), ...expenses.filter(e => bookOf(e) === curBook && e.date === add.dataset.date).map(e => +e.created || 0)) + 1;
+        expenses.push({ id: newId(), book: curBook, created, ...byMe(), date: add.dataset.date, sep: true, purpose: name, sent: 0, received: 0, sentVia: '', receivedVia: '', note: '' });
+        collapsed.delete('d:' + add.dataset.date);
+        save(); renderMonthly();
+        return;
+      }
+      const b = ev.target.closest('.sep-del');
+      if (!b) return;
+      const e = expenses.find(x => x.id === b.closest('tr.sep-row').dataset.sep);
+      if (!e) return;
+      deleteEntries([e]);
+    });
+
     /* 💰 opening balance (monthly / savings / account expenses): one line on top of the month; the total row then shows
        what's left (opening + received − sent). Kept per month with the month notes, as "YYYY-MM#bal". */
     const balKey = m => noteKey(m) + '#bal';
@@ -3530,6 +4063,13 @@
       if (isNaN(n)) delete monthNotes[balKey(curMonth)]; else monthNotes[balKey(curMonth)] = String(n);
       saveNotes();
     }
+    // 💳 the list: a new date moves the entry to its place (another month: that month comes into the list)
+    $('tbody').addEventListener('change', ev => {
+      if (!ev.target.matches('.date-in') || !feedOn()) return;
+      const k = ev.target.value.slice(0, 7);
+      if (/^\d{4}-\d{2}$/.test(k)) { if (k < feedFrom) feedFrom = k; if (k > feedTo) feedTo = k; }
+      renderMonthly();
+    });
     $('tbody').addEventListener('change', ev => { if (ev.target.id === 'balIn') { setOpeningBal(ev.target.value); updateMonthTotals(); } });
     $('tbody').addEventListener('keydown', ev => { if (ev.target.id === 'balIn' && ev.key === 'Enter') ev.target.blur(); });
     $('tbody').addEventListener('click', ev => { if (ev.target.id === 'balPrev') { setOpeningBal(closingBal(shiftMonth(curMonth, -1))); renderMonthly(); } });
@@ -3588,7 +4128,8 @@
     let amtStep = -1;                                      // where the "Amount" title's 4-step cycle is (-1 = not started)
     // date, then time (entries without a time after timed ones), then manual/insert order
     const cmp = (x, y) => x < y ? -1 : x > y ? 1 : 0;      // plain order ('~' sorts after digits)
-    const byDate = (a, b) => cmp(a.date, b.date) || cmp(a.time || '~', b.time || '~') || a.created - b.created;
+    const ordOf = e => e.ord ?? e.created;
+    const byDate = (a, b) => cmp(a.date, b.date) || cmp(a.time || '~', b.time || '~') || ordOf(a) - ordOf(b);
     const viaOf = e => e.sentVia || e.receivedVia || '';
     function compareRows(a, b) {
       if (sortCol === 'seq') return (seqOf(a) - seqOf(b)) * sortDir;
@@ -3635,37 +4176,43 @@
     function updateMonthTotals() {
       let s = 0, r = 0;
       countedItems().forEach(e => { s += +e.sent || 0; r += +e.received || 0; });
+      // 💸 a bill view also counts the payment(s) that settled it (listed at the bottom)
+      const refunds = r, settled = settleShown() ? billPayments().reduce((a, x) => a + (+x.e.received || 0), 0) : 0;
+      r += settled;
       const net = r - s;
       const [ty, tm] = curMonth.split('-').map(Number);
       const yr = level() === 'year' || level() === 'years', ysh = level() === 'years' && yearsShown();
       const yLbl = ysh ? (ysh.length > 1 ? `${ysh[0]}–${String(ysh[ysh.length - 1]).slice(2)}` : `${ysh[0]}`) : ty;
-      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (isEventBook() ? '🎉 Event total' : cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size || flowFilter ? '🔍 Filtered total' : dupOnly ? '⚠ Duplicates total' : starOnly ? '⭐ Starred total'
+      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (isEventBook() ? '🎉 Event total' : cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size || flowFilter || tagFilter.size || textFilter ? '🔍 Filtered total' : dupOnly ? '⚠ Duplicates total' : starOnly ? '⭐ Starred total'
         : ysh ? 'All years' : yr ? 'Year total' : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`);
       $('mTotalLabel').title = `Total for ${ysh ? 'all years' : yr ? ty : monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
       $('mTotalLabel').parentElement.classList.toggle('filtered', filtering());
-      $('mSent').textContent = money(s);
-      $('mRecv').textContent = money(r);
-      // 💳 billing cycle: "To pay" = this bill's spends minus refunds (card payments not counted)
-      const bill = cycleOn();
-      $('mNetLbl').textContent = bill ? 'To pay:' : 'Net:';
-      $('mNet').textContent = money(bill ? Math.max(0, -net) : net);
-      $('mNet').className = bill || net < 0 ? 'sent' : 'received';
+      // 💳 billing cycle: "Expenses ₹X · Bill paid ₹Y · To pay ₹Z" (Net ₹0 ✅ once it's paid);
+      // payments made during this cycle settle the previous bill and aren't counted here
+      const bill = cycleOn(), byPeriod = ['entries', 'day', 'week'].includes(level());
+      $('mSent').textContent = (bill && byPeriod ? 'Expenses ' : '') + money(s);
+      $('mRecv').textContent = (bill && byPeriod ? (settled ? (refunds ? 'Paid + refunds ' : 'Bill paid ') : refunds ? 'Refunds ' : '') : '') + money(r);
+      const due = Math.max(0, -net), done = bill && settled > 0 && due === 0;
+      $('mNetLbl').textContent = bill && !done ? 'To pay:' : 'Net:';
+      $('mNet').textContent = bill ? (done ? `${money(Math.max(0, net))} ✅` : money(due)) : money(net);
+      $('mNet').className = done ? 'received' : bill || net < 0 ? 'sent' : 'received';
       // 💰 balance left = opening balance + this month's net
       const ob = balanceOn(level()) ? openingBal(curMonth) : null;
       $('mBalWrap').hidden = ob === null;
       if (ob !== null) { $('mBal').textContent = money(ob + net); $('mBal').className = ob + net < 0 ? 'sent' : 'received'; }
       $('mNet').title = bill ? (net > 0 ? `Credit of ${money(net)} – nothing to pay` : 'Spends minus refunds in this billing cycle (card payments not counted)') : '';
 
+      const rowBase = feedOn() ? feedAll().filter(countable) : countedItems();      // date / week rows: every bill loaded
       $('tbody').querySelectorAll('tr.day-head').forEach(tr => {
         let ds = 0, dr = 0;
-        countedItems().filter(e => e.date === tr.dataset.date).forEach(e => { ds += +e.sent || 0; dr += +e.received || 0; });
+        rowBase.filter(e => e.date === tr.dataset.date).forEach(e => { ds += +e.sent || 0; dr += +e.received || 0; });
         tr.querySelector('.day-sent').innerHTML = ds ? `<span class="day-pill out">${money(ds)}</span>` : '';
         tr.querySelector('.day-recv').innerHTML = dr ? `<span class="day-pill in">${money(dr)}</span>` : '';
       });
 
       $('tbody').querySelectorAll('tr.week-total:not(.month-row)').forEach(tr => {
         let ws = 0, wr = 0;
-        countedItems().filter(e => weekStart(e.date) === tr.dataset.week)
+        rowBase.filter(e => weekStart(e.date) === tr.dataset.week)
           .forEach(e => { ws += +e.sent || 0; wr += +e.received || 0; });
         const wn = wr - ws;
         const [wa, wb] = weekSpan(tr.dataset.week);
@@ -3853,13 +4400,13 @@
     const collapsed = new Set();        // 'd:YYYY-MM-DD' (a day) or 'w:YYYY-MM-DD' (a week, keyed by its Monday)
 
     // ids of the entries in a day ('d:…') or week ('w:…') of the month being viewed
-    const groupIds = key => key.startsWith('p:') ? visibleItems().filter(e => viaOf(e) === key.slice(2)).map(e => e.id) : key.startsWith('g:') ? visibleItems().filter(e => e.grp === key.slice(2)).map(e => e.id) : visibleItems()
+    const groupIds = key => key.startsWith('p:') ? selectableItems().filter(e => viaOf(e) === key.slice(2)).map(e => e.id) : key.startsWith('g:') ? selectableItems().filter(e => e.grp === key.slice(2)).map(e => e.id) : selectableItems()
       .filter(e => key.startsWith('d:') ? e.date === key.slice(2) : weekStart(e.date) === key.slice(2))
       .map(e => e.id);
 
     function updateSelection() {
       // forget selections that no longer exist in this month
-      const inMonth = new Set(visibleItems().map(e => e.id));
+      const inMonth = new Set(selectableItems().map(e => e.id));
       [...selected].forEach(id => { if (!inMonth.has(id)) selected.delete(id); });
 
       $('tbody').querySelectorAll('tr[data-id]').forEach(tr => {
@@ -3868,7 +4415,7 @@
         tr.querySelector('.row-sel').checked = on;
       });
       // ☑ total of the ticked rows, just above the month total
-      const pick = visibleItems().filter(e => selected.has(e.id));
+      const pick = selectableItems().filter(e => selected.has(e.id));
       $('selTotal').hidden = !pick.length;
       if (pick.length) {
         const ss = pick.reduce((a, e) => a + (+e.sent || 0), 0), sr = pick.reduce((a, e) => a + (+e.received || 0), 0);
@@ -3881,6 +4428,9 @@
       $('groupCount').textContent = `(${selected.size})`;
       $('selAll').checked = inMonth.size > 0 && selected.size === inMonth.size;
       $('selAll').indeterminate = selected.size > 0 && selected.size < inMonth.size;
+      $('bgBtn').hidden = !(groupView() && canEdit(curBook));
+      $('bgBtn').disabled = selected.size < 2;
+      $('bgCount').textContent = `(${selected.size})`;
       updateDupBar();
 
       // day / week checkboxes: ticked when all of their entries are selected
@@ -3925,7 +4475,7 @@
     // "＋ Add" on a date row: new entry under that date
     $('tbody').addEventListener('click', ev => {
       const btn = ev.target.closest('.day-add');
-      if (!btn) return;
+      if (!btn || btn.classList.contains('day-sep')) return;      // (⎯ Separator has its own handler)
       addEntryOn(btn.dataset.date);
     });
 
@@ -3937,8 +4487,10 @@
       const e = { id: newId(), book: curBook, created: Date.now(), ...byMe(), ...(isEventBook() ? { seq: Math.max(0, ...bookItems().map(seqOf)) + 1 } : {}),
                   date, sent: 0, received: 0, purpose: '', sentVia: via, receivedVia: '', note: '' };
       expenses.push(e);
+      if (feedOn() && date.slice(0, 7) > feedTo) feedTo = date.slice(0, 7);
       renderMonthly();
       const row = $('tbody').querySelector(`tr[data-id="${e.id}"]`);
+      if (feedOn()) row?.scrollIntoView({ block: 'center' });
       const amt = row?.querySelector('[data-f=amount]');
       (amt?.offsetParent ? amt : row?.querySelector('[data-f=sent]'))?.focus();   // merged amount box on upright phones
     }
@@ -4364,7 +4916,7 @@
     function exportData(scope, opts = {}) {
       const ticked = !!opts.ticked;
       const all = !ticked && (scope === 'all' || level() === 'years');     // 📈 all years on screen = every month
-      const items = (ticked ? visibleItems().filter(e => selected.has(e.id)) : all ? expenses.filter(e => bookOf(e) === curBook) : visibleItems()).slice().sort(byDate);
+      const items = (ticked ? visibleItems().filter(e => selected.has(e.id)) : all ? expenses.filter(e => bookOf(e) === curBook) : visibleItems()).filter(e => !e.sep).slice().sort(byDate);
       const yr = !all && !ticked && level() === 'year';     // 📆 full year on screen: that year, month by month
       const cardLbl = cycleCard() || 'Card';
       const label = (all ? 'All months' : yr ? `Year ${curMonth.slice(0, 4)}${cycleOn() ? ` – ${cardLbl} bills` : ''}`
@@ -4789,13 +5341,14 @@
       try {
         if (doVault) await uploadData();
         for (const id of shared) if (refOf(SH + id)) await uploadShared(id);
+        setOffline(false);
         setSync(dirty ? 'saving' : 'saved');
       } catch (e) {
-        console.error(e);
         dirty = true;
         vaultDirty = vaultDirty || doVault;
         shared.forEach(id => { if (sharedFiles[id]) sharedFiles[id].dirty = true; });
-        setSync('error');
+        if (isNetErr(e)) goOffline();                       // kept on this device – synced when the connection is back
+        else { console.error(e); setSync('error'); }
       } finally {
         saving = false;
       }
@@ -4843,14 +5396,129 @@
     // Who can read the row at all is decided by the database rules (book_members).
     const sharedKey = (salt, iter) => deriveKey(`${APP_SECRET}:shared-expense`, salt, iter);
 
+    /* ---------- 📴 Offline (like a notes app) ----------
+       Everything is also kept on this device, encrypted with the same key as in the cloud: my private data, the
+       shared expenses I've opened, and the list of shared expenses. With no connection the app opens from that copy
+       and every change is saved there; when the connection is back it syncs by itself. If another device changed
+       things meanwhile, the two are merged entry by entry: what changed here wins, what changed there is kept,
+       entries added on either side stay and entries deleted on either side go (a 3-way merge against the last
+       copy both had in common – the "base"). */
+    let offline = false;
+    let vaultPending = false;              // logged in, but no data yet: offline and nothing on this device – loads when back online
+    const OFF = () => `offline_v1:${user.id}:`;
+    const LAST_USER_KEY = 'offline_v1:lastUser';
+    // 📲 the device copy is only for the installed app (PWA). A browser tab (phone or desktop) stores nothing:
+    // when the connection drops it shows a note and everything is view-only until it's back.
+    function offlineCopyAllowed() {
+      return matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: window-controls-overlay)').matches || navigator.standalone === true;
+    }
+    function offlineLocked() { return !!user && offline && !offlineCopyAllowed(); }
+    // no connection: the browser says so, or the request itself failed ("Failed to fetch" – Supabase passes that message on)
+    const isNetErr = e => !navigator.onLine || !!e && /failed to fetch|networkerror|network request failed|load failed|fetch failed|err_internet|timed? ?out/i.test(e.message || '');
+    function setOffline(v) {
+      const was = offline;
+      offline = v;
+      applyOfflineUI();
+      if (was !== v && screen === 'book' && user) renderMonthly();      // a browser tab: lock / unlock the table
+    }
+    function goOffline() { setOffline(true); setSync('offline'); }
+    function applyOfflineUI() {
+      const on = !!user && offline;
+      document.body.classList.toggle('offline-lock', offlineLocked());
+      $('offlineBar').hidden = !on;
+      if (on) $('offlineBar').innerHTML = vaultPending ? "📴 You're offline – your expenses load as soon as the connection is back."
+        : offlineLocked() ? "📴 You're offline – view only until the connection is back.<small>Install the app to keep working offline.</small>"
+        : "📴 Offline – your changes are saved on this device and sync when you're back online.";
+    }
+
+    /* 📲 IndexedDB: the installed app's device copy (room for years of entries – localStorage only holds ~5 MB) */
+    const IDB_STORE = 'copy';
+    let idbOpen = null;
+    function idb() {
+      return idbOpen ||= new Promise((res, rej) => {
+        const r = indexedDB.open('expense-manager-offline', 1);
+        r.onupgradeneeded = () => r.result.createObjectStore(IDB_STORE);
+        r.onsuccess = () => res(r.result);
+        r.onerror = () => { idbOpen = null; rej(r.error); };
+      });
+    }
+    const idbReq = (mode, fn) => idb().then(db => new Promise((res, rej) => {
+      const q = fn(db.transaction(IDB_STORE, mode).objectStore(IDB_STORE));
+      q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error);
+    }));
+    const idbGet = k => idbReq('readonly', st => st.get(k)).then(v => v ?? null).catch(() => null);
+    const idbSet = (k, v) => idbReq('readwrite', st => st.put(v, k)).catch(e => console.warn('Could not keep the offline copy', e));
+    const idbKeys = () => idbReq('readonly', st => st.getAllKeys()).catch(() => []);
+    const idbDel = k => idbReq('readwrite', st => st.delete(k)).catch(() => {});
+    // older versions kept the copy in localStorage: still read once (so unsynced changes get synced), then dropped
+    function legacyGet(k) { try { return JSON.parse(localStorage.getItem(OFF() + k)); } catch { return null; } }
+    function dropLegacy(k) { try { localStorage.removeItem(OFF() + k); localStorage.removeItem(LAST_USER_KEY); } catch {} }
+    async function cacheGet(k) {
+      if (!offlineCopyAllowed()) return legacyGet(k);
+      return (await idbGet(OFF() + k)) ?? legacyGet(k);
+    }
+    async function cacheSet(k, v) { if (offlineCopyAllowed()) await idbSet(OFF() + k, v); }
+    const vaultPayload = () => ({ expenses: privateExpenses(), monthNotes: privateNotes(), viaOptions: payModes, cardCycles, books,
+      quick: [...quick], monthlyShared, profile, savedAt: nowIso() });
+
+    // 3-way merge helpers: base = the last copy both sides had, mine = this device, theirs = the cloud now
+    const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
+    const merge3Val = (b, m, th) => !same(m, b) ? m : th;
+    function merge3List(base = [], mine = [], theirs = []) {     // by id (entries, books)
+      const B = new Map((base || []).map(x => [x.id, x])), M = new Map((mine || []).map(x => [x.id, x])), T = new Map((theirs || []).map(x => [x.id, x]));
+      const out = [];
+      new Set([...M.keys(), ...T.keys()]).forEach(id => {
+        const b = B.get(id), m = M.get(id), th = T.get(id);
+        if (m && th) out.push(!same(m, b) ? m : th);              // both have it: a change made here wins, else theirs
+        else if (m) { if (!b || !same(m, b)) out.push(m); }       // only here: new (or changed) here – else deleted there
+        else if (!b || !same(th, b)) out.push(th);                // only there: new (or changed) there – else deleted here
+      });
+      return out;
+    }
+    function merge3Map(base = {}, mine = {}, theirs = {}) {        // by key (month notes, card cycles)
+      base = base || {}; mine = mine || {}; theirs = theirs || {};
+      const out = {};
+      new Set([...Object.keys(base), ...Object.keys(mine), ...Object.keys(theirs)]).forEach(k => {
+        const v = !same(mine[k], base[k]) ? mine[k] : theirs[k];
+        if (v !== undefined) out[k] = v;
+      });
+      return out;
+    }
+    const mergeVault = (b, m, th) => (b = b || {}, {
+      expenses: merge3List(b.expenses, m.expenses, th.expenses), monthNotes: merge3Map(b.monthNotes, m.monthNotes, th.monthNotes),
+      viaOptions: merge3Val(b.viaOptions, m.viaOptions, th.viaOptions), cardCycles: merge3Map(b.cardCycles, m.cardCycles, th.cardCycles),
+      books: merge3List(b.books, m.books, th.books), quick: merge3Val(b.quick, m.quick, th.quick),
+      monthlyShared: merge3Val(b.monthlyShared, m.monthlyShared, th.monthlyShared), profile: merge3Val(b.profile, m.profile, th.profile)
+    });
+    const mergeShared = (b, m, th) => (b = b || {}, {
+      ...th, name: merge3Val(b.name, m.name, th.name), type: merge3Val(b.type, m.type, th.type),
+      expenses: merge3List(b.expenses, m.expenses, th.expenses), monthNotes: merge3Map(b.monthNotes, m.monthNotes, th.monthNotes)
+    });
+    const decryptOrNull = async (envStr, key) => { try { return envStr ? await decryptData(JSON.parse(envStr), key) : null; } catch { return null; } };
+
+    // keep my private data on this device (dirty = not in the cloud yet)
+    async function keepVaultLocal(dirtyFlag) {
+      if (!user || !cryptoKey || !offlineCopyAllowed()) return;
+      await cacheSet('vault', { env: JSON.stringify(await encryptData(vaultPayload())), baseEnv: cloud.baseEnv || null, modified: cloud.modified || null, dirty: dirtyFlag });
+    }
+    async function keepRefsLocal() { if (user && cryptoKey && offlineCopyAllowed()) await cacheSet('refs', await encryptData(sharedRefs)); }
+    async function loadRefsLocal() { const r = await cacheGet('refs'); if (r && cryptoKey) { try { sharedRefs = await decryptData(r, cryptoKey); } catch {} } }
+
     /* ---------- My private data ---------- */
     async function uploadData() {
-      const body = JSON.stringify(await encryptData({
-        expenses: privateExpenses(), monthNotes: privateNotes(), viaOptions: payModes, cardCycles, books,
-        quick: [...quick], monthlyShared, profile, savedAt: nowIso()
-      }));
+      await keepVaultLocal(true);                              // on this device first – nothing is lost if the connection drops
+      // another device saved since my last sync: merge its changes in before saving mine
+      const row = await dbGetVault();
+      if (row && row.updated_at !== cloud.modified) {
+        const theirs = await decryptData(JSON.parse(row.data), cryptoKey);
+        const base = await decryptOrNull(cloud.baseEnv, cryptoKey);
+        applyVault(mergeVault(base, vaultPayload(), theirs));
+        refreshView();
+      }
+      const body = JSON.stringify(await encryptData(vaultPayload()));
       const r = await dbSaveVault(body);
-      cloud.modified = r.updated_at;
+      cloud.modified = r.updated_at; cloud.baseEnv = body;
+      await keepVaultLocal(false);
     }
 
     // apply my private data, keeping the shared expenses that are loaded in memory
@@ -4871,16 +5539,31 @@
 
     async function openVault() {
       setSync('loading');
-      const row = await dbGetVault();
-      let data;
+      const cached = await cacheGet('vault');
+      let row, data, mergedOffline = false;
+      try { row = await dbGetVault(); }
+      catch (e) {
+        if (!isNetErr(e)) throw e;
+        if (cached?.env && offlineCopyAllowed()) return openVaultOffline(cached);   // 📲 the installed app: from this device
+        // nothing to open here (a browser tab, or the app before its first sync): say so, load once back online
+        expenses = []; monthNotes = {}; books = normBooks(null); sharedRefs = []; quick = new Set(); monthlyShared = null;
+        vaultPending = true;
+        setAuthUI(); goOffline(); refreshView();
+        return;
+      }
       if (row) {
         // returning user: decrypt
         const env = JSON.parse(row.data);
-        cloud = { modified: row.updated_at, salt: fromB64(env.salt) };
+        cloud = { modified: row.updated_at, salt: fromB64(env.salt), baseEnv: row.data };
         const key = await userKey(cloud.salt, env.iter || PBKDF2_ITER);
         try { data = await decryptData(env, key); }
         catch { throw new Error('Could not decrypt your saved data (was APP_SECRET changed?).'); }
         cryptoKey = key;
+        // changes made on this device while offline (not synced yet): merge them with the cloud's
+        if (cached?.dirty && cached.env) {
+          const mine = await decryptOrNull(cached.env, key);
+          if (mine) { data = mergeVault(await decryptOrNull(cached.baseEnv, key), mine, data); mergedOffline = true; }
+        }
       } else {
         // first login = sign up: new encrypted row, carry over anything entered before logging in
         const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -4890,6 +5573,8 @@
       }
       expenses = []; monthNotes = {};
       applyVault(data);
+      vaultPending = false;
+      setOffline(false);
       if (!row) {
         await uploadData();
         // guest data now lives (encrypted) in the cloud – remove the plain copy
@@ -4900,22 +5585,40 @@
       setAuthUI();
       setSync('saved');
       refreshView();
+      if (mergedOffline) { vaultDirty = dirty = true; await flush(); }      // upload the merged copy
+      else await keepVaultLocal(false);
+      if (!dirty) { dropLegacy('vault'); dropLegacy('refs'); }             // an old localStorage copy isn't needed any more
+    }
+    // no connection: open my data from this device
+    async function openVaultOffline(c) {
+      const env = JSON.parse(c.env), salt = fromB64(env.salt);
+      cryptoKey = await userKey(salt, env.iter || PBKDF2_ITER);
+      const data = await decryptData(env, cryptoKey);
+      cloud = { modified: c.modified || null, salt, baseEnv: c.baseEnv || null };
+      expenses = []; monthNotes = {};
+      applyVault(data);
+      vaultDirty = dirty = !!c.dirty;
+      await loadRefsLocal();
+      setAuthUI();
+      goOffline();
+      refreshView();
     }
 
     // another device changed my private data -> load it (unless I have unsaved edits)
     async function pullRemote() {
-      if (!user || !cryptoKey || dirty || saving || document.hidden) return;
+      if (!user || !cryptoKey || dirty || saving || document.hidden || offline) return;
       try {
         const row = await dbGetVault();
         if (!row || row.updated_at === cloud.modified) return;
         const env = JSON.parse(row.data);
         const data = await decryptData(env, cryptoKey);
         if (dirty || saving) return;   // local edits win; they'll be uploaded next
-        cloud.modified = row.updated_at;
+        cloud.modified = row.updated_at; cloud.baseEnv = row.data;
         applyVault(data);
+        keepVaultLocal(false);
         setAuthUI();
         refreshView();
-      } catch (e) { console.warn('Sync check failed', e); }
+      } catch (e) { if (isNetErr(e)) goOffline(); else console.warn('Sync check failed', e); }
     }
 
     /* ---------- Shared expenses: one encrypted row per shared book ---------- */
@@ -4932,10 +5635,19 @@
     // everything I own or that was shared with my email (the database only returns those)
     async function refreshSharedList() {
       if (!user) return;
-      const rows = await dbListShared();
+      let rows;
+      try { rows = await dbListShared(); }
+      catch (e) {
+        if (!isNetErr(e)) throw e;
+        goOffline();
+        if (!sharedRefs.length) await loadRefsLocal();       // offline: the list as last seen
+        refreshView();
+        return;
+      }
       const ids = new Set(rows.map(r => r.id));
       sharedRefs = rows.map(r => refFromRow(r, sharedRefs.find(x => x.id === r.id)));
       Object.keys(sharedFiles).forEach(id => { if (!ids.has(id)) forgetShared(id); });   // access removed
+      keepRefsLocal();
       refreshView();
     }
 
@@ -4950,11 +5662,33 @@
       };
     };
 
+    async function keepSharedLocal(id, dirtyFlag) {
+      const f = sharedFiles[id];
+      if (!f || !refOf(SH + id) || !offlineCopyAllowed()) return;
+      await cacheSet('shared:' + id, { env: JSON.stringify(await encryptData(sharedPayload(id), f.key, f.salt, { kind: 'shared-expense' })), baseEnv: f.baseEnv || null, modified: f.modified || null, dirty: dirtyFlag });
+    }
+    // put a shared expense's entries + notes in memory
+    function applyShared(id, data) {
+      const bid = SH + id;
+      expenses = expenses.filter(e => bookOf(e) !== bid).concat((data.expenses || []).map(e => ({ ...e, book: bid })));
+      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) delete monthNotes[k]; });
+      Object.entries(data.monthNotes || {}).forEach(([m, v]) => monthNotes[`${bid}|${m}`] = v);
+    }
     async function uploadShared(id) {
       const f = sharedFiles[id];
+      await keepSharedLocal(id, true);                          // on this device first
+      // someone else saved it since I loaded it: merge their changes in before saving mine
+      const row = await dbGetShared(id);
+      if (row && row.updated_at !== f.modified) {
+        const theirs = await decryptData(JSON.parse(row.data), f.key);
+        const base = await decryptOrNull(f.baseEnv, f.key);
+        applyShared(id, mergeShared(base, sharedPayload(id), theirs));
+        refreshView();
+      }
       const body = JSON.stringify(await encryptData(sharedPayload(id), f.key, f.salt, { kind: 'shared-expense' }));
       const r = await dbUpdateShared(id, { data: body });
-      f.modified = r.updated_at;
+      f.modified = r.updated_at; f.baseEnv = body;
+      await keepSharedLocal(id, false);
     }
 
     // First share of one of my books: move it out of my private data into its own shared row
@@ -4993,19 +5727,34 @@
 
     // Download + decrypt a shared book and put its entries in memory
     async function loadSharedFile(id) {
-      const row = await dbGetShared(id);
+      const cached = await cacheGet('shared:' + id);
+      let row;
+      try { row = await dbGetShared(id); }
+      catch (e) {
+        if (!isNetErr(e) || !cached?.env || !offlineCopyAllowed()) throw e;
+        // offline: open it from this device
+        const env = JSON.parse(cached.env), salt = fromB64(env.salt);
+        const key = sharedFiles[id]?.key || await sharedKey(salt, env.iter || PBKDF2_ITER);
+        sharedFiles[id] = { ...(sharedFiles[id] || {}), key, salt, modified: cached.modified, baseEnv: cached.baseEnv, dirty: !!cached.dirty || !!sharedFiles[id]?.dirty };
+        applyShared(id, await decryptData(env, key));
+        if (cached.dirty) dirty = true;
+        goOffline();
+        return refOf(SH + id);
+      }
       if (!row) { const e = new Error('403 no access'); e.noAccess = true; throw e; }
       const env = JSON.parse(row.data);
       if (env?.kind !== 'shared-expense') throw new Error('not an Expense Manager book');
       const salt = fromB64(env.salt);
       const key = sharedFiles[id]?.key || await sharedKey(salt, env.iter || PBKDF2_ITER);
-      const data = await decryptData(env, key);
-      sharedFiles[id] = { ...(sharedFiles[id] || {}), key, salt, modified: row.updated_at };
-
-      const bid = SH + id;
-      expenses = expenses.filter(e => bookOf(e) !== bid).concat((data.expenses || []).map(e => ({ ...e, book: bid })));
-      Object.keys(monthNotes).forEach(k => { if (k.startsWith(bid + '|')) delete monthNotes[k]; });
-      Object.entries(data.monthNotes || {}).forEach(([m, v]) => monthNotes[`${bid}|${m}`] = v);
+      let data = await decryptData(env, key);
+      sharedFiles[id] = { ...(sharedFiles[id] || {}), key, salt, modified: row.updated_at, baseEnv: row.data };
+      // changes made here while offline (not synced yet): merge them in, then save
+      if (cached?.dirty && cached.env) {
+        const mine = await decryptOrNull(cached.env, key);
+        if (mine) { data = mergeShared(await decryptOrNull(cached.baseEnv, key), mine, data); sharedFiles[id].dirty = true; dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(flush, 300); }
+      }
+      applyShared(id, data);
+      if (!sharedFiles[id].dirty) { keepSharedLocal(id, false); dropLegacy('shared:' + id); }
 
       const i = sharedRefs.findIndex(x => x.id === id);
       const r = refFromRow(row, { ...(sharedRefs[i] || {}), ownerName: data.ownerName || undefined, type: data.type || sharedRefs[i]?.type });
@@ -5017,7 +5766,7 @@
     async function openShared(id, push = true) {
       if (!user) { alert('Log in to open shared expenses.'); return; }
       const bid = SH + id;
-      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; sortForType(bid); }
+      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; tagFilter.clear(); textFilter = ''; feedFrom = feedTo = null; cardSel = ''; sortForType(bid); }
       curBook = bid;
       openScreen('book', push);
       $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
@@ -5028,13 +5777,13 @@
         if (screen === 'book' && curBook === bid) openScreen('book', false);
       } catch (e) {
         console.error(e);
-        mFlash(e.noAccess ? '🔒 You no longer have access to this shared expense.' : 'Could not load: ' + e.message);
+        mFlash(e.noAccess ? '🔒 You no longer have access to this shared expense.' : isNetErr(e) ? "📴 You're offline – open this expense once online to keep a copy on this device." : 'Could not load: ' + e.message);
       }
     }
 
     // someone else edited the shared expense that is open right now -> reload it
     async function pullShared(force) {
-      if (!user || screen !== 'book' || !isShared(curBook) || dirty || saving || (document.hidden && !force)) return;
+      if (!user || screen !== 'book' || !isShared(curBook) || dirty || saving || offline || (document.hidden && !force)) return;
       const id = curBook.slice(SH.length), f = sharedFiles[id];
       if (!f) return;
       try {
@@ -5043,7 +5792,7 @@
         if (row.updated_at === f.modified || dirty || saving) return;
         await loadSharedFile(id);
         if (!$('monthly').contains(document.activeElement)) renderMonthly();
-      } catch (e) { console.warn('Shared sync check failed', e); }
+      } catch (e) { if (isNetErr(e)) goOffline(); else console.warn('Shared sync check failed', e); }
     }
 
     /* ---------- Live updates (Supabase Realtime) + a slow safety poll ---------- */
@@ -5066,6 +5815,24 @@
     }
     setInterval(pullShared, 30000);
     setInterval(pullRemote, 45000);
+    // 📴 → 🌐 connection back: upload what was saved on this device (merged with any changes from elsewhere), then catch up
+    async function backOnline() {
+      if (!user) return;
+      if (vaultPending) {                                    // nothing was loaded yet: load it now
+        try { await openVault(); } catch (e) { if (!isNetErr(e)) console.error(e); }
+        return;
+      }
+      if (!cryptoKey) return;
+      setOffline(false);
+      setSync(dirty ? 'saving' : 'loading');
+      try { await refreshSharedList(); } catch {}
+      if (offline) return;                                   // still no connection
+      if (dirty || vaultDirty || Object.values(sharedFiles).some(f => f.dirty)) { dirty = true; clearTimeout(saveTimer); await flush(); }
+      else { setSync('saved'); pullRemote(); pullShared(true); }
+    }
+    window.addEventListener('online', backOnline);
+    window.addEventListener('offline', () => { if (user) goOffline(); });
+    setInterval(() => { if (offline && navigator.onLine) backOnline(); }, 30000);   // a missed "online" event
     window.addEventListener('focus', () => { pullRemote(); pullShared(); if (user) refreshSharedList().catch(() => {}); });
 
     /* ---------- Login / signup / logout ---------- */
@@ -5076,6 +5843,10 @@
       user = { id: u.id, email: u.email, name: defaultName, defaultName, picture: md.avatar_url || md.picture || '', avatar: md.avatar_url || md.picture || '' };
       closeLogin();
       setAuthUI();
+      if (offlineCopyAllowed()) {
+        idbSet(LAST_USER_KEY, { id: u.id, email: u.email, user_metadata: md });
+        navigator.storage?.persist?.().catch(() => {});      // don't let the browser clear the device copy when space is low
+      }
       try { await openVault(); }
       catch (e) { console.error(e); alert('Could not load your data: ' + e.message); await logout(true); }
     }
@@ -5084,15 +5855,30 @@
       // after the email link / Google redirect, and on every page load with a saved session
       sb.auth.onAuthStateChange((event, session) => {
         if (session?.user && !user) setTimeout(() => startSession(session), 0);
-        if (event === 'SIGNED_OUT' && user) setTimeout(() => logout(true), 0);
+        if (event === 'SIGNED_OUT' && user && navigator.onLine) setTimeout(() => logout(true), 0);
       });
     }
+    // 📴 opened with no connection: the login can't be checked – carry on with the last account (its data is on this device)
+    setTimeout(async () => {
+      if (user || navigator.onLine || !offlineCopyAllowed()) return;      // installed app only
+      const lu = await idbGet(LAST_USER_KEY);
+      if (!user && lu?.id && await idbGet(`offline_v1:${lu.id}:vault`)) startSession({ user: lu });
+    }, 1500);
 
     async function logout(silent) {
       if (!silent && user && (dirty || saving)) {
         clearTimeout(saveTimer);
         await flush();
+        if (offline && dirty && !confirm("You're offline and some changes haven't been synced yet.\nLogging out now removes them from this device.\n\nLog out anyway?")) return;
       }
+      // a real logout: this device forgets the (encrypted) offline copy
+      if (!silent && user) {
+        const mine = OFF();
+        await Promise.all((await idbKeys()).filter(k => String(k).startsWith(mine) || k === LAST_USER_KEY).map(idbDel));
+        try { Object.keys(localStorage).filter(k => k.startsWith(mine) || k === LAST_USER_KEY).forEach(k => localStorage.removeItem(k)); } catch {}
+      }
+      vaultPending = false;
+      setOffline(false);
       rtChannel?.unsubscribe(); rtChannel = null;
       const wasUser = !!user;
       user = null; cryptoKey = null;
@@ -5308,9 +6094,10 @@
       // just a small dot on the avatar: green = saved (encrypted), amber = saving, red = not saved
       if (dot) {
         dot.className = 'sync-dot ' + state;
-        dot.title = { loading: 'Loading…', saving: 'Saving…', saved: 'Saved · encrypted', error: 'Not saved' }[state] || '';
+        dot.title = { loading: 'Loading…', saving: 'Saving…', saved: 'Saved · encrypted', error: 'Not saved',
+          offline: "Offline – changes are saved on this device and sync when you're back online" }[state] || '';
       }
-      el.innerHTML = state === 'error' ? '⚠️ <button id="retryBtn">Retry</button>' : '';
+      el.innerHTML = state === 'error' ? '⚠️ <button id="retryBtn">Retry</button>' : state === 'offline' ? '<span class="off-pill" title="Changes are saved on this device and sync when you\'re back online">📴 Offline</span>' : '';
       const b = $('retryBtn');
       if (b) b.onclick = () => { dirty = true; vaultDirty = true; flush(); };
     }
@@ -5321,11 +6108,20 @@
     }));
 
     // phones: the one-line note gets out of the way while you scroll the entries
+    let lastScrollTop = 0;
     $('mTable').parentElement.addEventListener('scroll', ev => {
-      const w = ev.target, m = $('monthly');
-      if (w.scrollTop > 24 && w.scrollHeight - w.clientHeight > 80) m.classList.add('list-scrolled');
+      // 💳 the list: near the top → load the month before; the month in view drives the picker / totals
+      if (feedOn()) {
+        if (ev.target.scrollTop < 80) loadEarlier();
+        if (ev.target.scrollTop + ev.target.clientHeight > ev.target.scrollHeight - 80) loadLater();
+        syncFeedMonth();
+      }
+      const w = ev.target, m = $('monthly'), moved = Math.abs(w.scrollTop - lastScrollTop);
+      lastScrollTop = w.scrollTop;
+      if (w.scrollTop > 24 && w.scrollHeight - w.clientHeight > 80) { if (moved > 2) m.classList.add('list-scrolled'); }
       else if (w.scrollTop < 4) m.classList.remove('list-scrolled');
     }, { passive: true });
+    $('monthly').addEventListener('click', () => $('monthly').classList.remove('list-scrolled'));   // a tap anywhere: the note comes back
 
     // ⤢ Landscape view: the page is drawn turned 90° (works even with auto-rotate off) and shows the full grid
     const isRotated = () => document.documentElement.classList.contains('rot90');
