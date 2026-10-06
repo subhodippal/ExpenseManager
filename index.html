@@ -601,6 +601,8 @@
     /* view only (✏️ Edit off): no editing controls, fields read like plain text */
     #monthly.viewmode .day-add, #monthly.viewmode #clearBtn, #monthly.viewmode #bulkBtn, #monthly.viewmode .row-del,
     #monthly.viewmode .date-pick { display: none !important; }
+    /* ✏️ Edit on: no 📤 Import/Export */
+    #monthly:not(.viewmode):not(.readonly) #ioBtn { display: none !important; }
     #monthly.viewmode .star-btn:not(.on) { opacity: .35; }                 /* ☆ still tappable in view mode */
     #monthly.viewmode .edit-table :is(input, select, textarea):is(:disabled, [readonly]),
     #monthly.readonly .edit-table :is(input, select, textarea):is(:disabled, [readonly]) {
@@ -938,7 +940,7 @@
     #viewBtn.on { background: #ede9fe; color: #6d28d9; }
     html[data-theme=dark] #viewBtn.on { background: #2e1f4f; color: #e9d5ff; }
     /* full year: one line per month (styled like the week rows), no month note */
-    #monthly.yearmode .month-notes { display: none; }
+    #monthly.yearmode .month-notes, #monthly.cardmode .month-notes { display: none; }
     tr.month-row .wk-label { font-weight: 700; }
     tr.month-row.no-entries td { opacity: .55; }
     tr.month-row .mr-range { color: var(--muted); font-weight: 400; font-size: .72rem; margin-left: 6px; }
@@ -1067,6 +1069,11 @@
       border-radius: 6px; padding: 2px 10px; font-size: .8rem; font-weight: 600; cursor: pointer;
     }
     .day-add:hover { background: var(--primary); color: #fff; border-style: solid; }
+    /* ✏️ editing: today's "＋ Add row" stands out */
+    .day-add.today-add { background: #fef3c7; color: #92400e; border: 2px solid #f59e0b; box-shadow: 0 0 0 3px rgba(245, 158, 11, .25); }
+    .day-add.today-add:hover { background: #f59e0b; color: #fff; }
+    .day-add.today-add.pulse { animation: addPulse .7s ease-in-out 3; }
+    @keyframes addPulse { 50% { box-shadow: 0 0 0 7px rgba(245, 158, 11, .4); } }
     .caret { display: inline-block; width: 14px; text-align: center; color: #6366f1; font-size: .9rem; }
     .today-tag { background: var(--primary); color: #fff; border-radius: 4px; font-size: .68rem; padding: 1px 5px; margin-left: 4px; }
     /* grouped entries: the date is on the date row, so the cell only has a small 📅 to change it */
@@ -1145,18 +1152,6 @@
 
     footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 24px 16px; }
     footer .heart { color: #ef4444; }
-
-    /* phones held upright only: hint to turn the phone sideways */
-    .rotate-tip { display: none; }
-    @media (max-width: 600px) and (orientation: portrait) {
-      .rotate-tip {
-        display: flex; align-items: center; justify-content: center; gap: 8px;
-        background: #f8f1ff; color: #6b21a8; border-radius: 8px;
-        font-size: .75rem; padding: 3px 8px; margin-bottom: 6px;
-      }
-      .rotate-tip button { background: none; border: none; color: inherit; font-size: .8rem; cursor: pointer; padding: 0 4px; }
-      #monthly.list-scrolled .rotate-tip { display: none; }
-    }
 
     /* ---------- Tablets / phones in landscape: the full grid, compact so it still fits ---------- */
     @media (max-width: 980px), (max-height: 520px) and (orientation: landscape) {
@@ -1373,11 +1368,10 @@
       .month-pick .btn { flex: 0 0 auto; padding: 6px 12px; }
       .month-bar > .btn { flex: 1 1 0; min-width: 0; padding: 6px 0; display: flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; overflow: hidden; }
       .month-bar #selCount { font-size: .72rem; }
-      /* line 1: ◀ month ▶ 📍 🔍 📤 · line 2: ✏️ ⭐ ↔ ⛶ rotate ⚙️ (editing: ✔ 🗑 🧾 first) */
-      .month-pick { order: -2; flex: 1 1 calc(100% - 98px); }
+      /* line 1: ◀ month ▶ 📍 🔍 · line 2: ✏️ ⭐ 📤 📊 ⚙️ (editing: ✔ 🗑 🧾 first) */
+      .month-pick { order: -2; flex: 1 1 calc(100% - 50px); }
       .month-bar > #filterBtn { order: -1; flex: 0 0 44px; }
-      .month-bar > #ioBtn { order: 0; flex: 0 0 44px; }
-      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #bgBtn { order: 3; } #starOnlyBtn { order: 4; } #viewBtn { order: 4; } #wideBtn { order: 5; }
+      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #bgBtn { order: 3; } #starOnlyBtn { order: 4; } #ioBtn { order: 5; } #viewBtn { order: 6; } #wideBtn { order: 6; }
       #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
       html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
 
@@ -1478,6 +1472,8 @@
     }
     html.rot90 .landscape-btn { display: inline-flex !important; }
     html.rot90 .wide-btn { display: none !important; }
+    /* full screen, rotate and ↔ full-table buttons are hidden everywhere */
+    #fsBtn, #landscapeBtn, #wideBtn { display: none !important; }
     /* phones / tablets (little room): the one-line note slides out of the way while you scroll the entries and comes
        back with a tap anywhere (never while you're typing in it); big screens keep it in place */
     .month-notes { transition: max-height .25s ease, opacity .2s ease, margin-bottom .25s ease; max-height: 60vh; }
@@ -1563,13 +1559,13 @@
     html[data-theme=dark] :is(.today-tag, .filter-count, .day-add:hover, .menu button.active) { color: #111; }
     html[data-theme=dark] .btn-danger { background: #4c1d24; color: #fca5a5; }
     html[data-theme=dark] .msg { background: #064e3b; color: #bbf7d0; }
-    html[data-theme=dark] .msg .undo, html[data-theme=dark] .day-add { background: transparent; }
+    html[data-theme=dark] .msg .undo, html[data-theme=dark] .day-add:not(.today-add) { background: transparent; }
+    html[data-theme=dark] .day-add.today-add { background: #3a2a05; color: #fde68a; border-color: #f59e0b; }
     html[data-theme=dark] .amt-wrap.minus .sign-btn { background: #4c1d24; }
     html[data-theme=dark] .amt-wrap.plus .sign-btn { background: #064e3b; }
     html[data-theme=dark] .edit-table tr.invalid input.bad { background: #4c1d24; }
     html[data-theme=dark] :is(.note-preview, .month-notes textarea) { background: #191021; border-color: #573274; color: #ede9fe; }
     html[data-theme=dark] .note-preview .more { color: #c4b5fd; }
-    html[data-theme=dark] .rotate-tip { background: #191021; color: #d8b4fe; }
     html[data-theme=dark] .default-tag { background: #2e2e2e; color: #e6e6e6; }
     html[data-theme=dark] .shared-tag { background: #3b0764; color: #ddd6fe; }
     html[data-theme=dark] .role-tag { background: #2e2e2e; color: #d0d0d0; }
@@ -1803,7 +1799,6 @@
         </div>
       </div>
 
-      <div class="rotate-tip" id="rotateTip" hidden>📱↻ Use in landscape mode for better visibility<button type="button" id="rotateTipX" title="Close">✕</button></div>
       <div class="month-notes">
         <label for="monthNote" title="Month notes" aria-label="Month notes"><span class="note-ico">📝</span><span class="lbl"> Notes</span></label>
         <button type="button" class="note-preview" id="notePreview" title="Click to open the full note"></button>
@@ -2201,7 +2196,6 @@
       renderQuick();
       if (name === 'share') renderShare();
       if (name === 'book') renderMonthly();
-      if (name === 'book' && prev !== 'book') showRotateTip();
       if (name === 'newBook') {
         $('bookName').value = '';
         $('newBookTypes').innerHTML = typeListHtml('newType', 'monthly');
@@ -2246,13 +2240,6 @@
     });
     try { history.replaceState({ em: 0 }, ''); } catch {}
 
-    // "use in landscape" hint (CSS shows it on upright phones only): 4 s each time a book opens, ✕ closes it
-    function showRotateTip() {
-      $('rotateTip').hidden = false;
-      clearTimeout(showRotateTip.t);
-      showRotateTip.t = setTimeout(() => $('rotateTip').hidden = true, 4000);
-    }
-    $('rotateTipX').addEventListener('click', () => { clearTimeout(showRotateTip.t); $('rotateTip').hidden = true; });
     document.querySelectorAll('#homeMenu button').forEach(b => b.addEventListener('click', () => {
       if (b.dataset.go === 'monthly') { const m = monthlyBook(); if (isShared(m)) openShared(m.slice(SH.length)); else openBook('monthly'); }
       else openScreen(b.dataset.go);
@@ -3634,6 +3621,7 @@
       $('thisMonth').hidden = yearsMode || (yearMode ? curMonth.slice(0, 4) === today().slice(0, 4) : curMonth === today().slice(0, 7));
       $('monthly').classList.toggle('yearmode', yearMode || yearsMode);
       $('monthly').classList.toggle('eventmode', isEventBook());
+      $('monthly').classList.toggle('cardmode', cardBook());
       $('mTable').classList.toggle('is-list', cardList());
       $('mTable').classList.toggle('card-one', cardOne() && feedOn());
       $('mTable').classList.toggle('feed-on', feedOn());
@@ -3775,7 +3763,7 @@
             // ✏️ editing: "＋ Add" and "⎯ Available till now" centred on a line under the day's entries
             if (showEntries && editing() && (dOpen || !showDays)) html += `<tr class="day-add-row" data-date="${d}"><td colspan="${cols}"><div class="add-line">
                 ${nReal ? '' : '<span class="no-entry">No entries for this date</span>'}
-                <span class="add-btns"><button type="button" class="day-add" data-date="${d}" title="Add an entry for this date">＋ Add row</button>${hasSep(curBook) && sepsShown && d.endsWith('-01') ? `<button type="button" class="day-add day-sep" data-date="${d}" title="After the first-of-month payments (EMIs, loans, bills): work out what's available to spend this month">🧮 Calculate available</button>` : ''}</span>
+                <span class="add-btns"><button type="button" class="day-add${d === todayStr ? ' today-add' : ''}" data-date="${d}" title="Add an entry for this date">＋ Add row</button>${hasSep(curBook) && sepsShown && d.endsWith('-01') ? `<button type="button" class="day-add day-sep" data-date="${d}" title="After the first-of-month payments (EMIs, loans, bills): work out what's available to spend this month">🧮 Calculate available</button>` : ''}</span>
               </div></td></tr>`;
           });
           if (showWeeks) html += `<tr class="week-total${wOpen ? '' : ' closed'}" data-week="${w.key}" title="Click to ${wOpen ? 'collapse' : 'expand'} this week">
@@ -3900,9 +3888,12 @@
     function viaGroupRows(items, cols, row) {
       let html = '', i = 0, k = 0;
       while (i < items.length) {
-        const v = viaOf(items[i]), list = [];
-        while (i < items.length && viaOf(items[i]) === v) list.push(items[i++]);
-        const name = viaName(v), g = k++ % 6, key = 'p:' + v, open = !collapsed.has(key);   // colours in turn: neighbours always differ
+        const vk = viaKey(viaOf(items[i])), list = [];
+        while (i < items.length && viaKey(viaOf(items[i])) === vk) list.push(items[i++]);
+        // shown name: the spelling set up as a card, else the one used most
+        const n = {}; list.forEach(e => { const x = viaOf(e).trim(); n[x] = (n[x] || 0) + 1; });
+        const vs = Object.keys(n), v = vs.find(isCard) || vs.sort((a, b) => n[b] - n[a])[0];
+        const name = viaName(v), g = k++ % 6, key = 'p:' + vk, open = !collapsed.has(key);   // colours in turn: neighbours always differ
         const s = list.reduce((a, x) => a + (+x.sent || 0), 0), r = list.reduce((a, x) => a + (+x.received || 0), 0);
         html += `<tr class="grp-head via-head g${g}" data-key="${esc(key)}" title="Click to ${open ? 'fold' : 'unfold'} ${esc(name)}">
           <td class="c-tools"><div class="tools"><input type="checkbox" class="grp-sel" data-grp="${esc(key)}" title="Select all paid by ${esc(name)}"><span class="caret">${open ? '▾' : '▸'}</span></div></td>
@@ -4131,10 +4122,12 @@
     const ordOf = e => e.ord ?? e.created;
     const byDate = (a, b) => cmp(a.date, b.date) || cmp(a.time || '~', b.time || '~') || ordOf(a) - ordOf(b);
     const viaOf = e => e.sentVia || e.receivedVia || '';
+    // same payment method however it was typed ("ICICI card" = "icici  Card ")
+    const viaKey = v => (v || '').trim().replace(/\s+/g, ' ').toLowerCase();
     function compareRows(a, b) {
       if (sortCol === 'seq') return (seqOf(a) - seqOf(b)) * sortDir;
       if (sortCol === 'via') {
-        const x = viaOf(a).toLowerCase(), y = viaOf(b).toLowerCase();
+        const x = viaKey(viaOf(a)), y = viaKey(viaOf(b));
         if (!x !== !y) return x ? -1 : 1;
         return x.localeCompare(y) * sortDir || byDate(a, b);
       }
@@ -4400,7 +4393,7 @@
     const collapsed = new Set();        // 'd:YYYY-MM-DD' (a day) or 'w:YYYY-MM-DD' (a week, keyed by its Monday)
 
     // ids of the entries in a day ('d:…') or week ('w:…') of the month being viewed
-    const groupIds = key => key.startsWith('p:') ? selectableItems().filter(e => viaOf(e) === key.slice(2)).map(e => e.id) : key.startsWith('g:') ? selectableItems().filter(e => e.grp === key.slice(2)).map(e => e.id) : selectableItems()
+    const groupIds = key => key.startsWith('p:') ? selectableItems().filter(e => viaKey(viaOf(e)) === key.slice(2)).map(e => e.id) : key.startsWith('g:') ? selectableItems().filter(e => e.grp === key.slice(2)).map(e => e.id) : selectableItems()
       .filter(e => key.startsWith('d:') ? e.date === key.slice(2) : weekStart(e.date) === key.slice(2))
       .map(e => e.id);
 
@@ -4621,6 +4614,13 @@
       if (editMode) starOnly = false;                       // edit the whole month
       if (!editMode) pruneBlank();
       renderMonthly();
+      // straight to today: its "＋ Add row" in view and pulsing
+      const add = editMode && document.querySelector('#tbody .day-add.today-add');
+      if (add) {
+        add.scrollIntoView({ block: 'center' });
+        add.classList.add('pulse');
+        add.addEventListener('animationend', () => add.classList.remove('pulse'), { once: true });
+      }
     });
 
     // ↔ full table on upright phones (scroll sideways)
