@@ -124,7 +124,7 @@
     .offline-bar small { display: block; font-weight: 400; opacity: .85; font-size: .78rem; }
     body.book-mode .offline-bar { margin: 0 0 6px; padding: 5px 10px; font-size: .8rem; }
     body.offline-lock :is(#editBtn, #bulkBtn, #cardsBtn, .book-actions [data-act]:not([data-act=fav]):not([data-act=quick]):not([data-act=unquick]), #addBookCard,
-      [data-go=newBook], #profileBtn, .fav-btn, .star-btn, #addSharedBtn, .day-sep, .kind-btn) { pointer-events: none; opacity: .4; }
+      [data-go=newBook], #profileBtn, .fav-btn, #addSharedBtn, .day-sep, .kind-btn) { pointer-events: none; opacity: .4; }
     html[data-theme=dark] .offline-bar { background: #1f2937; border: 1px solid #374151; }
     .off-pill { background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.45); border-radius: 999px; padding: 1px 8px; font-weight: 600; white-space: nowrap; }
     @keyframes dotPulse { 50% { opacity: .35; } }
@@ -596,14 +596,13 @@
 
     /* a shared book you can only view */
     #monthly.readonly .day-add, #monthly.readonly #clearBtn, #monthly.readonly #bulkBtn,
-    #monthly.readonly .row-del, #monthly.readonly .date-pick, #monthly.readonly .star-btn, #monthly.readonly #starOnlyBtn { display: none !important; }
+    #monthly.readonly .row-del, #monthly.readonly .date-pick { display: none !important; }
 
     /* view only (✏️ Edit off): no editing controls, fields read like plain text */
     #monthly.viewmode .day-add, #monthly.viewmode #clearBtn, #monthly.viewmode #bulkBtn, #monthly.viewmode .row-del,
     #monthly.viewmode .date-pick { display: none !important; }
     /* ✏️ Edit on: no 📤 Import/Export */
     #monthly:not(.viewmode):not(.readonly) #ioBtn { display: none !important; }
-    #monthly.viewmode .star-btn:not(.on) { opacity: .35; }                 /* ☆ still tappable in view mode */
     #monthly.viewmode .edit-table :is(input, select, textarea):is(:disabled, [readonly]),
     #monthly.readonly .edit-table :is(input, select, textarea):is(:disabled, [readonly]) {
       background: transparent; border-color: transparent; color: var(--text); -webkit-text-fill-color: currentColor;
@@ -684,6 +683,8 @@
 
     /* 🔍 filter */
     #filterBtn.on { background: #dbeafe; color: #1e40af; }
+    #bgBtn.on { background: #fef3c7; color: #92400e; }
+    html[data-theme=dark] #bgBtn.on { background: #3a2a05; color: #fde68a; }
     .filter-count { background: var(--primary); color: #fff; border-radius: 999px; font-size: .7rem; padding: 0 6px; margin-left: 4px; }
     .filter-bar {
       display: flex; align-items: center; gap: 8px; flex-wrap: nowrap;
@@ -692,6 +693,8 @@
     }
     .filter-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .filter-bar .btn { padding: 3px 10px; flex: 0 0 auto; }
+    /* "Showing only …" and 💳 billing-cycle bars are not shown (the 🔍 button still shows the filter count) */
+    #filterBar, #cycleBar { display: none !important; }
     .filter-quick { display: flex; gap: 8px; }
     .filter-search { display: flex; flex-direction: column; gap: 6px; }
     /* the search box stands out: purple frame, 🔍 inside, soft glow when typing */
@@ -1036,9 +1039,6 @@
 
     /* row tools: star, insert */
     .tools { display: flex; align-items: center; gap: 2px; }
-    .star-btn { border: none; background: none; cursor: pointer; font-size: 1.15rem; color: #cbd5e1; padding: 2px; line-height: 1; }
-    .star-btn:hover { color: #f59e0b; }
-    .star-btn.on { color: #f59e0b; }
 
     /* rows grouped by day: alternating background, date shown once per day */
     /* one row per date (all days of the month); click to collapse / expand */
@@ -1092,9 +1092,6 @@
     tr.week-total .wk-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
     #mTotalLabel { white-space: nowrap; }
 
-    /* starred rows: marked in place */
-    tr.starred td { background: #f5f3ff; }
-    tr.starred td:first-child { box-shadow: inset 4px 0 0 #8b5cf6; }
 
     /* weekly subtotal – a paler shade of the monthly total's yellow */
     tr.week-total td {
@@ -1182,7 +1179,6 @@
       #tbody td.c-del { padding-left: 8px; }
       .edit-table .c-note { width: 12%; }
       .edit-table .c-by { width: 70px; }
-      .star-btn { font-size: 1rem; }
       tr.day-head td, tr.week-total td, tr.total td { padding: 4px 6px; font-size: .8rem; }
       .dup-tag { font-size: .62rem; padding: 0 4px; }
     }
@@ -1249,7 +1245,7 @@
       html:not(.tbl-wide) #mTable .c-date-cell, html:not(.tbl-wide) #mTable .c-time-cell, html:not(.tbl-wide) #mTable .c-note,
       html:not(.tbl-wide) #mTable thead .c-sent, html:not(.tbl-wide) #mTable thead .c-recv, html:not(.tbl-wide) #mTable thead .c-sv, html:not(.tbl-wide) #mTable thead .c-rv,
       html:not(.tbl-wide) #tbody tr[data-id] .c-sent, html:not(.tbl-wide) #tbody tr[data-id] .c-recv, html:not(.tbl-wide) #tbody tr[data-id] .c-sv, html:not(.tbl-wide) #tbody tr[data-id] .c-rv,
-      html:not(.tbl-wide) #tbody tr[data-id] .star-btn, html:not(.tbl-wide) #tbody tr[data-id] .dup-tag { display: none !important; }
+      html:not(.tbl-wide) #tbody tr[data-id] .dup-tag { display: none !important; }
       html:not(.tbl-wide) #mTable .c-by { display: none !important; }
       html:not(.tbl-wide) #tbody tr[data-id] .via-by { display: block; }
       /* view mode: the payment method as plain text, "by …" right under it */
@@ -1259,15 +1255,15 @@
       /* view mode: the amount as plain coloured text ("+344" green, "788" red) with the time under it */
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .amt-wrap { display: none; }
       html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .amt-view { display: flex; }
+      /* under the amount: full date ("Sun, 28 May"), the time on the next line */
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-view .av-time { font-size: .7rem; line-height: 1.25; }
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-view :is(.av-date, .av-t) { display: block; white-space: nowrap; }
+      html:not(.tbl-wide) #tbody tr[data-id] .amt-view .av-t::before { content: none; }
       html:not(.tbl-wide) #tbody tr[data-id] .c-amt { padding-left: 8px !important; }
       html:not(.tbl-wide) #mTable thead .c-amt { padding-left: 8px; }
-      /* ☐ on top, ☆ under it */
+      /* ☐ checkbox */
       #tbody tr[data-id] .tools { flex-direction: column; justify-content: center; gap: 0; line-height: 1; }
       html:not(.tbl-wide) #tbody tr[data-id] .tools .row-sel { width: 13px; height: 13px; margin: 0; }
-      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { font-size: .85rem !important; line-height: 1; padding: 1px 0 0 !important; }
-      /* view mode: ☆/★ at the start of the line (where the checkbox is when editing) */
-      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .star-btn { display: inline-block !important; font-size: .95rem; padding: 0; }
-      html:not(.tbl-wide) #monthly.readonly #tbody tr[data-id] .tools .star-btn { display: none !important; }
       html:not(.tbl-wide) #mTable thead .c-amt, html:not(.tbl-wide) #mTable thead .c-via, html:not(.tbl-wide) #tbody tr[data-id] .c-amt, html:not(.tbl-wide) #tbody tr[data-id] .c-via { display: block; }
       html:not(.tbl-wide) #mTable thead .c-amt { text-align: center; }
       html:not(.tbl-wide) #mTable thead th { display: block; width: auto; padding: 6px 2px; font-size: .7rem; border: none; background: none; }
@@ -1317,9 +1313,18 @@
       html:not(.tbl-wide) #monthly:not(.viewmode):not(.readonly) #mTable.with-payer #tbody tr[data-id] .c-by { grid-area: payer; display: block !important; }
 
       /* row colours move to the line */
-      html:not(.tbl-wide) #tbody tr.starred { background: #f5f3ff; box-shadow: inset 3px 0 0 #8b5cf6; }
       html:not(.tbl-wide) #tbody tr.dup { background: #fff7ed; }
       html:not(.tbl-wide) #tbody tr.selected { background: #dbeafe; }
+
+      /* view mode: no ☐ column – the amount starts the line; tap a row to tick it, a small ✓ marks it on the left */
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #mTable :is(thead tr, #tbody tr[data-id]) { grid-template-columns: 80px minmax(0, 1fr) 96px 22px; position: relative; }
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #mTable :is(thead tr, #tbody tr[data-id]) > .c-tools { display: none !important; }
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] { cursor: pointer; }
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr[data-id] .c-amt { padding-left: 10px !important; }
+      html:not(.tbl-wide) #monthly:is(.viewmode, .readonly) #tbody tr.selected::before {
+        content: '✓'; position: absolute; left: 1px; top: 50%; transform: translateY(-50%);
+        font-size: .7rem; font-weight: 700; line-height: 1; color: var(--primary);
+      }
 
       /* date rows, week totals and the month total: one line each */
       html:not(.tbl-wide) tr.day-head, html:not(.tbl-wide) tr.week-total, html:not(.tbl-wide) .edit-table tfoot tr {
@@ -1371,7 +1376,7 @@
       /* line 1: ◀ month ▶ 📍 🔍 · line 2: ✏️ ⭐ 📤 📊 ⚙️ (editing: ✔ 🗑 🧾 first) */
       .month-pick { order: -2; flex: 1 1 calc(100% - 50px); }
       .month-bar > #filterBtn { order: -1; flex: 0 0 44px; }
-      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #bgBtn { order: 3; } #starOnlyBtn { order: 4; } #ioBtn { order: 5; } #viewBtn { order: 6; } #wideBtn { order: 6; }
+      #editBtn { order: 1; } #clearBtn { order: 2; } #bulkBtn { order: 3; } #groupBtn { order: 3; } #bgBtn { order: 3; } #ioBtn { order: 4; } #viewBtn { order: 6; } #wideBtn { order: 6; }
       #fsBtn { order: 6; } #landscapeBtn { order: 7; } #filterBtn { order: 8; } #cardsBtn { order: 9; }
       html:not(.tbl-wide) .month-bar .time-toggle { display: none; }
 
@@ -1447,9 +1452,7 @@
     /* toolbar icon buttons (full screen, rotate) */
     .icon-btn, .wide-btn { align-items: center; justify-content: center; }
     .icon-btn svg { width: 18px; height: 18px; display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-    .icon-btn.on, .star-only-btn.on { background: #fef3c7; color: #92400e; }
     .icon-btn.on { background: #ede9fe; color: #6d28d9; }
-    html[data-theme=dark] .star-only-btn.on { background: #3a2a05; color: #fde68a; }
     html[data-theme=dark] .icon-btn.on { background: #2e1f4f; color: #e9d5ff; }
     .fs-btn .fs-out, .fs-btn.on .fs-in { display: none; }
     .fs-btn.on .fs-out { display: inline; }
@@ -1588,7 +1591,6 @@
     html[data-theme=dark] .day-pill.out { background: #4c1d24; color: #fda4af; }
     html[data-theme=dark] .day-pill.in { background: #064e3b; color: #6ee7b7; }
     html[data-theme=dark] .menu-divider { background: #2e2e2e; }
-    html[data-theme=dark] .star-btn:not(.on) { color: #4a4a4a; }
     html[data-theme=dark] .fav-btn:not(.on) { color: #7a7a7a; }
     /* table rows (wide grid: the cells; upright phones: the line) */
     html[data-theme=dark] tr.day-head td, html[data-theme=dark] #tbody tr.day-head { background: #111111 !important; border-top-color: #2a2a2a !important; }
@@ -1599,12 +1601,10 @@
     html[data-theme=dark] tr.total td, html[data-theme=dark] .edit-table tfoot tr.total { background: #191021 !important; border-top-color: #573274 !important; }
     html[data-theme=dark] tr.total.filtered td, html[data-theme=dark] .edit-table tfoot tr.total.filtered { background: #262626 !important; border-top-color: #555 !important; }
     html[data-theme=dark] tr.total.filtered.cycle td, html[data-theme=dark] .edit-table tfoot tr.total.filtered.cycle { background: #2e1065 !important; border-top-color: #7e22ce !important; }
-    html[data-theme=dark] tr.starred td { background: #2e1f4f; }
     html[data-theme=dark] tr.dup td, html[data-theme=dark] .item.dup { background: #3b2412; }
     html[data-theme=dark] #tbody tr.selected td { background: #333; }
     html[data-theme=dark]:not(.tbl-wide) #mTable thead { background: #111111 !important; }
     @media (max-width: 600px) and (orientation: portrait), (max-width: 600px) and (min-height: 521px) {
-      html[data-theme=dark]:not(.tbl-wide) #tbody tr.starred { background: #2e1f4f; }
       html[data-theme=dark]:not(.tbl-wide) #tbody tr.dup { background: #3b2412; }
       html[data-theme=dark]:not(.tbl-wide) #tbody tr.selected { background: #333; }
       html[data-theme=dark]:not(.tbl-wide) #tbody tr[data-id] td { background: transparent !important; }
@@ -1726,7 +1726,6 @@
         <button type="button" class="btn btn-light wide-btn" id="wideBtn" title="Full table – scroll sideways">↔</button>
         <button type="button" class="btn btn-light" id="bgBtn" title="Group the ticked entries (expenses + the bill payment / refunds)" hidden>🧾<span class="lbl"> Group</span> <span id="bgCount">(0)</span></button>
         <button type="button" class="btn btn-light" id="groupBtn" title="Put the ticked entries in a named group" hidden>🗂<span class="lbl"> Group</span> <span id="groupCount">(0)</span></button>
-        <button type="button" class="btn btn-light star-only-btn" id="starOnlyBtn" title="Show starred entries only">⭐<span class="lbl"> Starred</span></button>
         <button type="button" class="btn btn-light" id="viewBtn" title="Display – day / week totals, full year">📊<span class="lbl"> View</span></button>
         <button type="button" class="btn btn-light" id="filterBtn" title="Filter by payment method">🔍<span class="lbl"> Filter</span><span class="filter-count" id="filterCount" hidden></span></button>
         <button type="button" class="btn btn-light" id="cardsBtn" title="Payment management – cards, billing cycles, payment options">⚙️</button>
@@ -2212,7 +2211,7 @@
     }
 
     function openBook(id, push = true) {
-      if (id !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; tagFilter.clear(); textFilter = ''; feedFrom = feedTo = null; cardSel = ''; if (bookType(id) === 'card') curMonth = today().slice(0, 7); sortForType(id); }
+      if (id !== curBook) { groupPick = false; selected.clear(); collapsed.clear(); viaFilter.clear(); viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; tagFilter.clear(); textFilter = ''; feedFrom = feedTo = null; cardSel = ''; if (bookType(id) === 'card') curMonth = today().slice(0, 7); sortForType(id); }
       curBook = id;
       openScreen('book', push);
     }
@@ -3121,7 +3120,9 @@
     const byName = e => e.byEmail && e.byEmail === myEmail() ? 'You' : (e.by || (e.byEmail || '').split('@')[0] || '—');
 
     // "Tue, 01" (the month is in the picker)
-    const shortDay = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' }) + ', ' + iso.slice(8);
+    // 💳 credit card expenses: every date in full, "10 May 2024"
+    const fullDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const shortDay = iso => cardBook() ? fullDate(iso) : new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' }) + ', ' + +iso.slice(8) + ' ' + new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { month: 'short' });
     // Upright phones use ONE amount column (− sent / + received) and ONE "via" column
     const isReceived = e => +e.received > 0 && !(+e.sent > 0);
     const amountCell = e => {
@@ -3133,12 +3134,11 @@
     };
 
     // "Mon, 29 Jun · 1:29 PM" under the amount (one card's list has no date column)
-    const amtWhen = e => `<small class="amt-dt">${new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}${e.time ? ' · ' + fmtTime(e.time) : ''}</small>`;
+    const amtWhen = e => `<small class="amt-dt">${cardBook() ? fullDate(e.date) : new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}${e.time ? ' · ' + fmtTime(e.time) : ''}</small>`;
     // Editable cells for one expense row
     const rowInputs = e => `
         <td class="c-tools"><div class="tools">
           <input type="checkbox" class="row-sel" title="Select"${selected.has(e.id) ? ' checked' : ''}>
-          <button type="button" class="star-btn ${e.starred ? 'on' : ''}" title="${e.starred ? 'Unstar' : 'Star this entry'}">${e.starred ? '★' : '☆'}</button>
         </div></td>
         <td class="c-date-cell"><div class="dt-cell">
           <span class="dt-view"><span class="dv-date">${dayName(e.date)}</span>${e.time ? `<span class="dv-sep"> · </span><span class="dv-time">${fmtTime(e.time)}</span>` : ''}<span class="dv-compact">${compactDT(e)}</span></span>
@@ -3213,12 +3213,12 @@
       .sort((a, b) => a.date.localeCompare(b.date) || a.created - b.created);
     // ✏️ Edit mode: the table is view-only until you turn it on
     let editMode = false;
+    // 🧾 credit-card group mode (view mode only): tick entries, then 🧾 Group (n); ✔ Done leaves it – no editing meanwhile
+    let groupPick = false;
     const fmtTime = t => { const [h, m] = t.split(':').map(Number); return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h < 12 ? 'am' : 'pm'}`; };
 
     // 🔍 payment filter: empty = show everything; '' stands for "no payment method"
     const viaFilter = new Set();
-    // ⭐ starred only (view mode): totals follow, like the payment filter
-    let starOnly = false;
     let dupOnly = false;
     // 🔍 money sent only / received only ('' = both)
     let flowFilter = '';
@@ -3228,8 +3228,8 @@
     const TAG_RE = /#[\p{L}\p{N}_-]+/gu;
     const tagsOf = e => new Set((((e.purpose || '') + ' ' + (e.note || '')).match(TAG_RE) || []).map(x => x.slice(1).toLowerCase()));
     const textOf = e => [e.purpose, e.note, viaOf(e)].join(' ').toLowerCase();
-    const filtering = () => viaFilter.size > 0 || !!flowFilter || tagFilter.size > 0 || !!textFilter || starOnly || dupOnly;
-    const passesFilter = e => (!e.sep || !filtering()) && (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!cardSel || !cardBook() || (e.sentVia || e.receivedVia || '') === cardSel) && (!starOnly || !!e.starred) &&
+    const filtering = () => viaFilter.size > 0 || !!flowFilter || tagFilter.size > 0 || !!textFilter || dupOnly;
+    const passesFilter = e => (!e.sep || !filtering()) && (!viaFilter.size || viaFilter.has(e.sentVia || e.receivedVia || '')) && (!cardSel || !cardBook() || (e.sentVia || e.receivedVia || '') === cardSel) &&
       (!flowFilter || (flowFilter === 'received' ? isReceived(e) : !isReceived(e))) &&
       (!tagFilter.size || [...tagsOf(e)].some(x => tagFilter.has(x))) && (!textFilter || textOf(e).includes(textFilter.toLowerCase()));
     /* 📊 display: what the table shows (view mode – editing always shows every entry and every date)
@@ -3438,6 +3438,7 @@
         </div></td></tr>` + g.members.map((m, i) => row(m, `bg-member g${c}${i === g.members.length - 1 ? ' bg-last' : ''}`)).join('');
     }
     $('bgBtn').addEventListener('click', () => {
+      if (!groupPick) { groupPick = true; selected.clear(); renderMonthly(); mFlash('🧾 Tick the entries to group, then tap Group.'); return; }
       const picked = selectableItems().filter(e => selected.has(e.id) && !e.sep);
       if (picked.length < 2) return;
       const bg = 'bg' + newId();
@@ -3489,7 +3490,7 @@
     function loadCycles() { try { return JSON.parse(localStorage.getItem(CYCLES_KEY)) || {}; } catch { return {}; } }
     let cycleView = false;
     const isoDate = dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
-    const shortDate = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const shortDate = iso => cardBook() ? fullDate(iso) : new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
     // the one payment option being filtered (to offer "set up card" for it)
     function soleFilter() { const v = [...viaFilter]; return v.length === 1 && v[0] ? v[0] : null; }
     // the one card whose bills are shown: in a credit-card expense the 💳 Card picker (🔍 Filter just filters there), else the filter
@@ -3670,7 +3671,7 @@
       const sepsShown = sortCol === 'date' && sortDir === 1;            // ⎯ "Available till now" lines: date order, oldest first only
       const items = visibleItems().filter(e => !e.sep || sepsShown).sort(compareRows);
       const sepCalc = runningAt(items);
-      const row = (e, cls = '') => e.grpBlock ? groupBlockHtml(e, cols, row) : e.sep ? sepRow(e, cols, sepCalc) : `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e, true)}</tr>`;
+      const row = (e, cls = '') => e.grpBlock ? groupBlockHtml(e, cols, row) : e.sep ? sepRow(e, cols, sepCalc) : `<tr data-id="${e.id}" class="${cls}">${rowInputs(e, true)}</tr>`;
       let html = '';
       const feed = feedOn();
       // 💸 the payment(s) that settled bill `key` (made after its statement, by the next one) – at the bottom of the bill
@@ -3796,7 +3797,7 @@
         } else html = dateBlock(period().days, items) + settleHtml(curMonth);
       }
       $('tbody').innerHTML = balanceRow(lvl, cols) + (html ||
-        `<tr><td colspan="${cols}" class="empty">${starOnly ? `No starred entries in ${monthLabel(curMonth)} – tap ☆ on an entry to star it.` : `No entries for ${monthLabel(curMonth)} yet. Tap <b>✏️ Edit</b>, then <b>＋ Add</b> on a date, or use <b>🧾 Bulk add</b>.`}</td></tr>`);
+        `<tr><td colspan="${cols}" class="empty">No entries for ${monthLabel(curMonth)} yet. Tap <b>✏️ Edit</b>, then <b>＋ Add</b> on a date, or use <b>🧾 Bulk add</b>.</td></tr>`);
       // 👥 group expense: names already used, offered when typing "who paid"
       if (isGroupType(curBook)) $('payerNames').innerHTML = [...new Set([user?.name, ...expenses.filter(e => bookOf(e) === curBook).map(payerOf)].filter(n => n && n !== '—'))]
         .map(n => `<option value="${esc(n)}">`).join('');
@@ -3820,6 +3821,7 @@
       if (feed && feedScrollBottom && !feedFilling) { const wrap = $('mTable').parentElement; wrap.scrollTop = wrap.scrollHeight; feedScrollBottom = false; }
       $('totSums').colSpan = $('selSums').colSpan = (showBy ? 7 : 6) - (cardOne() && feedOn() ? 1 + (editing() ? 0 : 1) : 0);   // (one card: fewer columns)
       updateMonthTotals();
+      if (groupPick && (editMode || !groupView() || !canEdit(curBook))) groupPick = false;
       updateSelection();
       updateFilterUI();
 
@@ -3829,16 +3831,12 @@
       $('monthly').classList.toggle('viewmode', !ro && !editMode);
       $('editBtn').hidden = ro;
       // editing: no ⭐-only view (📤 import / export stays)
-      $('starOnlyBtn').hidden = editMode && !ro;
-      $('starOnlyBtn').classList.toggle('on', starOnly);
-      $('starOnlyBtn').title = starOnly ? 'Show all entries' : 'Show starred entries only';
-      $('editBtn').classList.toggle('on', editMode && !ro);
-      $('editBtn').innerHTML = editMode ? '✔<span class="lbl"> Done</span>' : '✏️<span class="lbl"> Edit</span>';
-      $('editBtn').title = editMode ? 'Done editing – back to view only' : 'Edit the table';
+      $('editBtn').classList.toggle('on', (editMode || groupPick) && !ro);
+      $('editBtn').innerHTML = editMode || groupPick ? '✔<span class="lbl"> Done</span>' : '✏️<span class="lbl"> Edit</span>';
+      $('editBtn').title = groupPick ? 'Done grouping – back to view only' : editMode ? 'Done editing – back to view only' : 'Edit the table';
       if (locked) {
         $('tbody').querySelectorAll('select, .sign-btn, .kind-btn').forEach(el => el.disabled = true);
         $('tbody').querySelectorAll('input:not(.row-sel):not(.grp-sel), textarea').forEach(el => { el.readOnly = true; if (el.type === 'date' || el.type === 'time') el.disabled = true; });
-        if (ro) $('tbody').querySelectorAll('.star-btn').forEach(el => el.disabled = true);      // ⭐ still works in view mode
       }
     }
 
@@ -3863,7 +3861,7 @@
       const ordered = items.slice().sort((a, b) => (seqOf(a) - seqOf(b)) * sortDir || a.created - b.created);
       const edit = editing(), done = new Set();
       let n = 0, html = '';
-      const row = (e, cls) => `<tr data-id="${e.id}" class="${cls}${e.starred ? ' starred' : ''}">${rowInputs(e)}</tr>`
+      const row = (e, cls) => `<tr data-id="${e.id}" class="${cls}">${rowInputs(e)}</tr>`
         .replace('<div class="tools">', `<div class="tools"><span class="seq-no">${++n}</span>`);
       ordered.forEach(e => {
         if (!e.grp) { html += row(e, ''); return; }
@@ -4105,9 +4103,10 @@
     /* ---------- Time lives in the Date column (no separate Time column) ---------- */
     const showTime = false;
     function applyTimeToggle() { $('mTable').classList.add('hide-time'); }
-    const dayName = iso => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
+    const dayName = iso => cardBook() ? fullDate(iso) : new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' });
     // phones held sideways: "Tue,01 - 9:05P"
     const compactDT = e => {
+      if (cardBook()) return fullDate(e.date) + (e.time ? ' - ' + fmtTime(e.time) : '');
       const d = new Date(e.date + 'T00:00:00').toLocaleDateString('en-IN', { weekday: 'short' }) + ',' + e.date.slice(8);
       if (!e.time) return d;
       const [h, m] = e.time.split(':').map(Number);
@@ -4176,7 +4175,7 @@
       const [ty, tm] = curMonth.split('-').map(Number);
       const yr = level() === 'year' || level() === 'years', ysh = level() === 'years' && yearsShown();
       const yLbl = ysh ? (ysh.length > 1 ? `${ysh[0]}–${String(ysh[ysh.length - 1]).slice(2)}` : `${ysh[0]}`) : ty;
-      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (isEventBook() ? '🎉 Event total' : cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size || flowFilter || tagFilter.size || textFilter ? '🔍 Filtered total' : dupOnly ? '⚠ Duplicates total' : starOnly ? '⭐ Starred total'
+      $('mTotalLabel').textContent = (yr ? `${yLbl} · ` : '') + (isEventBook() ? '🎉 Event total' : cycleOn() ? (yr ? '💳 Bills total' : '💳 Bill total') : viaFilter.size || flowFilter || tagFilter.size || textFilter ? '🔍 Filtered total' : dupOnly ? '⚠ Duplicates total'
         : ysh ? 'All years' : yr ? 'Year total' : `Total · ${new Date(ty, tm - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`);
       $('mTotalLabel').title = `Total for ${ysh ? 'all years' : yr ? ty : monthLabel(curMonth)}` + (viaFilter.size ? ' – only ' + [...viaFilter].map(viaName).join(', ') : '');
       $('mTotalLabel').parentElement.classList.toggle('filtered', filtering());
@@ -4376,18 +4375,6 @@
       save();
     });
 
-    // ☆ star / unstar – starred rows are pinned on top
-    $('tbody').addEventListener('click', ev => {
-      const btn = ev.target.closest('.star-btn');
-      if (!btn) return;
-      const e = expenses.find(x => x.id === btn.closest('tr').dataset.id);
-      if (!e) return;
-      e.starred = !e.starred;
-      if (!e.starred) delete e.starred;
-      save();
-      renderMonthly();
-    });
-
     /* ---------- Select rows + Clear (selected / month / week / date) with undo ---------- */
     const selected = new Set();
     const collapsed = new Set();        // 'd:YYYY-MM-DD' (a day) or 'w:YYYY-MM-DD' (a week, keyed by its Monday)
@@ -4422,7 +4409,11 @@
       $('selAll').checked = inMonth.size > 0 && selected.size === inMonth.size;
       $('selAll').indeterminate = selected.size > 0 && selected.size < inMonth.size;
       $('bgBtn').hidden = !(groupView() && canEdit(curBook));
-      $('bgBtn').disabled = selected.size < 2;
+      // editing: off · view mode: tap to start picking · picking: groups the ticked entries (2 or more)
+      $('bgBtn').disabled = editMode || (groupPick && selected.size < 2);
+      $('bgBtn').classList.toggle('on', groupPick);
+      $('bgBtn').title = editMode ? 'Tap ✔ Done first – grouping works in view mode' : groupPick ? 'Group the ticked entries (expenses + the bill payment / refunds)' : 'Group entries – tick them, then tap Group';
+      $('bgCount').hidden = !groupPick;
       $('bgCount').textContent = `(${selected.size})`;
       updateDupBar();
 
@@ -4449,6 +4440,16 @@
       if (!cb) return;
       const ids = cb.classList.contains('grp-sel') ? groupIds(cb.dataset.grp) : [cb.closest('tr').dataset.id];
       ids.forEach(id => cb.checked ? selected.add(id) : selected.delete(id));
+      updateSelection();
+    });
+    // upright phone, view mode: the ☐ column is hidden (CSS) – tap anywhere on the entry to tick / untick it
+    $('tbody').addEventListener('click', ev => {
+      const tr = ev.target.closest('tr[data-id]');
+      if (!tr || ev.target.closest('button, a, .row-sel') || !$('monthly').matches('.viewmode, .readonly')) return;
+      const tools = tr.querySelector('.c-tools');
+      if (!tools || getComputedStyle(tools).display !== 'none') return;
+      const id = tr.dataset.id;
+      if (selected.has(id)) selected.delete(id); else selected.add(id);
       updateSelection();
     });
 
@@ -4608,10 +4609,9 @@
     $('mTable').parentElement.addEventListener('scroll', hideTip, { passive: true });
 
     // ✏️ Edit / ✔ Done – on an upright phone you edit right in the compact list (two lines per entry); ↔ still opens the full table
-    $('starOnlyBtn').addEventListener('click', () => { starOnly = !starOnly; selected.clear(); renderMonthly(); });
     $('editBtn').addEventListener('click', () => {
+      if (groupPick) { groupPick = false; selected.clear(); renderMonthly(); return; }
       editMode = !editMode;
-      if (editMode) starOnly = false;                       // edit the whole month
       if (!editMode) pruneBlank();
       renderMonthly();
       // straight to today: its "＋ Add row" in view and pulsing
@@ -5766,7 +5766,7 @@
     async function openShared(id, push = true) {
       if (!user) { alert('Log in to open shared expenses.'); return; }
       const bid = SH + id;
-      if (bid !== curBook) { selected.clear(); collapsed.clear(); viaFilter.clear(); starOnly = false; viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; tagFilter.clear(); textFilter = ''; feedFrom = feedTo = null; cardSel = ''; sortForType(bid); }
+      if (bid !== curBook) { groupPick = false; selected.clear(); collapsed.clear(); viaFilter.clear(); viewLevel = 'entries'; crumbs = []; cycleView = false; autoCycleFor = null; dupOnly = false; flowFilter = ''; tagFilter.clear(); textFilter = ''; feedFrom = feedTo = null; cardSel = ''; sortForType(bid); }
       curBook = bid;
       openScreen('book', push);
       $('mMsg').textContent = '⏳ Loading the latest version…'; $('mMsg').hidden = false;
