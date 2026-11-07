@@ -1,0 +1,36 @@
+# Keeps the free-plan Supabase project awake.
+# Supabase pauses free projects after ~7 days without activity, so this
+# runs a tiny database query once a day.
+#
+# Setup (once): GitHub repo → Settings → Secrets and variables → Actions → New repository secret
+#   SUPABASE_URL       e.g. https://xxxxxxxx.supabase.co
+#   SUPABASE_ANON_KEY  the anon / public key (same one as in index.html)
+
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '30 3 * * *'   # every day at 03:30 UTC (09:00 IST)
+  workflow_dispatch:        # lets you run it by hand from the Actions tab
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the database
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Add the SUPABASE_URL and SUPABASE_ANON_KEY repository secrets."
+            exit 1
+          fi
+          # A real REST query reaches the database (Row Level Security just returns [] for the anon key).
+          code=$(curl -sS -o response.txt -w '%{http_code}' --retry 3 --retry-delay 10 \
+            "${SUPABASE_URL%/}/rest/v1/vaults?select=user_id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "HTTP $code"; cat response.txt; echo
+          # Fail (GitHub emails you) if the project is unreachable or paused
+          [ "$code" -ge 200 ] && [ "$code" -lt 300 ]

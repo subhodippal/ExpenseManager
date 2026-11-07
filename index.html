@@ -5932,7 +5932,13 @@
         $('loginMsg').innerHTML = `📬 Email sent to <b>${esc(email)}</b>.<br>Open the mail from <b>Supabase Auth</b> (“Your sign-in link”) and tap <b>Sign in</b>. Check Spam / Promotions if you don't see it. You can close this window.`;
         $('loginMsg').hidden = false;
       } catch (e) {
-        err(/rate|seconds/i.test(e.message) ? 'Please wait a minute before asking for another link.' : 'Could not send the link: ' + e.message);
+        const msg = String(e && e.message || e);
+        err(/rate|seconds/i.test(msg) ? 'Please wait a minute before asking for another link.'
+          : /failed to fetch|networkerror|load failed/i.test(msg)
+            ? (navigator.onLine === false ? 'You are offline – connect to the internet and try again.'
+              : 'Could not reach the login server. Please try again in a moment.')
+          : 'Could not send the link: ' + msg);
+        console.error('Login failed:', e, '– server:', projectUrl);
         $('loginSend').disabled = false;
       }
     });
